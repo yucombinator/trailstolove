@@ -1,6 +1,6 @@
 ---
 title: "East Bank Baker Lake"
-date: 2021-05-30
+date: 2022-05-30
 author: 
   name: "Yu Chen Hou"
   image: images/author/sage-kirk.jpg
@@ -13,7 +13,7 @@ stats:
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
 description: Easy, peaceful lakeshore backpacking
-thumbnail: "images/trips/baker-lake.jpg"
+thumbnail: "images/trips/baker-lake.jpeg"
 image: "lake.jpg"
 ---
 
