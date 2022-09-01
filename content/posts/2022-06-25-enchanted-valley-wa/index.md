@@ -55,7 +55,7 @@ Pony Bridge (2.5 miles from trailhead) — This is the closest backcountry camps
 
 **O’ Neil Creek (6.7 miles from trailhead) —** Potentially the most popular campsite on the trail, this campsite marks the halfway point to the valley, so it is an excellent stopping point if you’re backpacking for two nights. There is a privy and food storage area on-site.
 
-**Pyrites Creek (9.6 miles from trailhead) — **Also a popular campsite closer to the valley, it’s a good stopping point as an alternative to O’Neil.
+**Pyrites Creek (9.6 miles from trailhead) —** Also a popular campsite closer to the valley, it’s a good stopping point as an alternative to O’Neil.
 
 **Enchanted Valley (13 miles from trailhead) —** Great spot to camp, and probably the most scenic one! There’s not one but two privies here, but we’ve noticed that the campsites are not as secluded as the other ones, since there’s fewer trees here. Still, it’s possible to find a campsite closer to the sides of the valley if you want more quiet.
 
