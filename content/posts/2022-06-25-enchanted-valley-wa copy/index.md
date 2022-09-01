@@ -4,11 +4,11 @@ date: 2021-06-25
 author: 
   name: "Yu Chen Hou"
   image: images/author/sage-kirk.jpg
-  twitter: '@icechen1'
+  twitter: '@yucombinator'
 stats:
   where: "Olympic National Park, WA"
-  distance: "26mi"
-  elevation: "3700 ft / 1127 m"
+  distance: "26mi / 42km"
+  elevation: "3700ft / 1127m"
   date: "2021-06-25 to 2021-06-27"
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
