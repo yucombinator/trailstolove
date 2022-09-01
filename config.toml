@@ -21,7 +21,7 @@ paginate = 3
     showLogoTextOnMobile = true
     showLogoImageOnDesktop = true
     showLogoImageOnMobile = true
-    logoDesktopText = "Hugo Atlantic"
+    logoDesktopText = "TrailsToLove"
     logoDesktopImage = "images/logo/logo.svg"
     logoMobileText = ""
     logoMobileImage = "images/logo/logo-mobile.svg"
@@ -68,3 +68,6 @@ paginate = 3
     name = "About"
     url = "/about/"
     weight = 3
+
+[markup.goldmark.renderer]
+ unsafe = true

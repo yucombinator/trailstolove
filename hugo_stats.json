@@ -6,6 +6,8 @@
       "body",
       "button",
       "div",
+      "figcaption",
+      "figure",
       "footer",
       "h1",
       "h2",
@@ -13,6 +15,7 @@
       "head",
       "header",
       "html",
+      "iframe",
       "img",
       "li",
       "link",
@@ -148,7 +151,6 @@
       "text-gray-600",
       "text-gray-700",
       "text-green-400",
-      "text-green-500",
       "text-green-600",
       "text-green-800",
       "text-sm",
@@ -172,14 +174,20 @@
       "front-end-development",
       "github-flavored-markdown-gfm",
       "history",
+      "how-to-get-here",
       "markdown-extra",
       "markdown-flavours",
       "menu-close",
       "menu-container",
       "menu-trigger",
+      "permits",
       "process",
       "syntax-highlighting",
-      "what-is-web-design"
+      "trail-description",
+      "what-is-web-design",
+      "what-to-pack",
+      "when-to-go",
+      "where-to-camp"
     ]
   }
 }
