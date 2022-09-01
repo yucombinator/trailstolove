@@ -1,0 +1,31 @@
+{{ $where := .Params.stats.where }}
+{{ $distance := .Params.stats.distance }}
+{{ $elevation := .Params.stats.elevation }}
+{{ $date := .Params.stats.date }}
+
+<div class="space-y-4">
+  {{ if $where }}
+  <div class="items-center block">
+    <span class="font-medium text-sm ml-1 block">Location</span>
+    <span class="text-sm ml-1">{{ $where }}</span>
+  </div>
+  {{ end }}
+  {{ if $distance }}
+  <div class="items-center block">
+    <span class="font-medium text-sm ml-1 block">Distance</span>
+    <span class="text-sm ml-1">{{ $distance }}</span>
+  </div>
+  {{ end }}
+  {{ if $elevation }}
+  <div class="items-center block">
+    <span class="font-medium text-sm ml-1 block">Elevation</span>
+    <span class="text-sm ml-1">{{ $elevation }}</span>
+  </div>
+  {{ end }}
+  {{ if $date }}
+  <div class="items-center block">
+    <span class="font-medium text-sm ml-1 block">Dates hiked</span>
+    <span class="text-sm ml-1">{{ $date }}</span>
+  </div>
+  {{ end }}
+</div>
