@@ -50,12 +50,17 @@ More adventurous groups can press on to Anderson Pass, where you can get a peek 
 ## Where to Camp
 There’s a lot of camping options along the trail, but they need to be reserved ahead of time (see the Permits section below). The marked campsites are:
 
-Graves Creek (at trailhead) — This is the ideal campsite to stay at if you’re looking to car camp before or after your trip, no water is supplied though, so you’ll need to pack in or filter your own.
+**Graves Creek (at trailhead) —** This is the ideal campsite to stay at if you’re looking to car camp before or after your trip, no water is supplied though, so you’ll need to pack in or filter your own.
 Pony Bridge (2.5 miles from trailhead) — This is the closest backcountry campsite to the trailhead, it is not immensely popular, though, but is located near a nice bridge that crosses the river.
-O’ Neil Creek (6.7 miles from trailhead) — Potentially the most popular campsite on the trail, this campsite marks the halfway point to the valley, so it is an excellent stopping point if you’re backpacking for two nights. There is a privy and food storage area on-site.
-Pyrites Creek (9.6 miles from trailhead) — Also a popular campsite closer to the valley, it’s a good stopping point as an alternative to O’Neil.
-Enchanted Valley (13 miles from trailhead) — Great spot to camp, and probably the most scenic one! There’s not one but two privies here, but we’ve noticed that the campsites are not as secluded as the other ones, since there’s fewer trees here. Still, it’s possible to find a campsite closer to the sides of the valley if you want more quiet.
-Honeymoon Meadows and Camp Siberia (6 miles beyond Enchanted Valley) — The great beyond. From these campsites you can make your way to other areas in the National Park, and maybe even make this a thru-hike if you go all the way to Dosewallops.
+
+**O’ Neil Creek (6.7 miles from trailhead) —** Potentially the most popular campsite on the trail, this campsite marks the halfway point to the valley, so it is an excellent stopping point if you’re backpacking for two nights. There is a privy and food storage area on-site.
+
+**Pyrites Creek (9.6 miles from trailhead) — **Also a popular campsite closer to the valley, it’s a good stopping point as an alternative to O’Neil.
+
+**Enchanted Valley (13 miles from trailhead) —** Great spot to camp, and probably the most scenic one! There’s not one but two privies here, but we’ve noticed that the campsites are not as secluded as the other ones, since there’s fewer trees here. Still, it’s possible to find a campsite closer to the sides of the valley if you want more quiet.
+
+**Honeymoon Meadows and Camp Siberia (6 miles beyond Enchanted Valley) —** The great beyond. From these campsites you can make your way to other areas in the National Park, and maybe even make this a thru-hike if you go all the way to Dosewallops.
+
 Additionally there is a number of established (but unmarked) campsites along the river shore. I am unsure if those need to be reserved as well, so it is a good idea to call the ranger station for details.
 
 Unfortunately, it seems like we’re not the only fans of the river as our campsite (O’Neil Creek) was completely packed the second night and we had to seek out an alternative (unmarked) campsite a mile away, so be prepared for crowds on weekends.
