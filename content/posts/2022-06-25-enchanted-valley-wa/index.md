@@ -26,7 +26,7 @@ Let me tell you that I’ve found a profound appreciation for riverside trails. 
 ## Trail Description
 The Enchanted Valley the destination of the East Fork Quinault Trail, a roughly 26.0 mile roundtrip trail, but the there’s a number of side trips you can do once you reach the iconic chalet, if you want to add some days or mileage to your trip.
 
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1m9GZPRtma_KTgPx1PCWBTPiMkH7GwEMD&ehbc=2E312F" width="640" height="480"></iframe>
+<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1m9GZPRtma_KTgPx1PCWBTPiMkH7GwEMD&ehbc=2E312F" width=”100%” height="480"></iframe>
 <figcaption>Google Maps of campsites and points of interest</figcaption>
 
 ![Sign at the trailhead, telling us we were at the right place!](sign.jpeg "Sign at the trailhead, telling us we were at the right place!")

@@ -21,7 +21,7 @@ Went out for a two night trip hiking Copper Ridge counter clockwise on 7/15-7/17
 
 ## Trail Description
 
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1vokvD9z61OPSZS-sotv1Pwb8V03Ku5U&ehbc=2E312F" width="640" height="480"></iframe>
+<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1vokvD9z61OPSZS-sotv1Pwb8V03Ku5U&ehbc=2E312F" width=”100%” height="480"></iframe>
 <figcaption>Google Maps of our route and points of interest</figcaption>
 
 Getting to the Hannegan Pass trailhead was easy enough and the road, even if gravel, was pretty easy to drive even in a sedan.
