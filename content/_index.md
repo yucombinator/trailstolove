@@ -1,9 +1,9 @@
 ---
 title: Home
-meta_title: 'Hugo Tailwind 3 Theme - Hugo Atlantic'
-date: 2020-03-22
+meta_title: 'Hiking with Yu - Backpacking Trail Guides'
+date: 2022-08-31
 heading:
   title: "<strong>Trails</strong> I love"
-  description: "Atlantic is a clean and modern <strong>Tailwind 3</strong> theme for Hugo."
+  description: "A collection of trail reports and guides from backpacking trips I've done"
   align: left
 ---

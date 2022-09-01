@@ -1,6 +1,6 @@
 baseURL = "trailstolove"
 languageCode = "en-us"
-title = "TrailsToLove"
+title = "Hiking With Yu"
 themesDir="themes"
 theme = "hugo-atlantic"
 enableGitInfo = false
@@ -21,7 +21,7 @@ paginate = 3
     showLogoTextOnMobile = true
     showLogoImageOnDesktop = true
     showLogoImageOnMobile = true
-    logoDesktopText = "TrailsToLove"
+    logoDesktopText = "Hiking With Yu"
     logoDesktopImage = "images/logo/logo.svg"
     logoMobileText = ""
     logoMobileImage = "images/logo/logo-mobile.svg"

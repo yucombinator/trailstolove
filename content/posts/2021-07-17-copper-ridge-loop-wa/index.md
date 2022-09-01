@@ -12,7 +12,7 @@ stats:
   date: "2021-07-17 to 2021-07-19"
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
-description: A gentle backpacking trail to a historic chalet
+description: Ramble along a river, and panoramic views of the North Cascades
 thumbnail: "images/trips/copper-ridge-loop.jpg"
 image: "copper-ridge-1.jpg"
 ---
