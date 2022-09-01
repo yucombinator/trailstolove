@@ -10,11 +10,11 @@ stats:
   distance: "26mi"
   elevation: "3700 ft / 1127 m"
   date: "2021-06-25 to 2021-06-27"
-categories: ["Development", "Javascript", "Web Design"]
-tags: ["Writing"]
+categories: ["Backpacking", "Washington"]
+tags: ["Backpacking", "Trail Report"]
 description: A gentle backpacking trail to a historic chalet
 thumbnail: "images/trips/enchanted-valley/chalet.jpg"
-image: "/images/trips/enchanted-valley/chalet.jpg"
+image: "chalet.jpg"
 ---
 
 On June 25, some friends and I headed out to Olympics National Park for a two nighter backpacking trip to check out the iconic Enchanted Valley chalet.
@@ -29,9 +29,9 @@ The Enchanted Valley the destination of the East Fork Quinault Trail, a roughly 
 <iframe src="https://www.google.com/maps/d/u/0/embed?mid=1m9GZPRtma_KTgPx1PCWBTPiMkH7GwEMD&ehbc=2E312F" width="640" height="480"></iframe>
 <figcaption>Google Maps of campsites and points of interest</figcaption>
 
-![Sign at the trailhead, telling us we were at the right place!](/images/trips/enchanted-valley/sign.jpeg "Sign at the trailhead, telling us we were at the right place!")
+![Sign at the trailhead, telling us we were at the right place!](sign.jpeg "Sign at the trailhead, telling us we were at the right place!")
 
-![One of the many creek crossings you’ll find on the trail](/images/trips/enchanted-valley/creek.jpeg "One of the many creek crossings you’ll find on the trail")
+![One of the many creek crossings you’ll find on the trail](creek.jpeg "One of the many creek crossings you’ll find on the trail")
 
 While the trail is long, it makes up for it with little elevation gain as you are mostly following the Quinault river. This also means that you have reliable access to water almost along the whole trail, so you could pack less water and just refill as you go.
 
@@ -41,7 +41,7 @@ Once you reach the last mile of the trail, the river valley dramatically opens u
 
 I recommend at least two nights to get the most out of this trip, but three would be ideal if you want to camp right by the chalet.
 
-![On the way to the waterfall!](/images/trips/enchanted-valley/waterfall.jpeg "On the way to the waterfall!")
+![On the way to the waterfall!](waterfall.jpeg "On the way to the waterfall!")
 
 There’s a lot of fun goodies at the Chalet. While you can go bask in the sun next to this old historic building, there’s a few waterfalls you can walk to to keep yourself refreshed on hot summer days. There’s a waterfall really close to the south-east of the valley that was absolutely refreshing during our heat wave.
 
@@ -61,7 +61,7 @@ Additionally there is a number of established (but unmarked) campsites along the
 Unfortunately, it seems like we’re not the only fans of the river as our campsite (O’Neil Creek) was completely packed the second night and we had to seek out an alternative (unmarked) campsite a mile away, so be prepared for crowds on weekends.
 
 
-![Our campsite for the second night](/images/trips/enchanted-valley/camp.jpeg "Our campsite for the second night")
+![Our campsite for the second night](camp.jpeg "Our campsite for the second night")
 
 ## Permits
 Olympics National Park now requires overnight permits to camp in the entire park, and this includes all campsites on the way to Enchanted Valley. You can book them online here, do it early as spots tend to get snagged up quickly.
@@ -69,7 +69,7 @@ Olympics National Park now requires overnight permits to camp in the entire park
 You’ll also need a National Parks pass, and it’s good to have it ahead of time as there is no pay stations at the rather rustic parking lot.
 
 
-![It’s always good to stop to appreciate the rain forest](/images/trips/enchanted-valley/tree.jpeg "It’s always good to stop to appreciate the rain forest")
+![It’s always good to stop to appreciate the rain forest](tree.jpeg "It’s always good to stop to appreciate the rain forest")
 
 
 ## When to go
