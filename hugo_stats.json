@@ -140,6 +140,7 @@
       "sm:items-center",
       "sm:justify-between",
       "sm:px-6",
+      "space-y-4",
       "sr-only",
       "text-2xl",
       "text-3xl",
