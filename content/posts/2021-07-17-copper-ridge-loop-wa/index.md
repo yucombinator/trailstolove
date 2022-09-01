@@ -33,7 +33,7 @@ The trail starts off easy enough through a steady ascent to Hannegan Pass, we fo
 From there we descended to the valley floor into the dense forest canopy, which was a very welcome shelter from the afternoon sun. There isn't too much to see except the occasional waterfall, but it's a pretty quiet trail away from most day hikers, so we found a lot of solitude hiking to US Cabin.
 
 
-![River!](river.jpeg "Chilliwack river by camp")
+![River!](river.jpg "Chilliwack river by camp")
 
 The campsite is pretty decent, you can get a nice view of the valley if you walk over to the Chilliwack River, and the campsites themselves are quite spacious. You won't even notice the other campers there!
 
