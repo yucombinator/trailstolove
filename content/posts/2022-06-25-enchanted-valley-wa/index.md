@@ -13,7 +13,7 @@ stats:
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
 description: A gentle backpacking trail to a historic chalet
-thumbnail: "images/trips/enchanted-valley/chalet.jpg"
+thumbnail: "images/trips/enchanted-valley-chalet.jpg"
 image: "chalet.jpg"
 ---
 
