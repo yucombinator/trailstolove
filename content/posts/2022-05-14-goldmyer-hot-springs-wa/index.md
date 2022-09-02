@@ -12,7 +12,7 @@ stats:
   date: "2021-05-14 to 2021-05-15"
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
-description: Easy, peaceful lakeshore backpacking
+description: A hike to one of Washington's only natural hot springs
 thumbnail: "images/trips/goldmyer-hot-springs.jpg"
 image: "springs-2.jpg"
 ---
