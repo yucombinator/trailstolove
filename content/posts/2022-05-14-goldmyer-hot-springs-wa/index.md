@@ -13,8 +13,8 @@ stats:
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
 description: Easy, peaceful lakeshore backpacking
-thumbnail: "images/trips/goldmyer-hot-springs.JPG"
-image: "springs.jpg"
+thumbnail: "images/trips/goldmyer-hot-springs.jpg"
+image: "springs-2.jpg"
 ---
 
 We had an overnight reservation at Goldmyer Hot Springs and decided to hike 7 miles on the Middle Fork trail in a loop from Dingford Creek Trailhead to the hot springs, and come back the next day via the old road. You can also alternatively choose to hike to the hot springs via the old logging road and back (and avoiding the loop). While it is pretty boring, it will get you there the fastest (and you can even take a bike), and you won't have to contend with river crossings.
