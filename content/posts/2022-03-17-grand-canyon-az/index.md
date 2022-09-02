@@ -1,6 +1,6 @@
 ---
 title: "South Kaibab to Bright Angel"
-date: 2022-05-14
+date: 2022-03-18
 author: 
   name: "Yu Chen Hou"
   image: images/author/sage-kirk.jpg
@@ -20,6 +20,9 @@ image: "morning-after.jpeg"
 There aren't many backpacking trips out there where you get to enjoy a nice steak dinner before bed. You could carry all the food with you, or you can hike down from the rim of the Grand Canyon all the way to the bottom, and just check-in for a hot meal at Phantom Ranch. Of course, you're going to have to climb back up after, but that's a problem for the next day.
 
 I hiked this route in March 2021 with a few friends, and had a good but exhausting time. The elevation change is pretty significant, as is the difference in temperature as you hike down the canyon.
+
+<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1g4TxIISfjjTazuQke8-95P-LVCWWH6I&ehbc=2E312F" width="100%" height="480"></iframe>
+<figcaption>Google Maps of our route and points of interest</figcaption>
 
 We started the hike at 11am after taking the shuttle and getting dropped off at the South Kaibab trailhead. This is a great place to start the trip as you start at a higher elevation than Bright Angel, so you won't have to climb up as much the next day.
 
