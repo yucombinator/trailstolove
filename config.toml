@@ -9,6 +9,7 @@ pygmentsCodefencesGuessSyntax = true
 pygmentsUseClasses = true
 metaDataFormat = "yaml"
 paginate = 3
+disqusShortname = 'hikingwithyu'
 
 [params]
   google_analytics_id = ""
