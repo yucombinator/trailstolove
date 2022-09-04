@@ -8,14 +8,14 @@ pygmentsCodeFences = true
 pygmentsCodefencesGuessSyntax = true
 pygmentsUseClasses = true
 metaDataFormat = "yaml"
-paginate = 3
+paginate = 10
 disqusShortname = 'hikingwithyu'
 
 [params]
   google_analytics_id = ""
 
   [params.homepage]
-    postLimit = 6
+    postLimit = 10
     
   [params.logo]
     showLogoTextOnDesktop = true
