@@ -19,13 +19,21 @@ image: "deck.jpeg"
 
 Heybrook Lookout is one of the most unique places to spend a night in the state. Who wouldn't want to stay atop a lookout tower? Now, there are a number of fire lookouts you can get to around Seattle, but most of them are first-come-first-serve, and with how popular they are, you might very well have to get lucky. 
 
+![Heybrook Lookout near Index, WA](lookout-bottom.jpeg "The lookout")
+![Heybrook Lookout near Index, WA](morning.jpg "Inside view")
+
 Heybrook is a rare gem as it is bookable through [recreation.gov](https://www.recreation.gov/camping/campgrounds/269838) ahead of time, and you get keys and private access to the top floor away from dayhikers!
 
 My girlfriend and I stayed overnight at the lookout (with a prior booking), and hiked in at around 8PM on a weekday. We bumped into the last of the departing dayhikers as the sun set.
 
+![Heybrook Lookout near Index, WA](height.jpg "View from up high")
+
 By the time we reached the lookout we had the whole place to ourselves! The hike was definitely a little bit more exhausting than I expected, since most of the climb was in the first half mile of the hike, and is basically just a continuous climb with a full pack.
 
 The lookout was very clean, and came with a lot of amenities, like a radio, heater, and stove! The furniture provided almost feels like what you would find in a cabin, and you can get very comfortable here, far more comfortable than other lookouts I've been. The toilet is at the bottom of the lookout, though, so it is a pretty long trip getting down there at night.
+
+![Logbook at Heybrook Lookout](logbook.jpg "Minjia signing the logbook")
+![Night view at Heybrook Lookout near Index, WA](moon.jpg "Night view at Heybrook Lookout")
 
 Surprisingly there is reception near the tower too. We had fun signing the logbook and taking photos at night, and hiked out first thing next morning before the crowd came in. The logbook is especially worth a read! Lots of really fun messages in there.
 
