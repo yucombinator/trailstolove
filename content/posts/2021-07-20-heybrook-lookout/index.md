@@ -7,8 +7,8 @@ author:
   twitter: '@yucombinator'
 stats:
   where: "Mt. Baker-Snoqualmie National Forest, WA"
-  distance: "34mi / 55km"
-  elevation: "8600ft / 2600m"
+  distance: "2.5mi / 4km"
+  elevation: "850ft / 250m"
   date: "2021-07-20 to 2021-07-21"
 categories: ["Fire Lookout", "Washington"]
 tags: ["Fire Lookout", "Hiking", "Trail Report"]
