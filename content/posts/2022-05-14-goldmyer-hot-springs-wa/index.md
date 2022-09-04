@@ -13,7 +13,7 @@ stats:
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report"]
 description: A hike to one of Washington's only natural hot springs
-thumbnail: "images/trips/goldmyer-hot-springs.jpg"
+thumbnail: "images/trips/goldmyer-hot-springs-1.jpg"
 image: "springs-2.jpg"
 ---
 
