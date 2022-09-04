@@ -3,7 +3,7 @@ title: "South Kaibab to Bright Angel"
 date: 2022-03-18
 author: 
   name: "Yu Chen Hou"
-  image: images/author/sage-kirk.jpg
+  image: images/author/me.png
   twitter: '@yucombinator'
 stats:
   where: "Grand Canyon National Park"

@@ -3,7 +3,7 @@ title: "East Bank Baker Lake"
 date: 2022-05-30
 author: 
   name: "Yu Chen Hou"
-  image: images/author/sage-kirk.jpg
+  image: images/author/me.png
   twitter: '@yucombinator'
 stats:
   where: "Mt. Baker-Snoqualmie National Forest, WA"

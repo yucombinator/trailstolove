@@ -3,7 +3,7 @@ title: "Enchanted Valley"
 date: 2021-06-25
 author: 
   name: "Yu Chen Hou"
-  image: images/author/sage-kirk.jpg
+  image: images/author/me.png
   twitter: '@yucombinator'
 stats:
   where: "Olympic National Park, WA"

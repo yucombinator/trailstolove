@@ -3,7 +3,7 @@ title: "Heybrook Lookout"
 date: 2021-07-21
 author: 
   name: "Yu Chen Hou"
-  image: images/author/sage-kirk.jpg
+  image: images/author/me.png
   twitter: '@yucombinator'
 stats:
   where: "Mt. Baker-Snoqualmie National Forest, WA"

@@ -3,7 +3,7 @@ title: "Copper Ridge Loop"
 date: 2021-07-19
 author: 
   name: "Yu Chen Hou"
-  image: images/author/sage-kirk.jpg
+  image: images/author/me.png
   twitter: '@yucombinator'
 stats:
   where: "North Cascades National Park, WA"

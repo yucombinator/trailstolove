@@ -3,7 +3,7 @@ title: "Goldmyer Hot Springs"
 date: 2022-05-14
 author: 
   name: "Yu Chen Hou"
-  image: images/author/sage-kirk.jpg
+  image: images/author/me.png
   twitter: '@yucombinator'
 stats:
   where: "Mt. Baker-Snoqualmie National Forest, WA"
