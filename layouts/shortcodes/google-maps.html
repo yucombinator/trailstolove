@@ -1,0 +1,4 @@
+{{ if .IsNamedParams }}
+<iframe class="map" src="https://www.google.com/maps/d/u/0/embed?ehbc=2E312F&mid={{ .Get "id" }}" width=”100%” height="480"></iframe>
+<figcaption>Google Maps of our route and points of interest</figcaption>
+{{ end }}

@@ -27,8 +27,7 @@ This is a very popular backpacking route, so while we had no trouble finding a c
 
 ## Trail Description
 
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1R5kocHUaSP9affmWYkdYIYm1z7ngsRA&ehbc=2E312F" width=”100%” height="480"></iframe>
-<figcaption>Google Maps of our route and points of interest</figcaption>
+{{< google-maps id=1R5kocHUaSP9affmWYkdYIYm1z7ngsRA >}}
 
 You can start this loop any direction you like, by starting at Berry Flats trailhead for clockwise, and to Snowgrass Flats trailhead for a counter-clockwise hike. The two trailheads are linked by a 0.6 mile connector trail, so a shuttle is not needed for this loop, you can just walk back to your car at the end (or drop off the car at the finishing point, like we did)! We oped to hike clockwise, so that we can see views of Mt Adams as we are hiking out, and to get most of the tough elevation gain out of the away right off the start. Berry Flats also has a vault toilet and a picnic table, but did not see much at the other trailhead.
 

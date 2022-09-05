@@ -21,8 +21,7 @@ There aren't many backpacking trips out there where you get to enjoy a nice stea
 
 I hiked this route in March 2021 with a few friends, and had a good but exhausting time. The elevation change is pretty significant, as is the difference in temperature as you hike down the canyon.
 
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1g4TxIISfjjTazuQke8-95P-LVCWWH6I&ehbc=2E312F" width="100%" height="480"></iframe>
-<figcaption>Google Maps of our route and points of interest</figcaption>
+{{< google-maps id=1g4TxIISfjjTazuQke8-95P-LVCWWH6I >}}
 
 We started the hike at 11am after taking the shuttle and getting dropped off at the South Kaibab trailhead. This is a great place to start the trip as you start at a higher elevation than Bright Angel, so you won't have to climb up as much the next day.
 

@@ -19,12 +19,11 @@ image: "springs-2.jpg"
 
 We had an overnight reservation at Goldmyer Hot Springs and decided to hike 7 miles on the Middle Fork trail in a loop from Dingford Creek Trailhead to the hot springs, and come back the next day via the old road. You can also alternatively choose to hike to the hot springs via the old logging road and back (and avoiding the loop). While it is pretty boring, it will get you there the fastest (and you can even take a bike), and you won't have to contend with river crossings.
 
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1cBAUBrSN4O_Zeh_saGxkpJ1xB2THI5E&ehbc=2E312F" width="100%" height="480"></iframe>
-<figcaption>Google Maps of our route and points of interest</figcaption>
+{{< google-maps id=1cBAUBrSN4O_Zeh_saGxkpJ1xB2THI5E >}}
 
 We managed to make it to the Dingford Creek parking lot in a RAV4 (and saw a few CX-5s and RAV4s), but it was pushing the limits of the car a little bit. Lots of flooded potholes. We saw a trail crew working on the road, but until the work is done there are some washouts to be careful of! There's a very steep washout but luckily you can navigate around the steep part to get across. We definitely recommend at least a high clearance car, and to keep a close eye on the [access report](http://www.goldmyer.org/accessreport.php) updates. It is by far the worst "road" I have driven, so take it slow and sleazy. That road took us an hour to navigate, and we had to get around a few washouts, and some really nasty potholes.
 
-![Middle Fork Road](middle-fork-lush.jpg "Lush trees on Middle Fork Road")
+![Middle Fork Road](middle-fork-lush.JPG "Lush trees on Middle Fork Road")
 ![Big Potholes!](potholes.jpeg "Interesting potholes along the trail")
 
 At the trailhead, we took the Middle Fork trail because we heard it is more scenic, and it was, at least at first! There are plenty of interesting foliage and mushrooms along the way, and we ran into plenty of other hikers until Rock Creek, after which the trail conditions started deteriorating quickly. Most folks were headed to the hot springs via Digford creek road (the old logging road), which takes you to the springs faster. 

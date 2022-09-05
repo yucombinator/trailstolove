@@ -21,9 +21,7 @@ Went out for a two night trip hiking Copper Ridge counter clockwise on 7/15-7/17
 
 ## Trail Description
 
-<iframe src="https://www.google.com/maps/d/u/0/embed?mid=1vokvD9z61OPSZS-sotv1Pwb8V03Ku5U&ehbc=2E312F" width=”100%” height="480"></iframe>
-<figcaption>Google Maps of our route and points of interest</figcaption>
-
+{{< google-maps id=1vokvD9z61OPSZS-sotv1Pwb8V03Ku5U >}}
 
 **Day 1**
 
