@@ -32,7 +32,7 @@ By the time we reached the lookout we had the whole place to ourselves! The hike
 
 The lookout was very clean, and came with a lot of amenities, like a radio, heater, and stove! The furniture provided almost feels like what you would find in a cabin, and you can get very comfortable here, far more comfortable than other lookouts I've been. The toilet is at the bottom of the lookout, though, so it is a pretty long trip getting down there at night.
 
-![Logbook at Heybrook Lookout](logbook.jpg "Minjia signing the logbook")
+![Logbook at Heybrook Lookout](logbook.jpg "Signing the logbook")
 ![Night view at Heybrook Lookout near Index, WA](moon.jpg "Night view at Heybrook Lookout")
 
 Surprisingly there is reception near the tower too. We had fun signing the logbook and taking photos at night, and hiked out first thing next morning before the crowd came in. The logbook is especially worth a read! Lots of really fun messages in there.
