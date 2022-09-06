@@ -40,7 +40,7 @@ disqusShortname = 'hikingwithyu'
   [params.seo]
     meta_twitter_site = "@yucombinator"
     meta_twitter_creator = "@yucombinator"
-    meta_og_image = "https://www.zerostatic.io/theme/hugo-atlantic/hugo-atlantic-screenshot.png"
+    meta_og_image = "http://hiking.withyu.ca/images/trips/copper-ridge-loop.jpg"
 
 [build]
   writeStats = true
