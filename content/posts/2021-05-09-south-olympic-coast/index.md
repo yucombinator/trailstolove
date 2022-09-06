@@ -66,7 +66,8 @@ Mosquoto Creek is, despite its name, a rather nice place to spend the night. The
 
 We made camp, had a little campfire, cooked and slept well.
 
-![Mosquito Creek](mosquito-creek.jpeg "Beach by Mosquito Creek")
+![Mosquito Creek Beach](mosquito-creek.jpeg "Beach by Mosquito Creek")
+![Mosquito Creek Camp](camp-mosquito.jpg "Campsite at Mosquito Creek")
 
 **Day 2**
 
@@ -84,6 +85,7 @@ The sea stacks really picks up around Toleak Point and Strawberry Point, and tho
 
 Finally, we set up camp on right on Third Beach after making sure that our tent sites are above the high tide line. The weather wasn't too great and so instead of waiting for the sunset we ate, settled in the biggest tent and played cards, before calling it a night.
 
+![Beach Camping](camps-beach.jpg "Our tents on Third Beach")
 ![Beach fire](fire.jpg "Campfire on Third Beach")
 
 **Day 3**
