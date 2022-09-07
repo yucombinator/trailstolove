@@ -49,6 +49,7 @@ After setting up camp, we walked along the trail for 10 minutes until we reached
 ![Our campsite](campsite.jpg "Our campsite")
 ![Creek by Bright Angel Camp](bottom-creek.jpg "Creek by Bright Angel Camp")
 ![Phantom Ranch Meal](meal.jpg "Hello steak dinner")
+![Phantom Ranch Meal](foood.jpg "Happy Campers")
 
 It was pretty great. The canteen also serves snacks, drinks and lemonades, credit cards accepted. We especially liked the lemonade.
 
