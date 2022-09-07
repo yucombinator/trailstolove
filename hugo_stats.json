@@ -2,7 +2,6 @@
   "htmlElements": {
     "tags": [
       "a",
-      "blockquote",
       "body",
       "button",
       "div",
@@ -142,20 +141,15 @@
       "z-50"
     ],
     "ids": [
-      "creating-modern-websites",
-      "design-systems",
       "disqus_thread",
-      "front-end-development",
       "how-to-get-here",
       "itinerary",
       "menu-close",
       "menu-container",
       "menu-trigger",
       "permits",
-      "process",
       "trail-description",
       "trail-report",
-      "what-is-web-design",
       "what-to-pack",
       "when-to-go",
       "where-to-camp"
