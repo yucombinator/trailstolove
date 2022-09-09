@@ -11,7 +11,9 @@
   {{ if $thumbnail }}
     <div class="md:mr-4 mb-2 md:mb-0 md:w-4/12 ">
       <a class="bg-gray-100" href="{{ $url | relURL }}">
-        <img width="640" height="360" class="rounded mb-3 hover:opacity-70 transition duration-300 ease-in-out" alt="{{ $title }}" src="{{ $thumbnail | relURL }}"/></a>
+        {{ $image := resources.Get $thumbnail }}
+        {{ $image := $image.Resize "600x" }}
+        <img width="640" height="360" class="rounded mb-3 hover:opacity-70 transition duration-300 ease-in-out" alt="{{ $title }}" src="{{ $image.RelPermalink }}"/></a>
     </div>
   {{ end }}
 
