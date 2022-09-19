@@ -12,7 +12,7 @@ stats:
   date: "2022-09-15 to 2022-09-17"
 categories: ["Backpacking", "BC", "Canada"]
 tags: ["Backpacking", "Trail Report", "Rockies"]
-description: Mountain goats, lakes, and pain
+description: Great loop in the Canadian Rockies
 thumbnail: "images/trips/the-rockwall.jpg"
 image: "floe-sunrise.jpg"
 ---
@@ -48,6 +48,7 @@ We camped at Tunnel Village in Banff, so that we can start early the next day fo
 **Day 1**
 
 Distance hiked: 12.6km
+
 Ascent/Descent: +810m / -110m
 
 ![Vermilion River](river.jpg "Crossing the Vermilion River")
@@ -74,6 +75,7 @@ The lake is also beautiful, and just a great place to end the day. We saw a few 
 **Day 2**
 
 Distance hiked: 20.7km
+
 Ascent/Descent: +1120m / -1245m
 
 We were told by just about every backpacker we met along the trip that our 2nd day plan wad ambitious, as it was usually done over two days with a stay at Numa Creek. 
@@ -110,6 +112,7 @@ The campground at Tumbling Creek is similarly equipped as well.
 **Day 3**
 
 Distance hiked: 12.1km
+
 Ascent/Descent: +150m / -590m
 
 I woke up luckily not flooded in water, but found my tent to be covered by a sheet of ice. The temperature had dropped below freezing overnight and froze everything. Even the bear lockers were frozen and we had to put in an effort to open them.
