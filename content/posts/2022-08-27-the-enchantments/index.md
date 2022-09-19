@@ -9,7 +9,7 @@ stats:
   where: "Alpine Lakes Wilderness, WA"
   distance: "20mi / 32km"
   elevation: "5000ft / 600m"
-  date: "2021-08-27"
+  date: "2022-08-27"
 categories: ["Day Hike", "Washington"]
 tags: ["Long Hike", "Trail Report"]
 description: Mountain goats, lakes, and pain
