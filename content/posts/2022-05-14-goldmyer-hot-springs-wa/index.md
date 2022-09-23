@@ -48,7 +48,7 @@ For a natural hot spring, there is a lot of care and love that is put into this 
 ![Cave at Goldmyer Hot Springs](cave.jpg "Cave at Goldmyer Hot Springs")
 ![Goldmyer Hot Springs](springs.JPG "The hot springs we came here for")
 
-The caretakers gave us a lot of advice and were a little surprised we managed to make it there from the Middle Fork trail, through the raging creek. We camped on the property overnight and had another soak the next morning, and headed back to the car on the old road. There is a bucket provided where you can hang your food, and that came in handy because we encountered mice that was vying for our food.
+The caretakers from Goldmyer Hot Springs gave us a lot of advice and were a little surprised we managed to make it there from the Middle Fork trail, through the raging creek. We camped on the property overnight and had another soak the next morning, and headed back to the car on the old road. There is a bucket provided where you can hang your food, and that came in handy because we encountered mice that was vying for our food.
 
 ![Going home](logging-road.jpg "Leaving the Hot Springs")
 
@@ -57,13 +57,20 @@ The road is very much less interesting than the trail but much faster going. It 
 ![Middle Fork Road](middle-fork.jpg "Leaving Middle Fork Road")
 
 ## Permits
-You'll need to have a reservation to access the hot springs, both for a day hike or to camp, and more information can be found at [Goldmyer Hot Springs](http://www.goldmyer.org/). Since this is private property, you will be turned away if you do not have one! The reservation is competitive and is given out through a lottery system, but last minute bookings are possible.
+It's not an invite-only adventure, but you do need a reservation to access the hot springs, both for a day hike or to camp, and more information can be found at [Goldmyer Hot Springs](http://www.goldmyer.org/). Since this is private property, you will be turned away if you do not have one! The reservation is competitive and is given out through a lottery system, but last minute bookings are possible.
+
+We managed to win the lottery by signing up a month before, and I received a phone call from the caretakers a few days later. I believe they still proceed by bookings by phone so make sure you're available by phone and ready to take the call when it comes! Otherwise, last minute openings do free up on their calendar page, so it's worth looking at it closely too.
 
 ## When to go
-The hot springs are open year-round, but the property is much easier to access in the summer than the winter, where the road could be impassable to everything but the hardiest trucks.
+Goldmyer Hot Springs are open year-round, but the property is much easier to access in the summer than the winter, where the road could be impassable to everything but the hardiest trucks.
 
 ## How to get here
 Check out the [access report](http://www.goldmyer.org/accessreport.php), which should have information on how to get there. You're looking at at least 4 hours of driving and hiking time to get to the hot springs (2 hours of driving, and 2 more oh hiking).
+
+## What car do I need?
+That's a pretty good question to ask! The access road to Goldmyer is one of the worst roads I've driven (It's not shown on Google Maps, to give you an idea). Conditions vary by the season. The [access report](http://www.goldmyer.org/accessreport.php) should talk about clearance needed on your car. When we went in the spring (when the road conditions were impacted by a couple washouts), we made it to the trailhead in a RAV4, but we saw a number of trucks, but also a few CX-5s. 
+
+Conditions to get there should improve in the summer season because of roaf maintenance by staff, but you absolutely still need something more than a sedan. In the winter, due to snow, something like a truck would be required.
 
 ## What to pack
 I’ll probably write a more in-depth post about my backpacking gear later, but it’s good to carry your 10 essentials as with any hike. There is easy river water access at the Goldmyer property, but you'll want to filter the water.
