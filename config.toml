@@ -26,8 +26,8 @@ disqusShortname = 'hikingwithyu'
     logoDesktopImage = "images/logo/logo.png"
     logoMobileText = ""
     logoMobileImage = "images/logo/logo.png"
-    logoDesktopImageHeight = 32
-    logoDesktopImageWidth = 32
+    logoDesktopImageHeight = 48
+    logoDesktopImageWidth = 48
     logoMobileImageHeight = 32
     logoMobileImageWidth = 32
 
