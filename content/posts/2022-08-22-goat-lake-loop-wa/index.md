@@ -1,5 +1,6 @@
 ---
 title: "Goat Lake Loop"
+meta_title: "Backpacking Goat Lake Loop in the Goat Rocks Wilderness"
 date: 2022-08-21
 author: 
   name: "Yu Chen Hou"

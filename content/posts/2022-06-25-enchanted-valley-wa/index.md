@@ -1,5 +1,6 @@
 ---
 title: "Enchanted Valley"
+meta_title: "Backpacking the Olympics: Enchanted Valley"
 date: 2021-06-25
 author: 
   name: "Yu Chen Hou"

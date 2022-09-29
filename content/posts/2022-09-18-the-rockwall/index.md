@@ -1,5 +1,6 @@
 ---
 title: "The Southern Rockwall"
+meta_title: "Backpacking The Southern Rockwall in the BC Rockies"
 date: 2022-09-18
 author: 
   name: "Yu Chen Hou"

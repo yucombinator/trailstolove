@@ -1,5 +1,6 @@
 ---
 title: "Heybrook Lookout"
+meta_title: "Heybrook Lookout: A hidden gem"
 date: 2021-07-21
 author: 
   name: "Yu Chen Hou"

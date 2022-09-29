@@ -1,5 +1,6 @@
 ---
 title: "Enchantments Traverse"
+meta_title: "Day Hiking the Core Enchantments in Washington"
 date: 2022-08-27
 author: 
   name: "Yu Chen Hou"

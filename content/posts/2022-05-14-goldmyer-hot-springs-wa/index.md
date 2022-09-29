@@ -1,5 +1,6 @@
 ---
 title: "Goldmyer Hot Springs"
+meta_title: "Guide to the Goldmyer Hot Springs"
 date: 2022-05-14
 author: 
   name: "Yu Chen Hou"

@@ -1,5 +1,6 @@
 ---
 title: "Copper Ridge Loop"
+meta_title: "Guide to Backpacking the Copper Ridge Loop in the North Cascades"
 date: 2021-07-19
 author: 
   name: "Yu Chen Hou"

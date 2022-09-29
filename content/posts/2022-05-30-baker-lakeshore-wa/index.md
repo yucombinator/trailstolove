@@ -1,5 +1,6 @@
 ---
 title: "East Bank Baker Lake"
+meta_title: "Backpacking in the North Cascades: East Bank Baker Lake"
 date: 2022-05-30
 author: 
   name: "Yu Chen Hou"

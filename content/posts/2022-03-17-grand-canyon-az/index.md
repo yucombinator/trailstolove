@@ -1,5 +1,6 @@
 ---
 title: "South Kaibab to Bright Angel"
+meta_title: "Backpacking the Grand Canyon: South Kaibab to Bright Angel"
 date: 2022-03-18
 author: 
   name: "Yu Chen Hou"
