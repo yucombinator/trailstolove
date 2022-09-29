@@ -1,5 +1,6 @@
 ---
 title: "South Olympic Coast"
+meta_title: "Trail Guide to the South Olympic Coast"
 date: 2021-03-18
 author: 
   name: "Yu Chen Hou"
