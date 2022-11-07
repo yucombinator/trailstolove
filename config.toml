@@ -15,7 +15,7 @@ disqusShortname = 'hikingwithyu'
   google_analytics_id = ""
 
   [params.homepage]
-    postLimit = 10
+    postLimit = 15
     
   [params.logo]
     showLogoTextOnDesktop = true
