@@ -18,11 +18,11 @@ thumbnail: "images/trips/the-rockwall.jpg"
 image: "floe-sunrise.jpg"
 ---
 
-We planned on hiking the famous Skyline trail in Jasper National Park this September, but due to bad timing with wildfires, we had to pivot to another multi-day hike in the area. Luckily, last minute availability opened up for the popular Rockwall trail in Kootenay National Park, just a couple hours from Calgary where we were staying.
+We had originally planned to hike the famous Skyline trail in Jasper National Park this September, but due to the wildfires, we had to switch to another multi-day hike in the area. Fortunately, we were able to find last minute availability for the popular Rockwall trail in Kootenay National Park, just a couple hours from Calgary where we were staying.
 
-The Rockwall is a trail normally done over 4 or 5 days spanning three mountain passes and beautiful views of the namesake feature: the Rockwall, a vertical sheer wall spanning seemingly forever.
+The Rockwall is a trail that is typically done over 4 or 5 days and spans three mountain passes with beautiful views of the namesake feature: the Rockwall, a vertical sheer wall that seems to stretch on forever.
 
-Since we only budgeted time for the Skyline, which is a 3 day trail, we opted to hike an abridged version of this trail, which Parks Canada calls the ["Tumbling - Floe loop"](https://www.pc.gc.ca/en/pn-np/bc/kootenay/activ/arrierepays-backcountry#floe), which hits many of the highlights of the Rockwall trail while cutting some mileage. This trail reports is for this abridged version of the loop, so I did not get to visit Helmet Falls and the northernmost side of the loop.
+Since we only budgeted time for the Skyline, which is a 3 day trail, we opted to hike an abridged version of the Rockwall trail, which Parks Canada calls the ["Tumbling - Floe loop"](https://www.pc.gc.ca/en/pn-np/bc/kootenay/activ/arrierepays-backcountry#floe). This trail hits many of the highlights of the Rockwall trail while cutting some mileage. This trail report is for this abridged version of the loop, so I did not get to visit Helmet Falls and the northernmost side of the loop.
 
 {{< google-maps id=1K8jrn0fYGqrjUE3K-_m7AYi0YHyd0qw >}}
 
