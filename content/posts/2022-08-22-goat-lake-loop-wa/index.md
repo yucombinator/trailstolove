@@ -68,20 +68,19 @@ After about 4 miles from when you enter the forest, you will find yourself back 
 Overall, I loved the trip and the weather conditions were perfect, except for the bug situation, which was a nuisance but not too terrible. If I were to do it again, a couple of extra nights to hike along the PCT would be a great addition.
 
 ## Permits
-No advanced permits are needed for this trip, but you need to fill out a self-issue permit at the trailhead. This trail can get crowded on weekends, so plan ahead (or around this)!
+No advanced permits are needed for this trip, but you need to fill out a self-issue permit at the trailhead. This trail can get crowded on weekends, so plan ahead (or choose a different time to go)!
 
-You’ll also need a National Forest / Interagency pass, or pay $5 at the trailhead in cash.
+You will also need a National Forest / Interagency pass, or you can pay $5 at the trailhead in cash.
 
 ## When to go
-Mid to late summer is the best time to go. The trail is snow covered before mid-july which makes traverse difficult. Goat Lake was partially melted when we were there mid August, and according to reports, still completely frozen in July.
+Mid to late summer is the best time to go. The trail is snow-covered before mid-July, which makes it difficult to hike. Goat Lake was partially melted when we were there in mid-August, and according to reports, it was still completely frozen in July.
 
 ## How to get here
-The forest road to the trailhead starts off near Packwood, WA, about 2 hours south of Seattle by car. A pretty scenic drive though, taking you through Mount Rainier National Park.
+The forest road to the trailhead starts near Packwood, WA, about 2 hours south of Seattle by car. The drive is scenic, taking you through Mount Rainier National Park.
 
 ## What to pack
-I’ll probably write a more in-depth post about my backpacking gear later, but it’s good to carry your 10 essentials as with any hike.
+I will probably write a more in-depth post about my backpacking gear later, but it's important to carry your 10 essentials as with any hike.
 
-There are plenty of resupply/filter points by creeks and of course, at Goat Lake, so filtering water is not a problem.
+There are plenty of places to resupply and filter water along the trail and at Goat Lake, so filtering water is not a problem.
 
-A bear canister is not required but recommended for all overnight trips in the area, and as always, please observe Leave No Trace principles. Enjoy!
-
+A bear canister is not required but is recommended for all overnight trips in the area. As always, please observe Leave No Trace principles. Enjoy!
