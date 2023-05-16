@@ -47,6 +47,7 @@ We opted to start the hike by boarding the Lady Express at Fields Landing. We th
 **Day 1**
 
 Prince Creek to Moore Point. 
+
 Distance Hiked: About 12 miles. 2400 ft elevation gain.
 
 ![Getting off at Prince Creek](prince-creek.jpg "Getting off at Prince Creek")
@@ -76,6 +77,7 @@ No rattlesnake or bears for us, although some other hiker saw a snake. Lots of w
 **Day 2**
 
 Moore Point to Lakeview Camp in Stehekin. 
+
 Distance Hiked: 8 miles. 1300 ft elevation gain.
 
 To avoid the heat, we started hiking at 6am and managed to cover 8 miles into Stehekin by 10am, as we wanted to snag a good spot to camp before the first ferry is schedule to arrive in Stehekin. I highly recommend starting early as the entire hike is shaded before the sun rises above the mountains, making it much more pleasant. There's less elevation to cover in this segment, although there's a few great cliffside view points on the way. The trail brought us within close proximity of Lake Chelan’s pristine shoreline, a refreshing change from the rugged and sweltering terrain of the previous day. We found the dense forest at the end of the trail a welcome respite. All told, this scenic and verdant segment of the hike proved a bit more enjoyable than the first.
