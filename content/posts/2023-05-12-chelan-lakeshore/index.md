@@ -18,7 +18,7 @@ thumbnail: "images/trips/chelan-lakeshore.jpg"
 image: "downlake.jpg"
 ---
 
-This early season May backpacking trip in North Cascades National Park is a rewarding adventure. The route from Prince Creek to Stehekin showcases the park’s diverse beauty. Staying overnight at Moore Point and Lakeview campground in Stehekin allowed us to immerse ourselves in the stunning scenery at a leisurely pace.
+This early season May backpacking trip in North Cascades National Park is a rewarding adventure. The route from Prince Creek to Stehekin showcases the park’s diverse beauty. Staying overnight at Moore Point and Lakeview campground in Stehekin allowed us to immerse ourselves in the stunning scenery at a leisurely pace. This hike is pretty unique (at least in the US) because you need to take a ferry as part of the journey, and you get to explore Stehekin, a quaint little town popular with PCT hikers and folks trying to get awway from the city life.
 
 Wildflowers bloomed profusely along the trail, especially lupines, balsamroot, dogwood, and pemberton. The lack of bugs made the experience even more pleasant. Although the logistics require advance planning due to ferry schedules and limited services in Stehekin, the rewards of this unique trek are well worth it.
 
@@ -119,3 +119,5 @@ Some folks we met decided to hike into Stehekin on the last day before the last 
 If you are planning on breaking the trip into more days, and stopping at other camps other than Moore Point, or dispersed camping, you may need to bear-proof your food with a canister of rope. Bear vaults are only provided at Prince Creek, Moore Point, and in Stehekin.
 
 Lastly, information for things to do in Stehekin is a little scarce. To get to the Bakery, you can ride the shuttle (schedule [here](https://stehekinvalleyadventures.com/shuttle-bus/)) which is generally timed around the ferry arrival and departure times. It's also a short bike ride if you opt to [rent a bike](https://stehekindiscoverybikes.com/) near the ferry landing. In early May it was $10 an hour on an honor system, but advance reservations may be required later in the summer. There's also a shuttle to Rainbow Falls ($10 one way), or about a 20 minute bike ride (more fun!). The shower is quarters-only and you can exchange coins at the store by the landing.
+
+![Shuttles at the ferry landing](landing-shuttle.jpg "Shuttles at the ferry landing")
