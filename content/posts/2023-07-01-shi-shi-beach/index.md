@@ -18,7 +18,7 @@ thumbnail: "images/trips/shi-shi-beach.jpg"
 image: "beach-pano.jpg"
 ---
 
-This summer, my partner and I embarked on a delightful backpacking adventure to Shi Shi Beach on the Olympic Coast for a two-night stay. Having traversed a portion of this area two years ago, I was eager to return and share this incredible experience with my partner. It quickly became her favorite adventure, and it's easy to see why.
+This summer, my partner and I embarked on a delightful backpacking adventure to Shi Shi Beach on the Olympic Coast for a two-night stay. Having [traversed a portion of this area](https://hiking.withyu.ca/blog/2021/03/south-olympic-coast/) two years ago, I was eager to return and share this incredible experience with my partner. It quickly became her favorite adventure, and it's easy to see why.
 
 ![Komorebi at Shi Shi Beach](marine-layer.jpg "Komorebi - sun light through the marine fog")
 
@@ -86,7 +86,7 @@ On our second day, we hiked to Point of the Arches, a truly mesmerizing location
 
 The outhouses on the beach vary in quality; the one nearest to the north end is somewhat dirty, but the two on the south end are in better shape. They are, however, a little exposed along the trail.
 
-After one last exploration of the tide pools on the morning of our third day, we said farewell to Shi Shi Beach and began our journey home. We capped out the trip with a stop at Cape Flattery, another short hike nearby.
+After one last exploration of the tide pools on the morning of our third day, we said farewell to Shi Shi Beach and began our journey home. We capped out the trip with a stop at [Cape Flattery](https://www.wta.org/go-hiking/trip-reports/trip_report.2023-07-04.8205718301), another short hike nearby.
 
 ![Hiking out of Shi Shi Beach, in a forest](hiking-out.jpg "Hiking out of Shi Shi Beach")
 ![Cape Flattery](cape-flattery.jpg "Cape Flattery")
