@@ -47,7 +47,7 @@ When planning your trip to Shi Shi Beach, make sure to obtain a permit from Olym
 
 ![Olympic National Park Sign](entering-park.jpg "Entering the National Park")
 
-Parking is not available at the trailhead. Instead, you'll need to park at a "secure location" roughly half a mile back, which is essentially on the lawn in front of a private residence (see the map above for location). The fee for parking is $10 per day, and we paid $20 in cash for our two-night stay. While it's unfortunate that there is a fee, the owner takes safety and security seriously, and we felt comfortable leaving our car there for three days.
+Parking is not available at the trailhead. Instead, you'll need to park at a "secure location" roughly half a mile back, which is essentially on the lawn in front of a private residence (see the map above for location). The fee for parking is $10 per day, and we paid $30 in cash for our two-night stay. While it's unfortunate that there is a fee, the owner takes safety and security seriously, and we felt comfortable leaving our car there for three days.
 
 We heard of another house you can park at but it the owner seems to have changed their mind about it recently, and parking there is no longer an option.
 
