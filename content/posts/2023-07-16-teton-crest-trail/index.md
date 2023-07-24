@@ -70,12 +70,13 @@ The trail began with a downhill section, quickly followed by an uphill climb. Th
 
 The weather was hot and sunny, and I decided to put snow in my hat to cool down during the uphill sections. After hiking for about six miles, we made it to Marion Lake, a stunning blue-green alpine lake. 
 
-![Marion Lake](marion-lake.jpg "A view at Marion Lake")
+![Marion Lake](marion-lake.jpg "A view of Marion Lake")
 
 We took a brief rest before continuing on to Fox Creek Pass, which was a very exposed section of the mountain with limited water and trees. Despite this, we enjoyed panoramic views of the surrounding area, including our first glimpse of the Tetons, which we hadn't seen since we began the hike. We quickly passed this section of the trail and arrived at our desired camping zone, Death Canyon Shelf.
 
-![Death Canyon Shelf and the Tetons](shelf.jpg "A first view at Death Canyon Shelf and what is to come")
+![Big spire along Fox Creek Pass](fox.jpg "View along Fox Creek Pass")
 
+![A view towards Death Canyon Shelf, and an imposing grand teton in the background](shelf.jpg "A first view of Death Canyon Shelf and the Grand Tetons")
 Death Canyon Shelf is a vast camping zone with no signs indicating available campsites. It took us some time to find a suitable spot, and we were initially discouraged by the talus boulder fields at the start of the camping zone. However, we soon discovered an abundance of streams for water filtration and several excellent campsites after hiking for half a mile.
 
 The camping zone had a lot of marmots, and we spotted more than a dozen hanging out around our campsite. They seemed unafraid of us and would likely try to get to our food. The area also had lots of rocks which gave us a few sightings of pikas! They were adorable, but very timid.
@@ -91,9 +92,9 @@ On Day 2 of our hike, we woke up to find that some ground squirrels had chewed o
 ![A marmot looking at the camera](marmot-2.jpg "Another marmot by our campsite")
 ![A pika looking at the camera in front of rocks](pika.jpg "A rare pika signting")
 
-The rest of Death Canyon Shelf is a pleasant walk, as it is relatively flat, and full of marmots, whom we've grown very accustomed to by this point. We made it to Alaska Basin relatively quickly. I really liked the basin, it was very reminescent of the beautiful lake basins of the Sierra Nevada, with pine trees and large granite slabs all over that makes for easy walking. 
+The rest of Death Canyon Shelf is a pleasant walk, as it is relatively flat, and full of marmots, whom we've grown very accustomed to by this point. We made it to Alaska Basin relatively quickly, after descending the Sheep Steps, a rather steep rocky section. I really liked the basin, it was very reminescent of the beautiful lake basins of the Sierra Nevada, with pine trees and large granite slabs all over that makes for easy walking.
 
-![A view towards Death Canyon Shelf, and an imposing grand teton in the background](shelf.jpg "A first view of Death Canyon Shelf and the Grand Tetons")
+![Descending into Alaska Basin](moraine.jpg "Alaska Basin")
 
 We had to ford a stream near Basin Lake, which was the only one we had to cross on the trail, but the freezing water made it a bit of a challenge. I wish we brought some water shoesto make it a bit less of an annoyance.
 
