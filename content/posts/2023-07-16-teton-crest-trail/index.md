@@ -133,8 +133,6 @@ Going up to the divide was challenging even without our gear, and I can hardly i
 
 At this point it was already past noon, and we need to hike 8 miles to get to the ferry dock before the last ferry to get out, or we would have to skip the ferry and hike an extra couple miles, which we really didn't want to do. We packed up and made our last push out of the backcountry.
 
-![Hidden Falls](hidden-falls.jpg "Hidden Falls, right by the boat dock")
-
 ![Cascade Canyon](cascade-canyon.jpg "Cascade Canyon: a showcase of a round, glacially carved valley")
 
 It was long, and hot, and it only got hotter as we descended Cascade Canyon and the breezes became more and more infrequent. The shade gave us relief from the sun, and we dreaded every exposed patch of trail.
@@ -145,4 +143,4 @@ When we were just about 2 miles out from the dock, we ran into our first moose. 
 
 After it had cleared the trail, we quickly made our way to Inspiration Point, and to the dock shortly afterwards, and caught our ride back to the car.
 
-
+![Hidden Falls](hidden-falls.jpg "Hidden Falls, right by the boat dock")
