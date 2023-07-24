@@ -94,7 +94,7 @@ On Day 2 of our hike, we woke up to find that some ground squirrels had chewed o
 
 The rest of Death Canyon Shelf is a pleasant walk, as it is relatively flat, and full of marmots, whom we've grown very accustomed to by this point. We made it to Alaska Basin relatively quickly, after descending the Sheep Steps, a rather steep rocky section. I really liked the basin, it was very reminescent of the beautiful lake basins of the Sierra Nevada, with pine trees and large granite slabs all over that makes for easy walking.
 
-![Descending into Alaska Basin](moraine.jpg "Alaska Basin")
+![Descending into Alaska Basin](alaska.jpg "Alaska Basin")
 
 We had to ford a stream near Basin Lake, which was the only one we had to cross on the trail, but the freezing water made it a bit of a challenge. I wish we brought some water shoesto make it a bit less of an annoyance.
 
