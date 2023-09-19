@@ -81,8 +81,8 @@ Next top, Evelyn Creek, a major creek (thankfully with a bridge), and the last c
 
 As we approached the pass, we finally broke past the treeline. For the first time, we got to see beyond the trees that line up the trail so far. We were finally reading the alpine zone, and trees gave way to small shrubs and grasses. This section of the trail, from the treeline to Snowbowl Campground, was a delight to walk on, and we got our first taste of what's to come tomorrow...
 
-![Finally getting above the tree line](treeline.jpg "Finally getting above the tree line")
-![A mountain pass with glaciers](shovel.jpg "A look back at Little Shovel Pass and the manu glaciers of Jasper")
+![Mountains in the distance with a steep trail in the foreground](treeline.jpg "View above the tree line")
+![A mountain pass with glaciers](shovel.jpg "A look back at Little Shovel Pass and the many glaciers of Jasper")
 ![Approaching Snowbowl Campground](snowbowl.jpg "A little canyon as we approach Snowbowl")
 ![A vole hiding in the bushes](vole.jpg "A vole hiding in the bushes")
 
