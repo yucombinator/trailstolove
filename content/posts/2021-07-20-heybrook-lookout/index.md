@@ -11,7 +11,7 @@ stats:
   distance: "2.5mi / 4km"
   elevation: "850ft / 250m"
   date: "2021-07-20 to 2021-07-21"
-categories: ["Fire Lookout", "Washington"]
+categories: ["Mountain Hut", "Fire Lookout", "Washington"]
 tags: ["Fire Lookout", "Hiking", "Trail Report"]
 description: Hike to a tall historic fire lookout tower
 thumbnail: "images/trips/heybrook-lookout.jpeg"
