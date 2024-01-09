@@ -28,7 +28,7 @@ The highlights
 
 The lowlights
 
-- I'm not too sure here... Maybe the availability cell reception if you're trying to go off the grid?
+- I'm not too sure here... Maybe the availability of cell reception if you're trying to go off the grid?
 
 **Logistics and Planning**
 
