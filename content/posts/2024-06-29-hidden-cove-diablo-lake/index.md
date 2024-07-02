@@ -1,6 +1,6 @@
 ---
 title: "Hidden Cove at Diablo Lake"
-meta_title: "A quick overnight in a cool hut near Mt. Rainier"
+meta_title: "A quick kayak camping getaway"
 date: 2024-06-29
 author: 
   name: "Yu Chen Hou"
@@ -13,7 +13,7 @@ stats:
   date: "2024-06-29 to 2024-09-30"
 categories: ["Kayaking", "Washington"]
 tags: ["Kayaking", "Trail Report", "Mountains"]
-description: A quick overnight in a cool hut near Mt. Rainier
+description: A quick kayak camping getaway
 thumbnail: "images/trips/hidden-cove.jpg"
 image: "reflection.jpg"
 ---
