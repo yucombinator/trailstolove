@@ -79,7 +79,6 @@ There is still a few overland sections, but they are much shorter. We stopped at
 The sea stacks really picks up around Toleak Point and Strawberry Point, and those areas were extremely popular with other campers. This is a great spot to stop if you're looking for a great sunset! We met many backpackers who hiked here from Third Beach to camp, and are not attempting the whole thru-hike to Oil City.
 
 ![Beachwalk](beachwalk.jpg "Beach walking with friends")
-![Fording Goodman Creek](fording-goodman.jpg "Fording Goodman Creek")
 
 ![Seastacks](seastacks.jpeg "Seastacks along the Beach by Toleak Point")
 ![Seastacks](seastack-2.jpeg "Seastacks along the Beach by Toleak Point")
