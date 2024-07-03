@@ -5,8 +5,8 @@
 {{- end -}}
 {{- with $img -}}
 {{- $large := $img.Resize "1200x" -}}
-{{ $medium := $large.Fill "726x402" -}}
-{{ $small := $medium.Fill "458x254" -}}
+{{ $medium := $img.Resize "800x" -}}
+{{ $small := $img.Resize "500x" -}}
   <figure>
       <img loading="lazy" alt="{{ $.Text }}" srcset="
           {{ $small.RelPermalink }} 458w,
