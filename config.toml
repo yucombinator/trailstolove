@@ -8,6 +8,7 @@ pygmentsCodeFences = true
 pygmentsCodefencesGuessSyntax = true
 pygmentsUseClasses = true
 metaDataFormat = "yaml"
+timeout = "200s"
 paginate = 10
 disqusShortname = 'hikingwithyu'
 
