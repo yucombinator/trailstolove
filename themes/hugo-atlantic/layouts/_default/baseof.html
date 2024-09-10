@@ -12,7 +12,7 @@
     {{ partial "head/meta.html" . }}
 
     {{ $styles := resources.Get "css/dist/style.css" | postCSS }}
-    {{ if .Site.IsServer }}
+    {{ if hugo.IsServer }}
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}" />
     {{ else }}
     {{ $styles := $styles | minify | fingerprint | resources.PostProcess }}
@@ -33,7 +33,7 @@
 
     {{ $js := slice $scripts $hamburger | resources.Concat "js/bundle.js" }}
 
-    {{ if .Site.IsServer }}
+    {{ if hugo.IsServer }}
     <script type="text/javascript" src="{{ $js.RelPermalink }}"></script>
     {{ else }}
     <script type="text/javascript" src="{{ ($js | minify | fingerprint).RelPermalink }}"></script>
