@@ -1,5 +1,5 @@
 ---
-title: "Climbing Mt. Whitney"
+title: "Climbing Mt.Whitney"
 meta_title: "Conquering some of the highest heights"
 date: 2024-08-12
 author: 
