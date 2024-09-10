@@ -18,14 +18,14 @@ thumbnail: "images/trips/whitney.jpg"
 image: "window-2.jpg"
 ---
 
-Mt. Whitney is a very special hike, but also an extremely challenging one. It's the tallest mountain in the continental US and hikeable without special gear, and considered a must-do hike to those who are able. Here's my experience!
+Mt. Whitney is a very special hike, but also an extremely challenging one. It's the tallest mountain in the continental US and hikeable without special gear, and considered a must-do hike to those who are able. Here's my experience on the hiker-friendly Mt. Whitney Trail!
 
-Highlights
+**Highlights**
 
 - Beautiful Scenery: There are stunning views all the way up to the summit.
 - Entering Sequoia National Park: Gaining access to the park after a challenging climb felt like a significant achievement.
 
-Lowlights
+**Lowlights**
 
 - Physical Strain: The climb, especially the 99 switchbacks, was physically demanding and demoralizing at times.
 - Rocky Trails: The rocky terrain on the descent proved to be uncomfortable and tiring.
