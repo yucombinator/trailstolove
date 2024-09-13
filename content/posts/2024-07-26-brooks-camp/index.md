@@ -2,7 +2,7 @@
 ---
 title: "Brooks Camp"
 meta_title: "Bears, volcanoes, and more"
-date: 2024-08-26
+date: 2024-07-26
 author: 
   name: "Yu Chen Hou"
   image: images/author/me.png
