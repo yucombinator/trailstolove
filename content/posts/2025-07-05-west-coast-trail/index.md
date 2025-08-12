@@ -15,8 +15,8 @@ stats:
 categories: ["Backpacking", "BC"]
 tags: ["Backpacking", "Trail Report", "Beach"]
 description: Bliss and Blisters on the Coast
-thumbnail: "images/trips/high-divide.jpg"
-image: "lakes-basin.jpg"
+thumbnail: "images/trips/west-coast-trail.jpg"
+image: "foggy-hikers-min.jpg"
 ---
 
 I finally backpacked the West Coast Trail, a week-long, point-to-point adventure along the edge of Vancouver Island in BC. I’ve wanted to hike the trail ever since I moved to BC for an internship and started camping and backpacking. Coastal hiking presents different challenges than alpine hikes in the mountains, and very different views.
@@ -42,6 +42,8 @@ Permits for the WCT open early in the season, and the best dates with optimal ti
 The West Coast Trail app (iOS and Android) is excellent. Created by a friend of the trail, it lets you preview itineraries, check tides, view menus for the two shacks, and read trail history and warnings. I used it to pick a permit window and during the hike to learn about hazards and points of interest.
 Because the trail is point-to-point, arrange transportation between trailheads. The Trail Bus is a popular option if you don’t want to leave two cars. Note that parking at the southern end is paid.
 Plan your itinerary around ferries and tides. The trail crosses two ferry services (the Crab Shack and the Pacheedaht Nation); they have limited hours and often stop running well before sunset (around 4:00 p.m.). You need to clear those crossings in time or risk being stranded.
+
+![Boarding the West Coast Trail Bus](trailbus-min.jpg "Boarding the West Coast Trail Bus")
 
 ***Gear***
 
@@ -189,6 +191,8 @@ Soon we reached Walbran Creek, another popular campsite, especially with folks c
 ![Two bald eagles peached on a tree](eagles-min.jpg "Two bald eagles calling their friends")
 
 We met a trail runner here who was planning on completing the hike in a single day. It was humbling to know that people can indeed complete all 75 kms of the WCT in a single day, and the world record is a short 9 hour run.
+
+![Author hiking in the forsst with sun rays](in-the-forest-min.jpg "Continuing on to our camp")
 
 At this point, the weather was starting to turn, and we still had to hike some slow, tough, miles in the rainforest before we could make it to Cullite Cove, our campsite we had planned for the day.
 
