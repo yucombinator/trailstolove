@@ -52,11 +52,17 @@ We brought our usual backpacking kit, aiming for a lighter base weight. Water is
 Highly recommended extras:
 
 Gaiters — keep mud and debris out of your shoes.
+
 Trekking poles — great for balance on slippery roots, ladders, and muddy sections.
+
 Gloves — lightweight work/gardening gloves protect hands when using dirty ladders or scrambling.
+
 Reliable rain gear — essential. The WCT sits in one of the wettest climates on Earth; bring your best waterproof jacket.
+
 Pack rain cover or dry bags — to keep clothing and electronics dry.
+
 Quick-dry socks and camp shoes — for comfort when things get wet.
+
 Water filter/purifier — there’s plenty of water, but you still need a reliable treatment method.
 
 
@@ -77,6 +83,8 @@ Day 4: 16 km to Cullite Cove
 Day 5: 11 km to Thrasher Cove via Owens Point
 
 Day 6: 6 km to Gordon River Trailhead, and take the ferry back to the car!
+
+![Two hikers on the beach](hiking-together-min.jpg "6 days is a long time!")
 
 **Day 0**
 
