@@ -9,8 +9,8 @@ author:
   twitter: '@yucombinator'
 stats:
   where: "Pacific Rim National Park Reserve"
-  distance: "75 km"
-  elevation: "5400ft / 1660 m"
+  distance: "90 km"
+  elevation: "2039 m"
   date: "2025-07-05 to 2025-07-11"
 categories: ["Backpacking", "BC"]
 tags: ["Backpacking", "Trail Report", "Beach"]
