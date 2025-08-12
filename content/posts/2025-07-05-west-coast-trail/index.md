@@ -90,13 +90,11 @@ The bus ride seemingly took forever, and took a circuitous and bumpy route throu
 
 We met many day hikers heading to Sea Lion Rock (km 9), a great spot to take a break and watch a massive colony of sea lions offshore. You could hear them from quite a distance, way before you could even see them.
 
-![Sea Lion Colony on Sea Lion Rock](sealion-min.jpg "Sea Lion Colony on Sea Lion Rock")
-![Another Sea Lion on Sea Lion Rock](sealion-2-min.jpg "Another Sea Lion")
+{{< side-by-side "sealion-min.jpg" "sealion2-min.jpg" "Sea Lion Colony on Sea Lion Rock" "Another Sea Lion" >}}
 
 We passed an old rusty motorbike, a reminder of when parts of the trail were service roads, and saw more banana slugs than we could count. There were a few muddy sections (the WCT is infamous for mud), but it wasn’t too bad yet; we knew worse was coming.
 
-![Old Motorcycle on West Coast Trail in Forest](motorcycle-min.jpg "Old Motorcycle")
-![Light Station in forest](light-station-min.jpg "Looking at a the Pachena light station in the forest")
+{{< side-by-side "motorcycle-min.jpg" "light-station-min.jpg" "Old Motorcycle" "Looking at a the Pachena light station in the forest" >}}
 
 Eventually we arrived at Michigan Creek, the first campsite along the trail. We saw a very real reminder of the origins of the West Coast Trail: an old rutted boiler from the steamship Michigan. The ship hit around in 1893, and many other accidents like this along Vancouver Island led to the creation of a lifesaving trail that eventually formed the trail as we know it today.
 
@@ -112,14 +110,12 @@ One trend we noticed: there was cell reception in many places along the trail, e
 
 Our goal today was to camp at Tsusiat Falls. We started on tidepools and beaches; the tide was low and exposed pools full of sea urchins. After passing a Guardian cabin at Tsocowis Creek, the trail turned inland.
 
-![A hiker in the distance hiking on the beach](pebble-beach-min.jpg "Hiking on the beach")
-![Sea Urchins submerged in water](sea-urchin-min.jpg "Sea Urchins in Tide Pools")
+{{< side-by-side "pebble-beach-min.jpg" "sea-urchin-min.jpg" "Hiking on the beach" "Sea Urchins in Tide Pools" >}}
 ![bird peached on driftwood](bird-min.jpg "Bird")
 
 Here we encountered the first of many ladder systems. The trail has more than a hundred bridges and about 30 ladder systems. This ladder went straight up, and we had to wait for other groups to pass. There are also suspension bridges and some remarkable fungi.
 
-![WCT Ladder](ladder-min.jpg "Peering down a ladder")
-![View of the beach from cliffside](beach-view-min.jpg "View of the beach from a cliffside resting spot")
+{{< side-by-side "ladder-min.jpg" "beach-view-min.jpg" "Peering down a ladder" "View of the beach from a cliffside resting spot" >}}
 
 We eventually reached another famous stop on the WCT, a cable car. It’s an unusual but neat way to cross a large river without getting wet, but it was a neat (and exhausting) experience involving a lot of upper body strength! We had to load our packs in the gondola, then slowly pull ourselves to the other side using the attached rope. This was the only cable car we ended up taking on the trail. There were 3 others, but we were able to bypass them because the creek water levels were low enough.
 
@@ -127,8 +123,7 @@ We eventually reached another famous stop on the WCT, a cable car. It’s an unu
 
 Finally, we arrived at Tsusiat Falls. As this was one of the most crowded and popular campsites on the trail, we met lots of company on the beach. There was even a bear warning out as many bears in the area were habituated to humans. 
 
-![Ladders at Tsusiat](tsusiat-ladder-min.jpg "Ladders down to Tsusiat")
-![Tsusiat Falls in the morning fog](tsusiat-falls-min.jpg "Tsusiat Falls in the morning fog")
+{{< side-by-side "tsusiat-ladder-min.jpg" "tsusiat-falls-min.jpg" "Ladders down to Tsusiat" "Tsusiat Falls in the morning fog" >}}
 
 The waterfalls were nice to see, especially in the fog. We used the waterfall to shower, and while it was nice to get clean, it was very cold! We were able to warm up afterwards on a nice campfire on the beach before resting early for the long day ahead.
 
@@ -140,8 +135,7 @@ The waterfalls were nice to see, especially in the fog. We used the waterfall to
 
 We woke in tents covered with condensation and thick fog. We hurried to catch a tidal window for the “Hole-in-the-Wall” (Tsusiat Point), a rock arch you can walk through if tides allow.
 
-![Hikers hiking on the beach near Tsusiat in the think fo](foggy-hikers-min.jpg "Hikers departing Tsusiat in the think fog")
-![Hole-in-the-Wall sea cave on WCT](hole-in-the-wall.jpg "Hole-in-the-Wall")
+{{< side-by-side "foggy-hikers-min.jpg" "hole-in-the-wall.jpg" "Hikers departing Tsusiat in the think fog" "Hole-in-the-Wall" >}}
 
 It was going to be a long day, 17 km to Cribs. After some beach walking we re-entered the woods at Tsuquadra Point and reached our first ferry crossing. Southbound hikers have to time this crossing carefully: the ferry across Nitinat Narrows typically runs only until about 4:30 p.m. Miss it and your closest option is a long backtrack to Tsusiat Falls (about 7 km).
 
@@ -153,20 +147,17 @@ Luckily for us we arrived here around noon, and after a quick stop at the ferry 
 
 We ate a hearty meal at the crabshack and spent hours chatting with other hikers. We enjoyed the crabs, loaded potatoes, and banana bread here, even if it costs an arm and a leg ($75+!). We even saw a black bear fishing in the distance.
 
-![WCT Crabshack](crabshack-min.jpg "The crabshack")
-![Black Bear fishing on a log](bear-min.jpg "Bear: gone fishin'")
+{{< side-by-side "crabshack-min.jpg" "bear-min.jpg" "The crabshack" "Bear: gone fishin'" >}}
 
 It was cool to eat here and watch Carl and Shelly prepare the crabs that are caught right on-site. If we had more time, staying at a cabin or camping at the crabshack would be well worth the stop.
 
-![Crabs in a cage](crabs-min.jpg "Fresh crabs caught at the shack")
-![Crabs to eat](crab-meal-min.jpg "Our lunch!")
+{{< side-by-side "crabs-min.jpg" "crab-meal-min.jpg" "Fresh crabs caught at the shack" "Our lunch!" >}}
 
 We had to push on another 9 kms to get to Cribs Creek, the first campsite on this site of Nitinat Narrows. 
 
 There was a lot more mud, ladders, boardwalks and mangled tree roots,  but we eventually made it to Cribs, exhausted, an hour before sunset.
 
-![boardwalks we saw on the trailg](boardwalk-min.jpg "One of many boardwalks we saw on the trail")
-![battered bridge on the west coast trail](rotten-bridge-min.jpg "A broken bridge that we had to bypass")
+{{< side-by-side "boardwalk-min.jpg" "rotten-bridge-min.jpg" "One of many boardwalks we saw on the trail" "A broken bridge that we had to bypass" >}}
 
 This campsite was pretty unique because of the natural waterbreak formed by a long rock formation, and the campsite felt like a cozy harbor protected from the rough waters of the ocean. However, since we arrived late and exhausted, we did not get the chance to explore the area too much.
 
@@ -182,13 +173,11 @@ Another long day, and Day 4 was probably the roughest day for our hike: we had t
 
 That being said, the day started off in a fairly mellow manner, and we only had to hike a short beach section until we stopped at Nytom off Carmanah point. Nytom is a Burger Shack right on the beach and the successor of Chez Monique’s. For many years, Monique ran a popular burger shack on the WCT where she served meals to tired hikers, and all supplies had to be hiked or boated in. I actually heard about this trail years ago because of her, and there were many accounts online of hikers eating “the world’s most elusive burger”. Unfortunately, Monique and her husband both tragically passed away in 2017, and after many years of uncertainty, a member of her family, Katrina, has taken over the business. The hours of operation are sporadic and unpublished as she has to do many supply runs. Luckily for us, we confirmed by talking to some northboard hikers the day before that Nytom might be open when we are passing through, and we were able to enjoy some warm (but expensive - $45) burgers right on the beach! It was a little bit of home comfort before getting back on the rugged coastline.
 
-![Nytom from the beach](nytom-min.jpg "Nytom - the burger shack")
-![A burger](burger-min.jpg "Our burger")
+{{< side-by-side "nytom-min.jpg" "burger-min.jpg" "Nytom - the burger shack" "Our burger" >}}
 
 Soon we reached Walbran Creek, another popular campsite, especially with folks completing a 7 day itinerary. Even if we were not planning on stopping here, we absolutely loved this campsite! We spotted several bald eagles perched on the tall cedar trees calling out to each other, and a nice emerald swimming pool. We could not enjoy this area long enough, as we had to press on the trail.
 
-![Little cliffside caves at Walbran](walbran-min.jpg "Little cliffside caves at Walbran")
-![Two bald eagles peached on a tree](eagles-min.jpg "Two bald eagles calling their friends")
+{{< side-by-side "walbran-min.jpg" "eagles-min.jpg" "Little cliffside caves at Walbran" "Two bald eagles calling their friends" >}}
 
 We met a trail runner here who was planning on completing the hike in a single day. It was humbling to know that people can indeed complete all 75 kms of the WCT in a single day, and the world record is a short 9 hour run.
 
@@ -198,8 +187,7 @@ At this point, the weather was starting to turn, and we still had to hike some s
 
 The trail between Walbran and Cullite was rough. The rain was intensifying and the mud patches were filling with water. We had to navigate large slippery tree roots, and every section of decaying boardwalk was a welcome sight. We also had to cross several large ravines using ladders that had multiple sections and spans. We also crossed the largest suspension bridge on the WCT, a relatively new addition to the trail; the bridge over Logan Creek turned a slow slog through a 40m ladder descent into an easy and scenic stroll.
 
-![Logan Creek Suspension Bridge](logan-creek-min.jpg "Logan Creek Suspension Bridge, brand new and the trail's longest crossing")
-![Muddy trail](mud-trail-min.jpg "Some of the worst patches of mud puddles")
+{{< side-by-side "logan-creek-min.jpg" "mud-trail-min.jpg" "Logan Creek Suspension Bridge, brand new and the trail's longest crossing" "Some of the worst patches of mud puddles" >}}
 
 At last, we made it to the Cullite Creek, but we still had to climb down 6 or 7 sections of ladder (the longest on the whole trail), to get from the high cliffs of the trail all the way down to sea level, where we could finally get to camp.
 
@@ -217,8 +205,7 @@ Eventually, we reached a fork in the trail where we headed down to the beach. We
 
 We dropped to the beach at a fork to reach Owens Point and had a favorable tidal window. We saw a flock of sandpipers on the wet sand and ephemeral waterfalls raining down sandstone cliffs. It was a beautiful scene.
 
-![Sandpipers on the beach](pipers-2-min.jpg "Lots of sandpipers on the beach here")
-![waterfall on the sandstone cliffs](cliffs-min.jpg "A little waterfall on the sandstone cliffs")
+{{< side-by-side "pipers-2-min.jpg" "cliffs-min.jpg" "Lots of sandpipers on the beach here" "A little waterfall on the sandstone cliffs" >}}
 
 Getting to Owens meant navigating surge channels along the rocky shelf. Thanks to the WCT App and talking to various folks along the trip, we now knew how to navigate them. Every surge channel had an inland trail. If it looks impassable, we headed up towards the forest and there would normally be a faint trail to get around it. We spotted the occasional sea lion and seal along the shore as we hiked along.
 
@@ -226,8 +213,7 @@ Getting to Owens meant navigating surge channels along the rocky shelf. Thanks t
 
 Owens Point was gorgeous, but I slipped entering the wet sea cave and got soaked. I strongly recommend water shoes or going barefoot there as the cave is slippery even at low tide. One person can lower the group’s packs down from the cliff to make the cave approach easier.
 
-![Owens Point from the outside](owens-1-min.jpg "Owens Point from the outside")
-![Owens Point from the inside](owens-2-min.jpg "Owens Point from the inside")
+{{< side-by-side "owens-1-min.jpg" "owens-2-min.jpg" "Owens Point from the outside" "Owens Point from the inside" >}}
 
 
 The boulder field after Owens Point was said to be the most dangerous section of the trail, resulting in the vast majority of Search and Rescue calls. There were large boulders not unlike the talus fields you would encounter on wilderness alpine hikes, but this time you had to navigate it under the time constraints of rising tides. The 2 kms of the boulders took us much longer to complete, and we went slowly because we had to think about the savvyest way to solve this giant puzzle.
@@ -243,8 +229,7 @@ And finally we made it to Thrasher Cove right as the sun set. We enjoyed a meal 
 
 The final day from Thrasher to Gordon River is not technically hard, but it’s a slog: forest, ladders, and several climbs to reach the highest point on the trail near an old, unremarkable oil barrel. Surrounded by tall trees, there are few views to reward the effort.
 
-![ladder sections on the WCTl](ladders-2-min.jpg "Some more ladders on the WCT")
-![ highest point on the WCT marked by a barrel](tallest-point-min.jpg "The unceremonial barrel marking the highest point on the trail - this was a popular campsite once upon a time before the trees grew to cover the views")
+{{< side-by-side "ladders-2-min.jpg" "tallest-point-min.jpg" "Some more ladders on the WCT" "The unceremonial barrel marking the highest point on the trail - this was a popular campsite once upon a time before the trees grew to cover the views" >}}
 !["An old rusty donkey engine](donkey-engine-min.jpg "An old donkey engine that was used for logging the forest before the area was protected")
 
 Those last kilometers feel deceptively long, as on many long-distance hikes. We were a bit disappointed to miss a final 75 km marker (maybe it was stolen?), but we still made it: down the final (nearly vertical) ladder at the ferry landing, aboard the last ferry back to the Parks Office to sign out, and then back to the car.
