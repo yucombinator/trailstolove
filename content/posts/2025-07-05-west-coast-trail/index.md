@@ -14,7 +14,7 @@ stats:
   date: "2025-07-05 to 2025-07-11"
 categories: ["Backpacking", "BC"]
 tags: ["Backpacking", "Trail Report", "Beach"]
-description: Bliss and Blisters on the Coast
+description: Blisters and Bliss on the Coast
 thumbnail: "images/trips/west-coast-trail.jpg"
 image: "foggy-hikers-min.jpg"
 ---
