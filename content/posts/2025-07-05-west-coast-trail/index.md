@@ -23,15 +23,22 @@ I finally backpacked the West Coast Trail, a week-long, point-to-point adventure
 The opportunity came up to hike the trail this July with my partner and a friend. This would be the longest backpacking trip any of us had done, and we had to work out a lot of logistics since the trail is point-to-point.
 
 **Highlights**
-Beautiful sunsets and long beach hikes
-Lots of interesting wildlife
-The famously hard-to-get burgers and fresh crabs
-The cable car and dozens of ladders
+
+- Beautiful sunsets and long beach hikes
+
+- Lots of interesting wildlife
+
+- The famously hard-to-get burgers and fresh crabs
+
+- The cable car and dozens of ladders
 
 **Lowlights**
-Mud. So much mud.
-Some long days. It would have been better with an extra day
-Beach hiking can be exhausting
+
+- Mud. So much mud.
+
+- Some long days. It would have been better with an extra day
+
+- Beach hiking can be exhausting
 
 
 <iframe src="https://www.google.com/maps/d/u/1/embed?mid=1NLIanh7HDertfBC9Ev0uREG_nfCEGWU&ehbc=2E312F" style="border:none; overflow-y: hidden; background-color:white; min-width: 320px; max-width:800px; width:100%; height: 420px;" seamless></iframe>
