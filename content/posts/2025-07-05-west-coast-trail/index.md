@@ -1,7 +1,7 @@
 
 ---
 title: "West Coast Trail"
-meta_title: "6 days in the mud"
+meta_title: "Backpacking the West Coast Trail - 6 days in the mud"
 date: 2025-07-05
 author: 
   name: "Yu Chen Hou"
