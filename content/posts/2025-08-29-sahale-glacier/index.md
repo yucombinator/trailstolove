@@ -37,6 +37,8 @@ Additionally, unlike other backpacking permits in other parks, this permit is is
 - Water sources: Streams along the trail, glacier melt
 - Gear: Standard backpacking kit, bear canister required
 
+{{< google-maps id=1KnrOyUae3B7_iP-6hVjs65FUv6fT02w >}}
+
 ## Day 1: Hike to Sahale Glacier Camp
 
 After picking up my permit, I drove down Cascade River Road. The road is in better shape than most forest service roads, but there were still a couple of rough patches. Cascade Pass is a very popular hike, so the biggest challenge was being ready to pass other cars on narrow sections of this dirt road.
