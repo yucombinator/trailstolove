@@ -19,7 +19,7 @@ image: "sunset.jpg"
 
 ## Trip Overview
 
-Sahale Glacier is one of the most sought-after backpacking trips in Washington State, after the[] [Enchantments](). Many people try their luck every year at the Early Access lottery for their chance to sleep amongst the jagged peaks of the North Cascades.
+Sahale Glacier is one of the most sought-after backpacking trips in Washington State, after the [Enchantments](/blog/2022/08/enchantments-traverse/). Many people try their luck every year at the Early Access lottery for their chance to sleep amongst the jagged peaks of the North Cascades.
 
 I can understand why: the location was spectacular, right at the foot of an actual glacier and a great place to watch the sunset and sunrise. The “most scenic toilet in the state” is up here! 
 
