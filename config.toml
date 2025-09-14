@@ -9,67 +9,70 @@ pygmentsCodefencesGuessSyntax = true
 pygmentsUseClasses = true
 metaDataFormat = "yaml"
 timeout = "3600s"
-paginate = 10
-disqusShortname = 'hikingwithyu'
 
 [params]
   google_analytics_id = ""
+  description = "Hiking With Yu is a blog about backpacking adventures in the Pacific Northwest and beyond, featuring trail guides, gear reviews, and outdoor tips."
+  disqusShortname = 'hikingwithyu'
 
-  [params.homepage]
-    postLimit = 15
-    
-  [params.logo]
-    showLogoTextOnDesktop = true
-    showLogoTextOnMobile = true
-    showLogoImageOnDesktop = true
-    showLogoImageOnMobile = true
-    logoDesktopText = "Hiking With Yu"
-    logoDesktopImage = "images/logo/logo.png"
-    logoMobileText = ""
-    logoMobileImage = "images/logo/logo.png"
-    logoDesktopImageHeight = 48
-    logoDesktopImageWidth = 48
-    logoMobileImageHeight = 32
-    logoMobileImageWidth = 32
+[params.homepage]
+  postLimit = 15
 
-  [params.fonts]
-    google_fonts = "https://fonts.googleapis.com/css2?family=Fira+Mono&family=Lato:wght@300;400;700&family=Source+Sans+Pro&display=swap"
-    heading = "Lato"
-    base = "Source Sans Pro"
-    monospace = "Fira Mono"
+[params.logo]
+  showLogoTextOnDesktop = true
+  showLogoTextOnMobile = true
+  showLogoImageOnDesktop = true
+  showLogoImageOnMobile = true
+  logoDesktopText = "Hiking With Yu"
+  logoDesktopImage = "images/logo/logo.png"
+  logoMobileText = ""
+  logoMobileImage = "images/logo/logo.png"
+  logoDesktopImageHeight = 48
+  logoDesktopImageWidth = 48
+  logoMobileImageHeight = 32
+  logoMobileImageWidth = 32
 
-  [params.seo]
-    meta_twitter_site = "@yucombinator"
-    meta_twitter_creator = "@yucombinator"
-    meta_og_image = "http://hiking.withyu.ca/images/trips/copper-ridge-loop.jpg"
+[params.fonts]
+  google_fonts = "https://fonts.googleapis.com/css2?family=Fira+Mono&family=Lato:wght@300;400;700&family=Source+Sans+Pro&display=swap"
+  heading = "Lato"
+  base = "Source Sans Pro"
+  monospace = "Fira Mono"
+
+[params.seo]
+  meta_twitter_site = "@yucombinator"
+  meta_twitter_creator = "@yucombinator"
+  meta_og_image = "http://hiking.withyu.ca/images/trips/copper-ridge-loop.jpg"
 
 [build]
   writeStats = true
 
 [permalinks]
-    posts = "blog/:year/:month/:title/"
-    pages = ":slug/"
+  posts = "blog/:year/:month/:title/"
+  pages = ":slug/"
 
 [taxonomies]
-    tag = "tags"
-    category = "categories"
-    author = "authors"
-  
-# Main Menu
-[[menu.main]]
+  tag = "tags"
+  category = "categories"
+  author = "authors"
+
+[menu]
+  [[menu.main]]
     name = "Home"
     url = "/"
     weight = 1
 
-[[menu.main]]
+  [[menu.main]]
     name = "Blog"
     url = "/posts/"
     weight = 2
 
-[[menu.main]]
+  [[menu.main]]
     name = "About"
     url = "/about/"
     weight = 3
+
+[pagination]
+  pagerSize = 10
 
 [markup.goldmark.renderer]
  unsafe = true
