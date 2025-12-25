@@ -1,0 +1,63 @@
+{{ if .IsNamedParams }}
+  {{ if eq (.Get "source") "youtube" }}
+    <!-- YouTube video -->
+    <div class="video-container">
+      <iframe 
+        width="100%" 
+        height="480" 
+        src="https://www.youtube.com/embed/{{ .Get `id` }}" 
+        frameborder="0" 
+        allowfullscreen>
+      </iframe>
+    </div>
+    {{ with .Get "caption" }}
+      <figcaption>{{ . }}</figcaption>
+    {{ end }}
+  {{ else if eq (.Get "source") "vimeo" }}
+    <!-- Vimeo video -->
+    <div class="video-container">
+      <iframe 
+        src="https://player.vimeo.com/video/{{ .Get `id` }}" 
+        width="100%" 
+        height="480" 
+        frameborder="0" 
+        allowfullscreen>
+      </iframe>
+    </div>
+    {{ with .Get "caption" }}
+      <figcaption>{{ . }}</figcaption>
+    {{ end }}
+  {{ else }}
+    <!-- Self-hosted video -->
+    <div class="video-container">
+      <video width="100%" controls {{ with .Get "autoplay" }}autoplay{{ end }} {{ with .Get "loop" }}loop{{ end }} {{ with .Get "muted" }}muted{{ end }}>
+        <source src="{{ .Get `src` }}" type="video/{{ with .Get `type` }}{{ . }}{{ else }}mp4{{ end }}">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    {{ with .Get "caption" }}
+      <figcaption>{{ . }}</figcaption>
+    {{ end }}
+  {{ end }}
+{{ else }}
+  <!-- Fallback for positional parameters -->
+  <div class="video-container">
+    <video width="100%" controls {{ with .Get 2 }}autoplay{{ end }} {{ with .Get 3 }}loop{{ end }} {{ with .Get 4 }}muted{{ end }}>
+      <source src="{{ .Get 0 }}" type="video/{{ with .Get 1 }}{{ . }}{{ else }}mp4{{ end }}">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+{{ end }}
+
+<style>
+  .video-container {
+    position: relative;
+    width: 100%;
+    margin: 1.5em 0;
+  }
+  .video-container iframe,
+  .video-container video {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+</style>

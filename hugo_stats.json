@@ -25,11 +25,14 @@
       "p",
       "path",
       "script",
+      "source",
       "span",
       "strong",
+      "style",
       "svg",
       "title",
-      "ul"
+      "ul",
+      "video"
     ],
     "classes": [
       "-ml-4",
@@ -163,6 +166,7 @@
       "to-blue-500",
       "top-1",
       "transition",
+      "video-container",
       "w-5",
       "w-full",
       "w-screen",
@@ -171,8 +175,12 @@
       "z-50"
     ],
     "ids": [
+      "conclusion",
       "day-1-hike-to-sahale-glacier-camp",
+      "day-1-water-taxi-to-luxmore-hut",
+      "day-2-luxmore-hut-to-iris-burn-hut",
       "day-2-return",
+      "day-3-iris-burn-hut-to-rainbow-reach",
       "how-to-get-here",
       "itinerary",
       "menu-close",

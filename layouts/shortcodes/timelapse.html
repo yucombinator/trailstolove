@@ -1,0 +1,63 @@
+{{ if .IsNamedParams }}
+  <!-- Timelapse video shortcode -->
+  <div class="timelapse-container">
+    {{ if eq (.Get "source") "youtube" }}
+      <!-- YouTube timelapse -->
+      <iframe 
+        width="100%" 
+        height="480" 
+        src="https://www.youtube.com/embed/{{ .Get `id` }}" 
+        frameborder="0" 
+        allowfullscreen>
+      </iframe>
+    {{ else if eq (.Get "source") "vimeo" }}
+      <!-- Vimeo timelapse -->
+      <iframe 
+        src="https://player.vimeo.com/video/{{ .Get `id` }}" 
+        width="100%" 
+        height="480" 
+        frameborder="0" 
+        allowfullscreen>
+      </iframe>
+    {{ else }}
+      <!-- Self-hosted timelapse -->
+      <video width="100%" controls loop muted>
+        {{ with .Get "mp4" }}<source src="{{ . }}" type="video/mp4">{{ end }}
+        {{ with .Get "webm" }}<source src="{{ . }}" type="video/webm">{{ end }}
+        {{ with .Get "ogv" }}<source src="{{ . }}" type="video/ogg">{{ end }}
+        Your browser does not support the video tag.
+      </video>
+    {{ end }}
+  </div>
+  {{ with .Get "caption" }}
+    <figcaption class="timelapse-caption">{{ . }}</figcaption>
+  {{ end }}
+{{ else }}
+  <!-- Default self-hosted version with positional parameters -->
+  <div class="timelapse-container">
+    <video width="100%" controls loop muted>
+      <source src="{{ .Get 0 }}" type="video/{{ with .Get 1 }}{{ . }}{{ else }}mp4{{ end }}">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+{{ end }}
+
+<style>
+  .timelapse-container {
+    position: relative;
+    width: 100%;
+    margin: 1.5em 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .timelapse-container iframe,
+  .timelapse-container video {
+    max-width: 100%;
+  }
+  .timelapse-caption {
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 0.5em;
+  }
+</style>
