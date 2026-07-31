@@ -9,8 +9,8 @@ author:
   twitter: '@yucombinator'
 stats:
   where: "Yoho National Park, British Columbia"
-  distance: "TBD"
-  elevation: "TBD"
+  distance: "Depends, various day hikes"
+  elevation: "Depends, various day hikes"
   date: "2026-07-01 to 2026-07-03"
 categories: ["Day Hike", "British Columbia"]
 tags: ["Backpacking", "Trail Report"]
