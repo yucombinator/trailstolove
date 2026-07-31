@@ -1,8 +1,9 @@
-baseURL = "/"
+baseURL = "https://hiking.withyu.ca/"
 languageCode = "en-us"
 title = "Hiking With Yu"
 themesDir="themes"
 theme = "hugo-atlantic"
+enableRobotsTXT = true
 enableGitInfo = false
 pygmentsCodeFences = true
 pygmentsCodefencesGuessSyntax = true
@@ -41,7 +42,7 @@ timeout = "3600s"
 [params.seo]
   meta_twitter_site = "@yucombinator"
   meta_twitter_creator = "@yucombinator"
-  meta_og_image = "http://hiking.withyu.ca/images/trips/copper-ridge-loop.jpg"
+  meta_og_image = "https://hiking.withyu.ca/images/trips/copper-ridge-loop.jpg"
 
 [build]
   writeStats = true

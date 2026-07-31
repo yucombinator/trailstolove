@@ -1,13 +1,25 @@
+{{ $img1 := .Page.Resources.GetMatch (.Get 0) }}
+{{ $img2 := .Page.Resources.GetMatch (.Get 1) }}
 <div style="display: flex; gap: 1em; justify-content: center; align-items: flex-start; flex-wrap: wrap;">
   <figure style="flex: 1; min-width: 0; margin: 0;">
-    <a href="{{ .Get 0 }}">
-      <img class="side-by-side-img" src="{{ .Get 0 }}" alt="{{ with .Get 2 }}{{ . }}{{ else }}Image 1{{ end }}" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer;" />
+    <a href="{{ if $img1 }}{{ $img1.Permalink }}{{ else }}{{ .Get 0 }}{{ end }}">
+      {{ if $img1 }}
+        {{ $resized := $img1.Resize "1200x" }}
+        <img class="side-by-side-img" src="{{ $resized.RelPermalink }}" alt="{{ with .Get 2 }}{{ . }}{{ else }}Image 1{{ end }}" width="{{ $resized.Width }}" height="{{ $resized.Height }}" loading="lazy" decoding="async" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer;" />
+      {{ else }}
+        <img class="side-by-side-img" src="{{ .Get 0 }}" alt="{{ with .Get 2 }}{{ . }}{{ else }}Image 1{{ end }}" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer;" />
+      {{ end }}
     </a>
     {{ with .Get 2 }}<figcaption style="text-align: center; font-size: 0.9em; color: #666;">{{ . }}</figcaption>{{ end }}
   </figure>
   <figure style="flex: 1; min-width: 0; margin: 0;">
-    <a href="{{ .Get 1 }}">
-      <img class="side-by-side-img" src="{{ .Get 1 }}" alt="{{ with .Get 3 }}{{ . }}{{ else }}Image 2{{ end }}" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer;" />
+    <a href="{{ if $img2 }}{{ $img2.Permalink }}{{ else }}{{ .Get 1 }}{{ end }}">
+      {{ if $img2 }}
+        {{ $resized := $img2.Resize "1200x" }}
+        <img class="side-by-side-img" src="{{ $resized.RelPermalink }}" alt="{{ with .Get 3 }}{{ . }}{{ else }}Image 2{{ end }}" width="{{ $resized.Width }}" height="{{ $resized.Height }}" loading="lazy" decoding="async" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer;" />
+      {{ else }}
+        <img class="side-by-side-img" src="{{ .Get 1 }}" alt="{{ with .Get 3 }}{{ . }}{{ else }}Image 2{{ end }}" style="max-width: 100%; height: auto; border-radius: 8px; cursor: pointer;" />
+      {{ end }}
     </a>
     {{ with .Get 3 }}<figcaption style="text-align: center; font-size: 0.9em; color: #666;">{{ . }}</figcaption>{{ end }}
   </figure>

@@ -13,7 +13,7 @@
       <a class="bg-gray-100" href="{{ $url | relURL }}">
         {{ $image := resources.Get $thumbnail }}
         {{ $image := $image.Resize "600x" }}
-        <img width="640" height="360" class="rounded mb-3 hover:opacity-70 transition duration-300 ease-in-out" alt="{{ $title }}" src="{{ $image.RelPermalink }}"/></a>
+        <img width="{{ $image.Width }}" height="{{ $image.Height }}" loading="lazy" class="rounded mb-3 hover:opacity-70 transition duration-300 ease-in-out" alt="{{ $title }}" src="{{ $image.RelPermalink }}"/></a>
     </div>
   {{ end }}
 

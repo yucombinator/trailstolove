@@ -11,7 +11,7 @@
 
 {{ with .Resources.GetMatch .Params.image }}
   {{- $large := .Resize "1600x" -}}
-  <img src="{{ $large.RelPermalink }}" width="1600" height="900">
+  <img src="{{ $large.RelPermalink }}" width="{{ $large.Width }}" height="{{ $large.Height }}">
 {{ end }}
 
 <div class="flex flex-col md:flex-row py-6 md:py-12">

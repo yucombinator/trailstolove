@@ -10,6 +10,7 @@
     <link rel="icon" href="{{ .Site.BaseURL }}favicon-32x32.png">
     {{ partial "head/google-fonts.html" . }}
     {{ partial "head/meta.html" . }}
+    {{ partial "head/structured-data.html" . }}
 
     {{ $styles := resources.Get "css/dist/style.css" | postCSS }}
     {{ if hugo.IsServer }}

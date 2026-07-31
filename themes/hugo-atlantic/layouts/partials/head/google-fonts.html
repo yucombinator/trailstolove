@@ -1,5 +1,6 @@
 
 {{ with .Site.Params.fonts }}
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="{{ .google_fonts }}" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{{ .google_fonts }}" rel="stylesheet" media="print" onload="this.media='all'">
 {{ end }}

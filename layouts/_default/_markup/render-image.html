@@ -1,0 +1,11 @@
+{{ $dest := .Destination }}
+{{ $img := .Page.Resources.GetMatch $dest }}
+{{ if not $img }}
+  {{ $img = resources.Get $dest }}
+{{ end }}
+{{ if $img }}
+  {{ $resized := $img.Resize "1600x" }}
+  <img src="{{ $resized.RelPermalink }}" alt="{{ .PlainText }}" loading="lazy" decoding="async" width="{{ $resized.Width }}" height="{{ $resized.Height }}" />
+{{ else }}
+  <img src="{{ $dest | safeURL }}" alt="{{ .PlainText }}" />
+{{ end }}
