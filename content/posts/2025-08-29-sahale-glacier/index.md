@@ -27,16 +27,16 @@ I had wanted to camp at the glacier for years, but never managed to get quite so
 
 ## Planning & Logistics
 
-- Permit required for Sahale Glacier Camp (high demand, [lottery system](https://www.recreation.gov/permits/4675322))
+- **Permit:** Required for Sahale Glacier Camp (high demand, [lottery system](https://www.recreation.gov/permits/4675322))
 
 This is probably the most challenging part of the trip; only 4 groups are allowed per night. In the spring, the park opens an [Early Access lottery](https://www.recreation.gov/permits/4675322) for reservations. Even then, securing this permit is highly competitive. Luckily, cancellations happen, and walk-up permits are offered if you have the chance to swing by a permit office.
 
 Additionally, unlike other backpacking permits in other parks, this permit is issued in-person! This means you need to visit the [Wilderness Information Center in Marblemount](https://www.nps.gov/noca/planyourvisit/permits.htm).
 
-- Trailhead: Cascade Pass
-- Water sources: Streams along the trail, glacier melt. Note that by late season, many of the seasonal streams have dried up—there isn't a whole lot of water, so fill up at the reliable spots while you can.
-- Gear: Standard backpacking kit, bear canister required. Pack light—there's a lot of climbing (4,200 ft of gain!) and every pound counts on the final boulder slog.
-- Fire weather & smoke: Washington's fire season runs roughly July through September, with late summer the riskiest window for smoke. Smoke drifts in from fires east of the Cascades and in British Columbia, and up at Sahale's elevation there's nowhere to escape it. Before heading out (if you are coming from afar), check the two-day smoke forecast on [firesmoke.ca](https://firesmoke.ca) — I'd call off the trip rather than climb Sahale Arm in bad air.
+- **Trailhead:** [Cascade Pass Trailhead](https://www.google.com/maps/place/Cascade+Pass+Trailhead/data=!4m2!3m1!1s0x0:0xe14cc9562e1842c9?sa=X&ved=1t:2428&ictx=111)
+- **Water sources:** Streams along the trail, glacier melt. Note that by late season, many of the seasonal streams have dried up—there isn't a whole lot of water, so fill up at the reliable spots while you can.
+- **Gear:** Standard backpacking kit, bear canister required. Pack light—there's a lot of climbing (4,200 ft of gain!) and every pound counts on the final boulder slog.
+- **Fire weather & smoke:** Washington's fire season runs roughly July through September, with late summer the riskiest window for smoke. Smoke drifts in from fires east of the Cascades and in British Columbia, and up at Sahale's elevation there's nowhere to escape it. Before heading out (if you are coming from afar), check the two-day smoke forecast on [firesmoke.ca](https://firesmoke.ca) — I'd call off the trip rather than climb Sahale Arm in bad air.
 
 {{< google-maps id=1KnrOyUae3B7_iP-6hVjs65FUv6fT02w >}}
 
