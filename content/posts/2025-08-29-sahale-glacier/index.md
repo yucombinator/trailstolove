@@ -12,7 +12,7 @@ stats:
   date: "2025-08-29 to 2025-08-30"
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report", "Glacier", "North Cascades"]
-description: "A last-minute lottery win and a night camped under the glacier in the North Cascades."
+description: "A one-night adventure to Sahale Glacier Camp in the North Cascades."
 thumbnail: "images/trips/sahale-glacier.jpg"
 image: "sunset.jpg"
 ---
