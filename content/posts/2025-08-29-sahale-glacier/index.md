@@ -8,30 +8,30 @@ author:
 stats:
   where: "North Cascades National Park, WA"
   distance: "12.82 mi / 20.62 km"
-  elevation: "4,204 ft / 1,281.2 m"
+  elevation: "4204 ft / 1281 m"
   date: "2025-08-29 to 2025-08-30"
 categories: ["Backpacking", "Washington"]
 tags: ["Backpacking", "Trail Report", "Glacier", "North Cascades"]
-description: "A one-night adventure to Sahale Glacier Camp in the North Cascades."
+description: "A last-minute lottery win and a night camped under the glacier in the North Cascades."
 thumbnail: "images/trips/sahale-glacier.jpg"
 image: "sunset.jpg"
 ---
 
 ## Trip Overview
 
-Sahale Glacier is one of the most sought-after backpacking trips in Washington State, after the [Enchantments](/blog/2022/08/enchantments-traverse/). Many people try their luck every year at the Early Access lottery for their chance to sleep amongst the jagged peaks of the North Cascades.
+Sahale Glacier is one of the most sought-after backpacking trips in Washington State, second only to the [Enchantments](/blog/2022/08/enchantments-traverse/). Many people try their luck every year at the Early Access lottery for their chance to sleep amongst the jagged peaks of the North Cascades.
 
-I can understand why: the location was spectacular, right at the foot of an actual glacier and a great place to watch the sunset and sunrise. The “most scenic toilet in the state” is up here! 
+I can understand why: the location was spectacular, right at the foot of an actual glacier and a great place to watch the sunset and sunrise. The “most scenic toilet in the state” is up here!
 
-I had wanted to camp at the glacier for years, but never managed to get quite so lucky with the lottery. This year, I managed to get a permit for Sahale Glacier Camp with a last-minute cancellation, so I only had a two-day notice to plan it out and make the trip!
+I had wanted to camp at the glacier for years, but never managed to get quite so lucky with the lottery. This year, I managed to get a permit for Sahale Glacier Camp with a last-minute cancellation, so I only had two days' notice to plan and make the trip!
 
 ## Planning & Logistics
 
-- Permit required for Sahale Glacier Camp (high demand, lottery system)
+- Permit required for Sahale Glacier Camp (high demand, [lottery system](https://www.recreation.gov/permits/4675322))
 
-This is probably the most challenging part of the trip; only 4 groups are allowed per night. In the spring, the park opens up an Early Access lottery to offer reservations. Even then, securing this permit is highly competitive. Luckily, cancellations happen, and walk-up permits are offered if you have the chance to swing by a permit office.
+This is probably the most challenging part of the trip; only 4 groups are allowed per night. In the spring, the park opens an [Early Access lottery](https://www.recreation.gov/permits/4675322) for reservations. Even then, securing this permit is highly competitive. Luckily, cancellations happen, and walk-up permits are offered if you have the chance to swing by a permit office.
 
-Additionally, unlike other backpacking permits in other parks, this permit is issued in-person! This means you need to visit the Wilderness Information Center in Marblemount.
+Additionally, unlike other backpacking permits in other parks, this permit is issued in-person! This means you need to visit the [Wilderness Information Center in Marblemount](https://www.nps.gov/noca/planyourvisit/permits.htm).
 
 - Trailhead: Cascade Pass
 - Water sources: Streams along the trail, glacier melt
@@ -47,7 +47,7 @@ Parking at the trailhead can be tough, and I saw cars parked a mile down the roa
 
 The hike has three distinct sections, each with its own vibes and obstacles:
 
-- **Switchbacks to Cascade Pass:** 
+- **Switchbacks to Cascade Pass:**
 
 The hike starts with over 30 switchbacks for about 3 miles. This part was crowded with day hikers, and the trail climbs up the valley with few views, but I spotted pikas and ptarmigans. The trail is wide and easy, if a bit boring, as it follows the understory of a forest. The trail is fairly dry here, but there were a couple of seasonal streams to refill water if needed.
 
@@ -55,11 +55,11 @@ The hike starts with over 30 switchbacks for about 3 miles. This part was crowde
 
 Cascade Pass is the first major viewpoint on the trail, and marks the turnaround point for the majority of hikers. Only a few hikers and runners continue ahead up Sahale Arm.
 
-From here, we could glimpse the headwaters of the Stehekin Valley. I met a few groups that were spending a few days hiking all the way to Stehekin—a fun trip, but not for today.
+From here, I could glimpse the headwaters of the Stehekin Valley. I met a few groups that were spending a few days hiking all the way to Stehekin—a fun trip, but not for today.
 
-- **Sahale Arm:** 
+- **Sahale Arm:**
 
-Turning left from Cascade Pass, we entered another section of the trail for 2 miles, this time steeper and more rugged. As we were mostly above the treeline, the views really opened up, and we got expansive views of our surroundings: from the glaciers of Eldorado Peak to the beautiful Doubtful Lake below us.
+Turning left from Cascade Pass, I entered another section of the trail for 2 miles, this time steeper and more rugged. As I was mostly above the treeline, the views really opened up, and I got expansive views of my surroundings: from the glaciers of Eldorado Peak to the beautiful Doubtful Lake below us.
 
 ![Sahale Arm and Doubtful Lake](sahale-arm.jpg "Sahale Arm and Doubtful Lake")
 
@@ -67,21 +67,23 @@ After a few steep switchbacks, the grade mellows out. I encountered many pikas h
 
 {{< side-by-side "goat-far.jpg" "goat-close.jpg" "Spotted a mountain goat from afar" "These animals really are not afraid of people" >}}
 
-It's important to stay on the main trail—lots of social trails are now off-limits. 
+It's important to stay on the main trail—lots of social trails are now off-limits.
 
-- **Sahale Glacier:** The last half mile is a steep slog up boulders and scree. It was slow going, but worth it for the views. I didn't carry hiking poles, but I would recommend it for this section.
+- **Sahale Glacier:**
 
-![Sunset photo of jagged mountains](camp-pano.jpg "Panorama from Sahale Glacier Camp")
+The last half mile is a steep slog up boulders and scree. It was slow going, but worth it for the views. I didn't carry hiking poles, but I would recommend it for this section.
 
-Eventually, after 4 hours of hiking, I made it to the campground. Right away, this became one of my favorite backcountry camps. 
+![Panorama of jagged peaks from camp](camp-pano.jpg "Panorama from Sahale Glacier Camp")
+
+Eventually, after a long afternoon of hiking, I made it to the campground. Right away, this became one of my favorite backcountry camps.
 
 Majestic views of the best of the North Cascades. I was able to get a front-and-center view of jagged, glaciated peaks all around me. I saw more glaciers than I can count. I even found a spot to camp right under Sahale Glacier.
 
 {{< side-by-side "tent.jpg" "tent-photo-op.jpg" "My campsite" "Playing around with some self portraits" >}}
 
-After setting up, I met the other campers who were there that night. Some of them were staying two nights, just to have a middle day to take in the views. Together, we watched an epic sunset, and I took photos of the mountains at twilight before retreating to my tent.
+After setting up, I met the other campers who were there that night. Some of them were staying two nights, just to have a middle day to take in the views. Together with the other campers, I watched an epic sunset and took photos of the mountains at twilight before retreating to my tent.
 
-![Orange sky and moutains during sunset](sunset.jpg "Sunset as seen from camp")
+![Orange sky and mountains during sunset](sunset.jpg "Sunset as seen from camp")
 
 In good weather conditions, this place was perfect. It does get kind of windy up here, and I wouldn't want to come up here if any sort of bad weather is in the forecast!
 
@@ -92,7 +94,6 @@ For those prepared, a climb to Sahale Mountain is possible from the campground, 
 ## Day 2: Return
 
 I woke up early to see the sunrise alpenglow. After enjoying the morning views, I packed up and headed down to the parking lot. On the way, I saw a cloud inversion in the valley. I got back to the parking lot by 9:30 am.
-
 
 {{< side-by-side "pika2.jpg" "marmot.jpg" "Another pika" "And a lazy marmot" >}}
 
