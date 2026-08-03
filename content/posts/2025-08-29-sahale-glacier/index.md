@@ -34,8 +34,9 @@ This is probably the most challenging part of the trip; only 4 groups are allowe
 Additionally, unlike other backpacking permits in other parks, this permit is issued in-person! This means you need to visit the [Wilderness Information Center in Marblemount](https://www.nps.gov/noca/planyourvisit/permits.htm).
 
 - Trailhead: Cascade Pass
-- Water sources: Streams along the trail, glacier melt
-- Gear: Standard backpacking kit, bear canister required
+- Water sources: Streams along the trail, glacier melt. Note that by late season, many of the seasonal streams have dried up—there isn't a whole lot of water, so fill up at the reliable spots while you can.
+- Gear: Standard backpacking kit, bear canister required. Pack light—there's a lot of climbing (4,200 ft of gain!) and every pound counts on the final boulder slog.
+- Fire weather & smoke: Washington's fire season runs roughly July through September, with late summer the riskiest window for smoke. Smoke drifts in from fires east of the Cascades and in British Columbia, and up at Sahale's elevation there's nowhere to escape it. Before heading out (if you are coming from afar), check the two-day smoke forecast on [firesmoke.ca](https://firesmoke.ca) — I'd call off the trip rather than climb Sahale Arm in bad air.
 
 {{< google-maps id=1KnrOyUae3B7_iP-6hVjs65FUv6fT02w >}}
 
