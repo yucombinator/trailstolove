@@ -16,7 +16,7 @@
 
 <div class="flex flex-col md:flex-row py-6 md:py-12">
 
-    <div class="w-full md:w-3/12 pr-3">
+    <div class="w-full md:w-[20%] pr-3">
         {{ with .Params.author }}
         <div class="hidden flex-col md:flex mb-3 md:mb-6">
             {{ partial "author/author-large.html" (dict "name" .name "image" .image "twitter" .twitter)}}
@@ -36,10 +36,12 @@
             {{ partial "stats/stats.html" .}}
         </div>
         {{ end }}
+
+        {{ partial "blog/related-posts.html" (dict "page" . "layout" "sidebar") }}
     </div>
 
-    <div class="w-full md:w-9/12">
-        <div class="prose">
+    <div class="w-full md:w-[80%]">
+        <div class="prose mx-auto">
             {{ .Content }}
         </div>
     </div>
@@ -62,5 +64,26 @@
         {{ template "_internal/disqus.html" . }}
     </div>
 </div>
+
+<nav class="flex flex-col md:flex-row justify-between gap-4 border-t pt-6 mb-8">
+    {{ with .PrevInSection }}
+    <a href="{{ .Permalink }}" class="hover:text-green-400">
+        <span class="text-sm text-gray-500">← Previous</span>
+        <span class="block font-semibold">{{ .Title }}</span>
+    </a>
+    {{ else }}
+    <span></span>
+    {{ end }}
+    {{ with .NextInSection }}
+    <a href="{{ .Permalink }}" class="md:text-right hover:text-green-400">
+        <span class="text-sm text-gray-500">Next →</span>
+        <span class="block font-semibold">{{ .Title }}</span>
+    </a>
+    {{ else }}
+    <span></span>
+    {{ end }}
+</nav>
+
+{{ partial "blog/related-posts.html" (dict "page" . "layout" "grid") }}
 
 {{ end }}

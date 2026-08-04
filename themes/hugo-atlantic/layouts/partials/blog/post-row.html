@@ -5,6 +5,7 @@
 {{ $author := .author }}
 {{ $date := .date }}
 {{ $categories := .categories }}
+{{ $stats := .stats }}
 
 <div class="flex flex-col md:flex-row w-full lg:w-10/12">
 
@@ -32,6 +33,15 @@
     </a>
 
     <p class="text-base font-light text-gray-600 mb-4">{{ $description }}</p>
+
+    {{ if $stats }}
+      {{ $parts := slice }}
+      {{ with $stats.distance }}{{ $parts = $parts | append . }}{{ end }}
+      {{ with $stats.elevation }}{{ $parts = $parts | append . }}{{ end }}
+      {{ if gt (len $parts) 0 }}
+      <p class="text-sm text-gray-500 mb-2">{{ delimit $parts " · " }}</p>
+      {{ end }}
+    {{ end }}
 
     {{ if $categories }}
         <div class="mb-2">

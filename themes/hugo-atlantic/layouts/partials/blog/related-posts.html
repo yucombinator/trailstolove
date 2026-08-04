@@ -1,0 +1,60 @@
+{{ $page := . }}
+{{ $layout := "grid" }}
+{{ if reflect.IsMap . }}
+  {{ $page = .page }}
+  {{ $layout = default "grid" .layout }}
+{{ end }}
+{{ $related := where ($page.Site.RegularPages.Related $page) "Type" "posts" | first 3 }}
+{{ if lt (len $related) 3 }}
+  {{ $fallback := where $page.Site.RegularPages "Type" "posts" }}
+  {{ $fallback = where $fallback "Permalink" "ne" $page.Permalink }}
+  {{ $related = $related | append (first (sub 3 (len $related)) $fallback) }}
+{{ end }}
+
+{{ if $related }}
+  {{ if eq $layout "sidebar" }}
+    <div class="hidden md:block mb-3 md:mb-6">
+      <h3 class="text-sm font-medium mb-2 ml-1">🔗 Related Trips</h3>
+      <div class="flex flex-col gap-5">
+        {{ range $related }}
+        {{ $rTitle := .Title }}
+        <a href="{{ .Permalink }}" class="group block">
+          {{ with .Params.thumbnail }}
+            {{ $image := resources.Get . }}
+            {{ with $image }}
+              {{ $image := $image.Resize "400x" }}
+              <img src="{{ $image.RelPermalink }}" width="{{ $image.Width }}" height="{{ $image.Height }}" loading="lazy" alt="{{ $rTitle }}" class="rounded mb-1 group-hover:opacity-70 transition duration-300 ease-in-out" />
+            {{ end }}
+          {{ end }}
+          <span class="block font-semibold text-sm leading-snug group-hover:text-green-400">{{ $rTitle }}</span>
+          {{ with .Params.description }}
+          <span class="block text-xs text-gray-600">{{ . }}</span>
+          {{ end }}
+        </a>
+        {{ end }}
+      </div>
+    </div>
+  {{ else }}
+    <section class="py-10 border-t border-gray-200">
+      <h2 class="text-2xl font-semibold mb-6">Related Trips</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {{ range $related }}
+        {{ $rTitle := .Title }}
+        <a href="{{ .Permalink }}" class="group">
+          {{ with .Params.thumbnail }}
+            {{ $image := resources.Get . }}
+            {{ with $image }}
+              {{ $image := $image.Resize "600x" }}
+              <img src="{{ $image.RelPermalink }}" width="{{ $image.Width }}" height="{{ $image.Height }}" loading="lazy" alt="{{ $rTitle }}" class="rounded mb-3 group-hover:opacity-70 transition duration-300 ease-in-out" />
+            {{ end }}
+          {{ end }}
+          <h3 class="font-semibold group-hover:text-green-400">{{ $rTitle }}</h3>
+          {{ with .Params.description }}
+          <p class="text-sm font-light text-gray-600">{{ . }}</p>
+          {{ end }}
+        </a>
+        {{ end }}
+      </div>
+    </section>
+  {{ end }}
+{{ end }}

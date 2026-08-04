@@ -3,29 +3,29 @@
 {{ $elevation := .Params.stats.elevation }}
 {{ $date := .Params.stats.date }}
 
-<div class="space-y-4">
+<div class="callout">
   {{ if $where }}
-  <div class="items-center block">
-    <span class="font-medium text-sm ml-1 block">Location</span>
-    <span class="text-sm ml-1">{{ $where }}</span>
+  <div>
+    <span class="block text-sm font-medium">📍 Location</span>
+    <span class="block text-sm">{{ $where }}</span>
   </div>
   {{ end }}
   {{ if $distance }}
-  <div class="items-center block">
-    <span class="font-medium text-sm ml-1 block">Distance (roundtrip)</span>
-    <span class="text-sm ml-1">{{ $distance }}</span>
+  <div>
+    <span class="block text-sm font-medium">🥾 Distance (roundtrip)</span>
+    <span class="block text-sm">{{ $distance }}</span>
   </div>
   {{ end }}
   {{ if $elevation }}
-  <div class="items-center block">
-    <span class="font-medium text-sm ml-1 block">Elevation</span>
-    <span class="text-sm ml-1">{{ $elevation }}</span>
+  <div>
+    <span class="block text-sm font-medium">⛰️ Elevation</span>
+    <span class="block text-sm">{{ $elevation }}</span>
   </div>
   {{ end }}
   {{ if $date }}
-  <div class="items-center block">
-    <span class="font-medium text-sm ml-1 block">Dates hiked</span>
-    <span class="text-sm ml-1">{{ $date }}</span>
+  <div>
+    <span class="block text-sm font-medium">📅 Dates hiked</span>
+    <span class="block text-sm">{{ $date }}</span>
   </div>
   {{ end }}
 </div>

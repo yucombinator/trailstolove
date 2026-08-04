@@ -1,4 +1,4 @@
-baseURL = "https://hiking.withyu.ca/"
+baseURL = "https://hikewithyu.com/"
 languageCode = "en-us"
 title = "Hiking With Yu"
 themesDir="themes"
@@ -42,7 +42,7 @@ timeout = "3600s"
 [params.seo]
   meta_twitter_site = "@yucombinator"
   meta_twitter_creator = "@yucombinator"
-  meta_og_image = "https://hiking.withyu.ca/images/trips/copper-ridge-loop.jpg"
+  meta_og_image = "https://hikewithyu.com/images/trips/copper-ridge-loop.jpg"
 
 [build]
   writeStats = true
@@ -55,6 +55,20 @@ timeout = "3600s"
   tag = "tags"
   category = "categories"
   author = "authors"
+
+[related]
+  threshold = 80
+  includeNewer = true
+  [[related.indices]]
+    name = "tags"
+    weight = 100
+  [[related.indices]]
+    name = "categories"
+    weight = 80
+  [[related.indices]]
+    name = "date"
+    weight = 10
+    pattern = "2006"
 
 [menu]
   [[menu.main]]

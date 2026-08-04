@@ -18,7 +18,7 @@ thumbnail: "images/trips/shi-shi-beach.jpg"
 image: "beach-pano.jpg"
 ---
 
-This summer, my partner and I embarked on a delightful backpacking adventure to Shi Shi Beach on the Olympic Coast for a two-night stay. Having [traversed a portion of this area](https://hiking.withyu.ca/blog/2021/03/south-olympic-coast/) two years ago, I was eager to return and share this incredible experience with my partner. It quickly became her favorite adventure, and it's easy to see why.
+This summer, my partner and I embarked on a delightful backpacking adventure to Shi Shi Beach on the Olympic Coast for a two-night stay. Having [traversed a portion of this area](https://hikewithyu.com/blog/2021/03/south-olympic-coast/) two years ago, I was eager to return and share this incredible experience with my partner. It quickly became her favorite adventure, and it's easy to see why.
 
 ![Komorebi at Shi Shi Beach](marine-layer.jpg "Komorebi - sun light through the marine fog")
 
