@@ -10,11 +10,11 @@ pygmentsCodefencesGuessSyntax = true
 pygmentsUseClasses = true
 metaDataFormat = "yaml"
 timeout = "3600s"
+disqusShortname = "hikingwithyu"
 
 [params]
   google_analytics_id = "G-H3H5S61VMW"
   description = "Hiking With Yu is a blog about backpacking adventures in the Pacific Northwest and beyond, featuring trail guides, gear reviews, and outdoor tips."
-  disqusShortname = 'hikingwithyu'
 
 [params.homepage]
   postLimit = 15
