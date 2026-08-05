@@ -1,0 +1,6 @@
+{{ $projectId := .Site.Params.commentbox_project_id }}
+{{ if $projectId }}
+<div class="commentbox" data-page-id="{{ .File.UniqueID }}"></div>
+<script src="https://unpkg.com/commentbox.io/dist/commentBox.min.js"></script>
+<script>commentBox('{{ $projectId }}')</script>
+{{ end }}
