@@ -1,5 +1,6 @@
 module.exports = {
-    content: ["./**/*.html"],
+    darkMode: "class",
+    content: ["./**/*.html", "./editor/**/*.tsx"],
     theme: {
         screens: {
             sm: "640px",

@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgb(167 243 208);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+html.dark {
+  color-scheme: dark;
+}
+/* Dark preview: invert the site's light theme inside the iframe, then
+   re-invert raster media so photos keep their true colors. Editor-only
+   cosmetic trick — the published site is untouched. */
+iframe.dark-preview {
+  filter: invert(1) hue-rotate(180deg);
+}
+html.dark *::-webkit-scrollbar-thumb {
+  background: rgb(55 65 81);
+}
+html.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgb(75 85 99);
+}
+
+/* Thin, unobtrusive scrollbars */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(209 213 219);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(156 163 175);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
