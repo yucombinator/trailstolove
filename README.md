@@ -69,7 +69,7 @@ slide-over drawer with the post's front matter; close with `Esc`.
 
 Each post lives at `content/posts/YYYY-MM-DD-<slug>/index.md` (Hugo page
 bundle). Copy an existing post's front matter shape or see
-`content/posts/2026-09-11-algonquin-canoe/` for a canoe-trip template —
+`content/posts/2026-09-11-three-days-in-algonquin/` for a canoe-trip template —
 newest post conventions there are the current standard (categories use
 activity + province, `stats` block drives the listing card).
 
