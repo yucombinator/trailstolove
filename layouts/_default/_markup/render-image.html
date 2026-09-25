@@ -5,7 +5,10 @@
 {{ end }}
 {{ if $img }}
   {{ $resized := $img.Resize "1600x" }}
-  <img src="{{ $resized.RelPermalink }}" alt="{{ .PlainText }}" loading="lazy" decoding="async" width="{{ $resized.Width }}" height="{{ $resized.Height }}" />
+  <figure>
+    <img src="{{ $resized.RelPermalink }}" alt="{{ .PlainText }}" loading="lazy" decoding="async" width="{{ $resized.Width }}" height="{{ $resized.Height }}" />
+    {{ with .Title }}<figcaption>{{ . }}</figcaption>{{ end }}
+  </figure>
 {{ else }}
   <img src="{{ $dest | safeURL }}" alt="{{ .PlainText }}" />
 {{ end }}
