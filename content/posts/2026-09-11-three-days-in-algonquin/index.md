@@ -1,6 +1,8 @@
 ---
-title: Algonquin Provincial Park
-meta_title: Canoe Trip in Algonquin Provincial Park, Ontario
+title: Three Days in Algonquin
+meta_title: "Three-Day Beginner Canoe Loop in Algonquin Provincial Park, Ontario"
+aliases:
+  - /blog/2026/09/algonquin-provincial-park/
 date: '2026-09-11'
 draft: false
 author:
