@@ -120,6 +120,12 @@ def main() -> None:
                 'nwr["canoe_access"]{{bbox}};nwr["canoe"]{{bbox}};'
                 'nwr["leisure"="slipway"]{{bbox}};nwr["amenity"="boat_rental"]{{bbox}};')
 
+    # 5b) Ramp/rental/parking anchors for official access point pins.
+    fetch_tiled("amenities",
+                'nwr["amenity"="parking"]{{bbox}};'
+                'nwr["shop"="boat_rental"]{{bbox}};'
+                'nwr["amenity"="boat_rental"]{{bbox}};')
+
     # 6) Waterways for paddle links (tiled: ways + their child nodes).
     merged = {}
     for i, (s, w, n, e) in enumerate(tiles()):

@@ -43,6 +43,7 @@ No portage difficulty ratings were invented — OSM does not carry them.
   - `portages` — ways with `portage` or `canoe=portage` (1,070)
   - `obstacles` — `waterway`/`man_made` in (rapids, waterfall, dam, weir) (561)
   - `access` — `canoe`, `canoe_access`, `leisure=slipway`, `amenity=boat_rental` (5,123)
+  - `amenities` — `amenity=parking`, `shop`/`amenity=boat_rental` (pin anchors)
   - `waterways` — `waterway` in (river, stream, canal), `out body` + child nodes (890,400)
 - Overpass quirks this works around (they cost real debugging time):
   - The park's Overpass `area` index entry does not exist on current mirrors;
@@ -102,6 +103,10 @@ as JSON, ~12 MB):
   "avoid flagged obstacles" toggle.
 - **Endpoints**: type in the search boxes (any named water body, river reach or
   access point), or click a lake on the map and use the popup buttons.
+- **Official access-point pins** sit at the physical launch infrastructure, not the
+  mapped canoe put-in: the OSM slipway named for the access point (`... Access Point (#N)`)
+  when present, else the nearest boat ramp / boat rental / parking within 400 m
+  (`build_access_geo.py` — `access_official_geo.csv` carries the chosen pin coordinates).
 - Route output: carries count, total carry metres, step-by-step itinerary, and the
   route drawn with real portage trail geometry.
 - Rebuild with `python3 build_page.py` (needs `router_data.json` inputs from parse).
