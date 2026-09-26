@@ -5,6 +5,23 @@
 <title>Algonquin canoe routes — directions</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script>
+  // Google Analytics — same property as hikewithyu.com; skipped if the host page
+  // (Hugo build) already loaded gtag to avoid double counting.
+  if (!window.dataLayer) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    const ga = document.createElement('script');
+    ga.async = true;
+    ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-H3H5S61VMW';
+    document.head.appendChild(ga);
+    gtag('js', new Date());
+    gtag('config', 'G-H3H5S61VMW');
+  }
+  function track(event, params) {
+    if (window.gtag) window.gtag('event', event, params || {});
+  }
+</script>
 <style>
   :root {
     --canvas: #f5f4ed; --surface: #fffef8; --surface-raised: rgba(255,254,248,.93);
@@ -156,6 +173,30 @@
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
   .side-footer p { margin: 0 0 6px; }
   .side-footer .meta { display: block; letter-spacing: .04em; }
+  /* planning-tool notice */
+  .notice-veil {
+    position: absolute; inset: 0; z-index: 3000; display: none;
+    background: rgba(13, 27, 23, .45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  .notice-veil.show { display: grid; place-items: center; }
+  .notice {
+    width: min(420px, calc(100vw - 40px)); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .notice h2 { margin: 0 0 8px; font: 500 20px/1.15 Georgia, "Times New Roman", serif; color: var(--ink); }
+  .notice p { margin: 0 0 9px; color: var(--ink-muted); font-size: 12.5px; line-height: 1.55; }
+  .notice .eyebrow { margin-bottom: 10px; }
+  .notice .row { display: flex; gap: 8px; margin-top: 14px; flex-direction: column; }
+  .notice button {
+    padding: 10px; border-radius: 6px; cursor: pointer;
+    font: 800 12px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .05em;
+  }
+  .notice .primary { background: var(--accent); color: #fff; border: 0; }
+  .notice .primary:hover { background: var(--accent-strong); }
+  .notice .ghost { background: 0 0; color: var(--ink-muted); border: 1px solid var(--line); }
+  .notice .ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+  .notice a { color: var(--accent-strong); }
 </style>
 </head>
 <body>
@@ -211,6 +252,22 @@
     <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
     <span class="meta">Built <b id="bts">?</b></span>
   </footer>
+</div>
+<div class="notice-veil" id="noticeVeil">
+  <div class="notice" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+    <p class="eyebrow">Before you paddle</p>
+    <h2 id="noticeTitle">This is a planning tool only.</h2>
+    <p>Routes, portages and access points are approximations from OpenStreetMap and
+       official data. <strong>Conditions change</strong> &mdash; low water, closures, dams and
+       portage reroutes happen every season.</p>
+    <p>Check conditions with the park before going on a trip:
+       <a href="https://www.algonquinpark.on.ca/news/algonquin_park_advisories.php" target="_blank" rel="noopener">Algonquin Park advisories</a>
+       and the official park map.</p>
+    <div class="row">
+      <button class="primary" id="noticeOk">Got it — plan a route</button>
+      <button class="ghost" id="noticeNever">Never show this again</button>
+    </div>
+  </div>
 </div>
 <div class="legend">
   <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach</div>
@@ -403,6 +460,9 @@ function attachAC(input, ac) {
 }
 initRows();
 document.getElementById('addStop').onclick = addStop;
+document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
+document.getElementById('avoid').addEventListener('change', e => track('avoid_toggle', { enabled: e.target.checked }));
+map.on('baselayerchange', e => track('basemap_change', { basemap: e.name }));
 document.getElementById('swap').onclick = () => {
   const vals = rows.map(r => ({ v: r.input.value, id: r.input.dataset.id })).reverse();
   rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; });
@@ -438,6 +498,7 @@ function runSample(s) {
   const fid = idx.search.find(x => x.name === s.from);
   const tid = idx.search.find(x => x.name === s.to);
   if (!fid || !tid) return;
+  track('sample_route', { label: s.label });
   initRows();
   setField(0, fid.id);
   setField('end', tid.id);
@@ -640,6 +701,14 @@ document.getElementById('go').onclick = () => {
     selectedOption = 0;
     const samplesEl = document.getElementById('samples');
     if (samplesEl) samplesEl.style.display = 'none';   // onboarding done
+    track('plan_route', {
+      mode: mode,
+      carries: options[0].res.carries,
+      lakes: options[0].res.lakes,
+      portage_m: options[0].res.portageM,
+      steps: options[0].res.edges,
+      waypoints: pointIds.length
+    });
     renderOptionsPanel();
     const segs = drawRoute(options[0], pointIds);
     summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ${segs} segments drawn`;
@@ -654,6 +723,27 @@ document.getElementById('go').onclick = () => {
 
 // initial view around Canoe Lake
 map.setView(DATA.center, 12);
+
+// planning-tool notice: show unless the user opted out permanently
+(function () {
+  const veil = document.getElementById('noticeVeil');
+  const KEY = 'algonquin_notice_hidden';
+  let hidden = false;
+  try { hidden = localStorage.getItem(KEY) === '1'; } catch (e) { /* private mode */ }
+  if (!hidden) {
+    veil.classList.add('show');
+    track('notice_shown');
+  }
+  document.getElementById('noticeOk').onclick = () => {
+    veil.classList.remove('show');
+    track('notice_dismissed', { permanent: false });
+  };
+  document.getElementById('noticeNever').onclick = () => {
+    veil.classList.remove('show');
+    try { localStorage.setItem(KEY, '1'); } catch (e) {}
+    track('notice_dismissed', { permanent: true });
+  };
+})();
 </script>
 </body>
 </html>
