@@ -147,6 +147,7 @@
   .sw.portage { border-style: dashed; border-color: var(--carry); }
   .sw.reach { border-color: #41b6c4; }
   .sw.road { border-color: #8a6d4e; border-width: 6px; }
+  .pa-leg { color: var(--carry); font-size: 12px; font-weight: 900; margin-right: 4px; }
   .sw.route { border-color: var(--carry); border-style: solid; border-width: 5px; height: 0; }
   .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
   .carry-badge span, .wp-badge span {
@@ -156,6 +157,16 @@
     border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
   .carry-badge span { background: var(--carry); }
+  .el { font-weight: 700; font-size: 11px; }
+  .el.up { color: #9a3412; }
+  .el.down { color: #1a6b4a; }
+  .portage-arrow span {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--carry);
+    color: var(--carry); font-size: 12px; font-weight: 900; line-height: 1;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+  }
   .wp-badge span { background: var(--paddle); }
   .ap-badge span {
     display: flex; align-items: center; justify-content: center;
@@ -286,7 +297,7 @@
 </div>
 <div class="legend">
   <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach &nbsp; <span class="sw road"></span>Hwy 60</div>
-  <div><span class="sw portage"></span>portage &nbsp; <span class="sw route"></span>your route</div>
+  <div><span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="router.js?v=__BUILD__"></script>
@@ -602,7 +613,26 @@ function drawRoute(opt, pointIds) {
       L.marker([bp[1], bp[0]], {
         icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
       }).addTo(routeLayer);
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
+      // uphill-direction arrow at the middle of the carried portage line
+      if (e.el !== null && e.el !== undefined && Math.abs(e.el) >= 3 && e.g.length >= 2) {
+        const gp = e.g;
+        const k = Math.floor((gp.length - 1) / 2);
+        const midPt = gp[k];
+        const nxt = gp[Math.min(k + 1, gp.length - 1)];
+        const prv = gp[Math.max(k - 1, 0)];
+        // bearing along the drawn (s→d) direction; el>0 means climbing s→d
+        const bearing = (Math.atan2(nxt[0] - prv[0], nxt[1] - prv[1]) * 180 / Math.PI + 360) % 360;
+        const deg = (bearing + (e.el < 0 ? 180 : 0)).toFixed(0);
+        L.marker([midPt[1], midPt[0]], {
+          icon: L.divIcon({ className: 'portage-arrow', iconSize: [22, 22],
+            html: `<span style="transform: rotate(${deg}deg)">▲</span>` })
+        }).addTo(routeLayer);
+      }
+      const elTxt = (e.el === null || e.el === undefined) ? ''
+        : Math.abs(e.el) < 3 ? '<span class="el">≈ flat</span>'
+        : e.el > 0 ? `<span class="el up">↑ ${e.el} m up</span>`
+        : `<span class="el down">↓ ${-e.el} m down</span>`;
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';

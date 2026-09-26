@@ -199,6 +199,7 @@
       "sm:justify-between",
       "sm:px-6",
       "sr-only",
+      "sub",
       "sw",
       "text-2xl",
       "text-3xl",

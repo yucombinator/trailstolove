@@ -110,6 +110,20 @@ def main():
         if r["edge_kind"] == "portage":
             obstacles.setdefault(int(r["edge_id"]), []).append(r["type"])
 
+    # portage steepness: elevation gain from p0 (from_id end) to p1 (to_id end)
+    elev = {}
+    elev_csv = DATA / "elevations.csv"
+    if elev_csv.exists():
+        with open(elev_csv, newline="") as f:
+            for r in csv.DictReader(f):
+                elev[(r["lat"], r["lon"])] = float(r["elev"])
+    def portage_gain(p):
+        e0 = elev.get((p["p0_lat"], p["p0_lon"]))
+        e1 = elev.get((p["p1_lat"], p["p1_lon"]))
+        if e0 is None or e1 is None:
+            return None
+        return round(e1 - e0)
+
     edges = []
     portage_geo = {}
     for p in load_csv("portages.csv"):
@@ -126,15 +140,16 @@ def main():
         line = [[r5(q["lon"]), r5(q["lat"])] for q in g]
         m = round(float(p["length_m"]))
         o = sorted(set(obstacles.get(oid, [])))
+        el = portage_gain(p)   # gain in metres from p0 (a end) to p1 (b end)
         # orient geometry so g[0] sits on the s-side of each directed edge
         if a == int(p["from_id"]):
             g_fwd, g_rev = line, line[::-1]
         else:
             g_fwd, g_rev = line[::-1], line
         edges.append({"s": a, "d": b, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
-                      "o": o, "g": g_fwd})
+                      "o": o, "g": g_fwd, "el": el})
         edges.append({"s": b, "d": a, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
-                      "o": o, "g": g_rev})
+                      "o": o, "g": g_rev, "el": (-el if el is not None else None)})
         portage_geo[oid] = line
     print(f"portage edges: {len(edges)}")
 
@@ -350,7 +365,8 @@ def main():
     print(f"router_data.json: {len(payload) / 1e6:.1f} MB")
 
     template = (ROOT / "router_template.html").read_text()
-    build = str(int((ROOT / "router.js").stat().st_mtime))
+    build = str(int(max((ROOT / "router.js").stat().st_mtime,
+                        (ROOT / "router_data.json").stat().st_mtime)))
     html = template.replace("__DATA__", payload).replace("__BUILD__", build)
     (ROOT / "index.html").write_text(html)
     print(f"index.html: {(ROOT / 'index.html').stat().st_size / 1e6:.1f} MB")
