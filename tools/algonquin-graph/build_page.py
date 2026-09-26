@@ -226,6 +226,8 @@ def main():
                     if g["osm_id"] and int(g["osm_id"]) == int(r["osm_id"])), None)
         if off:
             nm = f"Access Point #{off['num']}: {off['name'].replace(' Access Point', '')}"
+            # pin at the physical boat ramp / rental / parking when known
+            lat, lon = float(off["lat"]), float(off["lon"])
             official.append({"id": aid, "num": int(off["num"]), "name": nm,
                              "lat": lat, "lon": lon, "approx": False})
         nodes.append([aid, nm, "access", lat, lon])
@@ -344,7 +346,8 @@ def main():
     print(f"router_data.json: {len(payload) / 1e6:.1f} MB")
 
     template = (ROOT / "router_template.html").read_text()
-    html = template.replace("__DATA__", payload)
+    build = str(int((ROOT / "router.js").stat().st_mtime))
+    html = template.replace("__DATA__", payload).replace("__BUILD__", build)
     (ROOT / "index.html").write_text(html)
     print(f"index.html: {(ROOT / 'index.html').stat().st_size / 1e6:.1f} MB")
 
