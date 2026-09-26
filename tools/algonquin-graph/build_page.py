@@ -343,6 +343,7 @@ def main():
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     (DATA / "router_data.json").write_text(payload)
+    (ROOT / "router_data.json").write_text(payload)   # served next to index.html
     print(f"router_data.json: {len(payload) / 1e6:.1f} MB")
 
     template = (ROOT / "router_template.html").read_text()

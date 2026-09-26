@@ -1,1 +1,1 @@
-STAND {{ with (.Resources.Get "app.html") }}{{ .Content | safeHTML }}{{ end }} RENDOK
+{{ with (.Resources.Get "app.html") }}{{ .Content | safeHTML }}{{ end }}

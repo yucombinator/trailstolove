@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Algonquin canoe routes — directions</title>
+<title>Algonquin Canoe Routes — interactive trip planner</title>
+<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least portage distance, or portages only."/>
+<link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
+<meta property="og:title" content="Algonquin Canoe Routes"/>
+<meta property="og:description" content="Point-to-point paddling directions across Algonquin Provincial Park — every named lake, portage and river."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://hikewithyu.com/algonquin/"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script>
@@ -276,7 +282,10 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="router.js?v=__BUILD__"></script>
 <script>
-const DATA = __DATA__;
+document.getElementById('stats').textContent = 'loading map data…';
+fetch('router_data.json?v=__BUILD__')
+  .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
+  .then(DATA => {
 const idx = Router.buildIndex(DATA);
 document.getElementById('bts').textContent = document.lastModified;
 {
@@ -723,8 +732,15 @@ document.getElementById('go').onclick = () => {
 
 // initial view around Canoe Lake
 map.setView(DATA.center, 12);
-
-// planning-tool notice: show unless the user opted out permanently
+})
+  .catch(err => {
+    console.error(err);
+    const el = document.getElementById('stats');
+    if (el) el.textContent = 'failed to load map data — refresh';
+  });
+</script>
+<script>
+// planning-tool notice (independent of map data): show unless opted out permanently
 (function () {
   const veil = document.getElementById('noticeVeil');
   const KEY = 'algonquin_notice_hidden';
