@@ -458,18 +458,16 @@ function drawRoute(opt, pointIds) {
     if (e.k === 'portage') {
       carryNo++;
       addLine(e.g, { color: '#d95f02', weight: 7, opacity: .95 });
-      const fromN = idx.nodeById.get(g.from);
-      const d0 = (e.g[0][0] - fromN.lon) ** 2 + (e.g[0][1] - fromN.lat) ** 2;
-      const d1 = (e.g[e.g.length - 1][0] - fromN.lon) ** 2 + (e.g[e.g.length - 1][1] - fromN.lat) ** 2;
-      const bp = d0 <= d1 ? e.g[0] : e.g[e.g.length - 1];
+      // portage geometry is route-oriented: g[0] is the landing on the from-lake
+      const bp = e.g[0];
       L.marker([bp[1], bp[0]], {
         icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
       }).addTo(routeLayer);
-      html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
-      html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${dir}${nameOf(e.s >= 1000000000000 ? e.s : e.d)}</span></div></div>`;
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${dir}${nameOf(e.s >= 1000000000000 ? e.s : e.d)}</span></div></div>`;
     } else {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const reachId = e.d < 0 ? e.d : e.s;
@@ -482,7 +480,7 @@ function drawRoute(opt, pointIds) {
         if (slice && slice.length >= 2) {
           addLine(slice, { color: '#1f78b4', weight: 6, opacity: .95 });
           const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
-          html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
+          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
           i++;
           continue;
         }
@@ -496,11 +494,11 @@ function drawRoute(opt, pointIds) {
         if (cpath) cpath = Router.refinePath(cpath, union, 40);
         if (cpath) {
           addLine(cpath, { color: '#1f78b4', weight: 6, opacity: .95 });
-          html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}</div></div>`;
+          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}</div></div>`;
           continue;
         }
       }
-      html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">via ' + e.n + '</span>' : ''}</div></div>`;
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">via ' + e.n + '</span>' : ''}</div></div>`;
     }
     // waypoint divider
     if (stops.length && stops.indexOf(g.to) >= 0) {
