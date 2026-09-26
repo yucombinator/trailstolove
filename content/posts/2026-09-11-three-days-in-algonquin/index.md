@@ -27,6 +27,8 @@ image: hero_photo.jpg
 
 Algonquin is Ontario's oldest and most famous canoe country: thousands of glacial lakes stitched together by portage trails, moose on the shorelines, and loons calling all night. We spent three days paddling through it in mid-September from Canoe Lake as our access point.
 
+> 🗺️ **Plan this exact route yourself:** we built an [interactive Algonquin Planner](/algonquin/) — point-to-point directions over every lake, portage and access point in the park, with carry lengths, elevation change and uphill direction for each portage. The route from this trip is one of the built-in samples.
+
 {{< google-maps id=1M09tDgR_mFjHloK06WB2Js11VlCt66I >}}
 
 **Logistics and Planning**
@@ -35,7 +37,7 @@ Algonquin is Ontario's oldest and most famous canoe country: thousands of glacia
 
 **Permits:** Algonquin's backcountry is permit-only. Interior permits are booked through [Ontario Parks reservations](reservations.ontarioparks.com). Popular access points sell out months ahead for summer weekends.
 
-**Route Planning:** The park has over a lifetime's worth of canoe routes connecting its lakes. Algonquin paddling can require many portages (carries), and can be a big drag if planned poorly. The indispensable tool is the official Canoe Routes Map (published by the Friends of Algonquin Park, free online) with its portage tables listing every portage's length, elevation change, and condition. Paddle Planner is another popular interactive option — and a special shout-out to [Maps by Jeff](https://mapsbyjeff.com/pages/algonquin), which is a great map and what we actually used the whole trip.
+**Route Planning:** The park has over a lifetime's worth of canoe routes connecting its lakes. Algonquin paddling can require many portages (carries), and can be a big drag if planned poorly. The indispensable tool is the official Canoe Routes Map (published by the Friends of Algonquin Park, free online) with its portage tables listing every portage's length, elevation change, and condition. Paddle Planner is another popular interactive option — and a special shout-out to [Maps by Jeff](https://mapsbyjeff.com/pages/algonquin), which is a great map and what we actually used the whole trip. Since then we built our own: the [Algonquin Planner](/algonquin/) routes you between any two points over the whole portage network — try the Canoe Lake access → Otterslide sample.
 
 ![Our route planning session — Maps by Jeff on the table](planning_map.jpg)
 
