@@ -8,14 +8,15 @@ This folder is the *source* for the map published at https://hikewithyu.com/algo
   `router_template.html`, `router.js`, `build_page.py`) and working data (`data CSVs`,
   `router_data.json`). The 286 MB `raw/` OSM cache and `algonquin.duckdb` stay OUT of
   git (see .gitignore) — keep your build archive wherever it chains from.
-- `content/algonquin/index.html` — the built, self-contained app (12 MB). Hugo serves
-  it as a page resource; `layouts/_default/app.html` injects it verbatim into
-  https://hikewithyu.com/algonquin/.
+- `content/algonquin/app.html` — the built, self-contained app (12 MB) with NO front
+  matter (kept out of Hugo's markdown pipeline). Hugo picks it up as a page resource;
+  `layouts/_default/app.html` injects it verbatim into https://hikewithyu.com/algonquin/.
+- `content/algonquin/index.md` — the page's front matter (title, description).
 
 ## Rebuild
 
   python3 tools/algonquin-graph/build_page.py            # writes data/router_data.json + index.html
-  cp tools/algonquin-graph/index.html content/algonquin/app.html   # recommended: keep as resource app.html
+  cp tools/algonquin-graph/index.html content/algonquin/app.html
   hugo && git add -A && git commit
 
 ---
