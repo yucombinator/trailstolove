@@ -190,6 +190,23 @@
     const islands = polys.flatMap(p => p.slice(1));
     const allRings = outers.concat(islands);
 
+    // Landing anchors come from full-resolution geometry while the drawn lake
+    // polygons are simplified — anchors can sit just OUTSIDE the rings, which
+    // kills the visibility graph (every segment from outside crosses the shore).
+    // Snap any anchor that isn't inside to the nearest ring vertex.
+    function nearestVertex(p) {
+      let best = null, bd = Infinity;
+      for (const ring of allRings) {
+        for (const v of ring) {
+          const d = (v[0] - p[0]) * (v[0] - p[0]) + (v[1] - p[1]) * (v[1] - p[1]);
+          if (d < bd) { bd = d; best = v; }
+        }
+      }
+      return best ? [best[0], best[1]] : p;
+    }
+    const A = insideLake(ptA[0], ptA[1]) ? ptA : nearestVertex(ptA);
+    const B = insideLake(ptB[0], ptB[1]) ? ptB : nearestVertex(ptB);
+
     function segInt(p1, p2, p3, p4) {
       const d1 = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
       const d2 = (p4.x - p3.x) * (p2.y - p3.y) - (p4.y - p3.y) * (p2.x - p3.x);
@@ -224,12 +241,12 @@
       return false;
     }
 
-    const nodes = [{ x: ptA[0], y: ptA[1] }];
+    const nodes = [{ x: A[0], y: A[1] }];
     for (const ring of allRings) {
       const step = Math.max(1, Math.ceil(ring.length / 60));
       for (let i = 0; i < ring.length; i += step) nodes.push({ x: ring[i][0], y: ring[i][1] });
     }
-    nodes.push({ x: ptB[0], y: ptB[1] });
+    nodes.push({ x: B[0], y: B[1] });
 
     const n = nodes.length;
     const dist = new Array(n).fill(Infinity);
@@ -253,6 +270,11 @@
     if (!isFinite(dist[n - 1])) return null;
     const path = [];
     for (let v = n - 1; v !== -1; v = prev[v]) path.unshift([nodes[v].x, nodes[v].y]);
+    // a bare 2-point crossing refines to nothing — inject a midpoint so
+    // refinePath can bend it off the straight chord
+    if (path.length === 2) {
+      path.splice(1, 0, [(path[0][0] + path[1][0]) / 2, (path[0][1] + path[1][1]) / 2]);
+    }
     return path;
   }
 
