@@ -28,10 +28,13 @@
     if (mode === "conservative" && e.k === "river") return null;
     if (e.k === "portage") {
       if (mode === "carries") return 1e6 + e.m;
-      if (mode === "meters") return e.m;
+      if (mode === "balanced" || mode === "meters") return e.m;
       return 1 + e.m / 1e7; // "edges": fewest hops, tie-broken by carry metres
     }
     if (mode === "carries") return 0.5;
+    // "balanced": crossing into another water body ≈ the effort of a 300 m carry,
+    // so routes that zigzag through many lakes pay for it even with few carries.
+    if (mode === "balanced") return e.k === "access" ? e.m : 300;
     if (mode === "meters") return Math.max(e.m, 0.001);
     return 1;
   }
@@ -140,7 +143,7 @@
     const seen = new Set();
     const out = [];
     for (const m of [mode].concat(
-        ["carries", "meters", "conservative", "edges"].filter(x => x !== mode))) {
+        ["balanced", "carries", "meters", "conservative", "edges"].filter(x => x !== mode))) {
       if (out.length >= (want || 3)) break;
       let ok = true;
       const nodeIds = [pointIds[0]];
@@ -156,6 +159,7 @@
       if (seen.has(key)) continue;
       seen.add(key);
       const portageLegs = legs.filter(e => e.k === "portage");
+      const lakes = new Set(nodeIds.filter(id => idx.nodeById.get(id)?.kind === "lake")).size;
       out.push({
         mode: m,
         res: {
@@ -163,12 +167,15 @@
           legs: legs,
           carries: portageLegs.length,
           portageM: portageLegs.reduce((s, e) => s + e.m, 0),
+          lakes: lakes,
           edges: legs.length,
         },
       });
     }
-    out.sort((a, b) => (a.res.carries - b.res.carries) || (a.res.portageM - b.res.portageM));
-    return out.slice(0, want || 3);
+    // the chosen model's route is the headline answer; the rest are alternatives
+    const rest = out.filter(o => o.mode !== mode)
+      .sort((a, b) => (a.res.carries - b.res.carries) || (a.res.portageM - b.res.portageM));
+    return out.filter(o => o.mode === mode).concat(rest).slice(0, want || 3);
   }
 
   // Path across a lake that stays inside the lake polygon: visibility graph

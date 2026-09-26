@@ -97,18 +97,20 @@ as JSON, ~12 MB):
 - **Graph**: all water nodes, every routable edge with drawing geometry — portages
   carry their full trail geometry, river/channel links carry a short touch-point
   spur, access links connect launches to their lake.
-- **Routing**: Dijkstra client-side (`router.js`), four cost models — fewest
-  carries (default), least total carrying, *portages only* (ignores mapped river
-  links — use this if you don't trust paddleable creeks), fewest steps — plus an
-  "avoid flagged obstacles" toggle.
+- **Routing**: Dijkstra client-side (`router.js`), five cost models —
+  *balanced* (default: portage metres + a 300 m-carry equivalent per water body
+  crossed, so lake-zigzag routes lose to cleaner ones), fewest carries (pure
+  carry count), least total carrying, *portages only* (ignores mapped river
+  links — use this if you don't trust paddleable creeks), fewest steps — plus
+  an "avoid flagged obstacles" toggle.
 - **Endpoints**: type in the search boxes (any named water body, river reach or
   access point), or click a lake on the map and use the popup buttons.
 - **Official access-point pins** sit at the physical launch infrastructure, not the
   mapped canoe put-in: the OSM slipway named for the access point (`... Access Point (#N)`)
   when present, else the nearest boat ramp / boat rental / parking within 400 m
   (`build_access_geo.py` — `access_official_geo.csv` carries the chosen pin coordinates).
-- Route output: carries count, total carry metres, step-by-step itinerary, and the
-  route drawn with real portage trail geometry.
+- Route output: carries count, total carry metres, lakes crossed, step-by-step
+  itinerary, and the route drawn with real portage trail geometry.
 - Rebuild with `python3 build_page.py` (needs `router_data.json` inputs from parse).
 
 ### 4. Official data (no OSM)

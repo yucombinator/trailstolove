@@ -180,6 +180,7 @@
     </div>
     <div class="opts">
       <select id="mode">
+        <option value="balanced">balanced — carries + lakes crossed</option>
         <option value="carries">fewest carries</option>
         <option value="meters">least total carrying</option>
         <option value="conservative">portages only (no river paddling)</option>
@@ -412,6 +413,7 @@ map.on('popupopen', ev => {
 
 // ---------- directions ----------
 const modeLabel = m => ({
+  balanced: 'balanced (carries + lakes)',
   carries: 'fewest carries', meters: 'least total carrying',
   conservative: 'portages only', edges: 'fewest steps'
 }[m] || m);
@@ -556,7 +558,7 @@ function renderOptionsPanel() {
     const via = o.res.nodeIds.map(nameOf).filter(nm => nm).slice(1, 4).join(' → ');
     cards += `<div class="optcard ${i === selectedOption ? 'sel' : ''}" data-i="${i}">
       <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m</div>
-      <div class="m">${modeLabel(o.mode)} · ${o.res.edges} steps · via ${via}${o.res.nodeIds.length > 5 ? '…' : ''}</div></div>`;
+      <div class="m">${modeLabel(o.mode)} · ${o.res.edges} steps · ${o.res.lakes} lakes · via ${via}${o.res.nodeIds.length > 5 ? '…' : ''}</div></div>`;
   });
   optionsEl.innerHTML = cards;
   optionsEl.querySelectorAll('.optcard').forEach(c => {
@@ -565,7 +567,7 @@ function renderOptionsPanel() {
       renderOptionsPanel();
       const o = currentOptions[selectedOption];
       const segs = drawRoute(o, currentPoints);
-      summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${segs} segments drawn`;
+      summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${o.res.lakes} lakes · ${segs} segments drawn`;
     };
   });
 }
@@ -598,7 +600,7 @@ document.getElementById('go').onclick = () => {
     selectedOption = 0;
     renderOptionsPanel();
     const segs = drawRoute(options[0], pointIds);
-    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · ${segs} segments drawn`;
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ${segs} segments drawn`;
   } catch (err) {
     warnbox.style.display = 'block';
     warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
