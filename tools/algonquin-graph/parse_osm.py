@@ -426,6 +426,8 @@ def main():
         t = el.get("tags", {})
         if t.get("waterway") == "access_point":
             pass  # official canoe access points — keep even when canoe=designated
+        elif t.get("waterway"):
+            continue  # waterway=link/flowline canoe-route connectors, not launches
         elif t.get("canoe") in ("link", "flowline", "river", "stream", "permit",
                                 "designated", "no", "waterfall"):
             continue  # canoe-route member ways, not access points
@@ -510,6 +512,63 @@ def main():
         wr = csv.DictWriter(f, ["osm_id", "name", "kind", "lat", "lon", "water_id"])
         wr.writeheader()
         wr.writerows(access)
+
+    # ---------- 7c) Highway 60 corridor (map context) ----------
+    r_uf, r_ways = UF(), {}
+    for el in load("roads")["elements"]:
+        if el["type"] != "way" or not el.get("nodes"):
+            continue
+        g = el.get("geometry") or []
+        if len(g) < 2:
+            continue
+        if not any(inside_park(q["lat"], q["lon"], 500.0)
+                   for q in g[::max(1, len(g) // 20)]):
+            continue
+        r_ways[el["id"]] = el
+        r_uf.find(el["id"])
+        for nid in el["nodes"]:
+            key = ("n", nid)
+            if key in r_uf.p:
+                r_uf.union(el["id"], r_uf.find(key))
+            else:
+                r_uf.p[key] = key
+                r_uf.union(el["id"], key)
+    r_comps = {}
+    for wid, el in r_ways.items():
+        r_comps.setdefault(r_uf.find(wid), []).append(el)
+    hw60 = []
+    for root, els in r_comps.items():
+        # chain member ways into continuous lines by node id
+        segs = {el["id"]: [(q["lon"], q["lat"]) for q in el["geometry"]] for el in els}
+        used = set()
+        for wid2 in list(segs):
+            if wid2 in used:
+                continue
+            line = list(segs[wid2])
+            used.add(wid2)
+            changed = True
+            while changed:
+                changed = False
+                for wid3 in segs:
+                    if wid3 in used:
+                        continue
+                    s = segs[wid3]
+                    if s[0] == line[-1]:
+                        line.extend(s[1:]); used.add(wid3); changed = True
+                    elif s[-1] == line[-1]:
+                        line.extend(s[::-1][1:]); used.add(wid3); changed = True
+                    elif s[-1] == line[0]:
+                        line[:] = s[:-1] + line; used.add(wid3); changed = True
+                    elif s[0] == line[0]:
+                        line[:] = s[::-1][:-1] + line; used.add(wid3); changed = True
+            simp = line[::4]
+            if simp[-1] != line[-1]:
+                simp.append(line[-1])
+            hw60.append([list(q) for q in simp])
+    with open(DATA / "roads.json", "w") as f:
+        json.dump({"name": "Ontario Highway 60", "lines": hw60}, f,
+                  ensure_ascii=False, separators=(",", ":"))
+    print(f"hwy 60: {len(hw60)} line(s) from {len(r_ways)} ways", flush=True)
 
     # ---------- 8) official access points from the 29 harvested pages ----------
     import re

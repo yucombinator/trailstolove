@@ -86,6 +86,8 @@ def main() -> None:
         for i, (s, w, n, e) in enumerate(tiles()):
             bbox = f"({s:.4f},{w:.4f},{n:.4f},{e:.4f})"
             q = (f"[out:json][timeout:600];({body.replace('{{bbox}}', bbox)});out geom;")
+            out = RAW / f"{name}_t{i:02d}.json"
+            cached = out.exists()
             els = run(f"{name}_t{i:02d}", q, tries).get("elements", [])
             for el in els:
                 key = (el["type"], el["id"])
@@ -93,7 +95,8 @@ def main() -> None:
                 if cur is None or len(ring_points(el)) > len(ring_points(cur)):
                     merged[key] = el
             print(f"  tile {i:02d}: +{len(els)} -> {len(merged)} merged", flush=True)
-            time.sleep(pause)
+            if not cached:
+                time.sleep(pause)   # only pace real network hits
         (RAW / f"{name}.json").write_text(json.dumps({"elements": list(merged.values())}))
         print(f"[ok] {name}: {len(merged)} elements (tiled)", flush=True)
         return merged
@@ -120,11 +123,16 @@ def main() -> None:
                 'nwr["canoe_access"]{{bbox}};nwr["canoe"]{{bbox}};'
                 'nwr["leisure"="slipway"]{{bbox}};nwr["amenity"="boat_rental"]{{bbox}};')
 
-    # 5b) Ramp/rental/parking anchors for official access point pins.
+    # 5c) Ramp/rental/parking anchors for official access point pins.
     fetch_tiled("amenities",
                 'nwr["amenity"="parking"]{{bbox}};'
                 'nwr["shop"="boat_rental"]{{bbox}};'
                 'nwr["amenity"="boat_rental"]{{bbox}};')
+
+    # 5d) Highway 60 — the park corridor road, for map context.
+    fetch_tiled("roads",
+                'way["highway"]["ref"~"^60$"]{{bbox}};'
+                'way["name"="Highway 60"]{{bbox}};')
 
     # 6) Waterways for paddle links (tiled: ways + their child nodes).
     merged = {}

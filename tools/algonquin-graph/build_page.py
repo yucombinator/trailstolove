@@ -333,6 +333,8 @@ def main():
 
     center = water[CENTER_ID]
 
+    roads = json.loads((DATA / "roads.json").read_text()) if (DATA / "roads.json").exists() else None
+
     data = {
         "center": [round(center["lat"], 6), round(center["lon"], 6)],
         "nodes": nodes,
@@ -340,6 +342,7 @@ def main():
         "lakes": {"type": "FeatureCollection", "features": merged},
         "reaches": reaches,
         "official": data_official,
+        "roads": roads,
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     (DATA / "router_data.json").write_text(payload)
