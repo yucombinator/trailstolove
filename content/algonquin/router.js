@@ -286,6 +286,7 @@
       : (geometry.type === 'Polygon' ? [geometry.coordinates] : null);
     if (!polys) return points;
     const rings = polys.flatMap(p => p);
+    const DEG_M = 111320;   // metres per degree of latitude
 
     function pushOff(p) {
       const [px, py] = p;
@@ -303,10 +304,10 @@
           if (d < bd) { bd = d; bx = px2; by = py2; }
         }
       }
-      if (!isFinite(bd) || bd >= margin) return [px, py];
+      if (!isFinite(bd) || bd * DEG_M >= margin) return [px, py];
       const vx = px - bx, vy = py - by;
       const L = Math.hypot(vx, vy) || 1;
-      const push = margin - bd;
+      const push = (margin - bd * DEG_M) / DEG_M;   // displacement in degrees
       return [px + (vx / L) * push, py + (vy / L) * push];
     }
 
@@ -327,6 +328,17 @@
       }
     }
     out.push(pts2[pts2.length - 1]);
+    // guard: the spline must stay near the input path — on any wild excursion
+    // fall back to the unrefined path (which drawRoute can draw safely)
+    let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+    for (const p of pts2) {
+      if (p[0] < mnX) mnX = p[0]; if (p[0] > mxX) mxX = p[0];
+      if (p[1] < mnY) mnY = p[1]; if (p[1] > mxY) mxY = p[1];
+    }
+    const slack = 0.05;   // ~5 km — the spline may bulge, never wander
+    for (const p of out) {
+      if (p[0] < mnX - slack || p[0] > mxX + slack || p[1] < mnY - slack || p[1] > mxY + slack) return points;
+    }
     return out;
   }
 
