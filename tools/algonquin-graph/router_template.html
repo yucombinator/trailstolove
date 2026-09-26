@@ -142,6 +142,16 @@
   }
   .leg-zoom { cursor: pointer; }
   .leg-zoom:hover { background: #f2f7f1; }
+  #samples { margin-bottom: 6px; }
+  #samples .eyebrow { margin-bottom: 8px; }
+  .sample-btn {
+    display: block; width: 100%; text-align: left; margin-bottom: 7px;
+    border: 1px solid var(--line); background: var(--surface); border-radius: 6px;
+    padding: 9px 11px; cursor: pointer;
+  }
+  .sample-btn:hover { border-color: var(--accent); background: #f6f9f3; }
+  .sample-btn .t { font-weight: 700; color: var(--ink); font-size: 12.5px; }
+  .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
   .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
   .side-footer p { margin: 0 0 6px; }
@@ -191,6 +201,7 @@
     <button class="go" id="go">Directions</button>
   </section>
   <section class="side-section grow">
+    <div id="samples"></div>
     <div id="options"></div>
     <div id="summary"></div>
     <div class="warnbox" id="warnbox"></div>
@@ -411,6 +422,37 @@ map.on('popupopen', ev => {
   });
 });
 
+// ---------- sample routes (onboarding; hidden after the first navigation) ----------
+const SAMPLES = [
+  { label: 'Canoe Lake access → Otterslide Lake',
+    desc: 'the classic Hwy 60 chain — 5 carries · 2.1 km',
+    from: 'Access Point #5: Canoe Lake', to: 'Otterslide Lake' },
+  { label: 'Lake Opeongo access → Happy Isle Lake',
+    desc: 'big-water paddling from the park\u2019s largest lake — no portages',
+    from: 'Access Point #11: Lake Opeongo', to: 'Happy Isle Lake' },
+  { label: 'Rock Lake access → Pen Lake',
+    desc: 'an easy first paddle off the Hwy 60 corridor — no portages',
+    from: 'Access Point #9: Rock Lake', to: 'Pen Lake' },
+];
+function runSample(s) {
+  const fid = idx.search.find(x => x.name === s.from);
+  const tid = idx.search.find(x => x.name === s.to);
+  if (!fid || !tid) return;
+  initRows();
+  setField(0, fid.id);
+  setField('end', tid.id);
+  document.getElementById('go').click();
+}
+(function renderSamples() {
+  const el = document.getElementById('samples');
+  if (!el) return;
+  el.innerHTML = '<p class="eyebrow">Try a sample route</p>' + SAMPLES.map((s, i) =>
+    `<button class="sample-btn" data-s="${i}"><div class="t">${s.label}</div><div class="m">${s.desc}</div></button>`).join('');
+  el.querySelectorAll('.sample-btn').forEach(b => {
+    b.onclick = () => runSample(SAMPLES[Number(b.dataset.s)]);
+  });
+})();
+
 // ---------- directions ----------
 const modeLabel = m => ({
   balanced: 'balanced (carries + lakes)',
@@ -596,6 +638,8 @@ document.getElementById('go').onclick = () => {
     currentOptions = options;
     currentPoints = pointIds;
     selectedOption = 0;
+    const samplesEl = document.getElementById('samples');
+    if (samplesEl) samplesEl.style.display = 'none';   // onboarding done
     renderOptionsPanel();
     const segs = drawRoute(options[0], pointIds);
     summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ${segs} segments drawn`;
