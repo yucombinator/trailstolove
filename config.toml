@@ -86,6 +86,11 @@ timeout = "3600s"
     url = "/about/"
     weight = 3
 
+  [[menu.main]]
+    name = "Algonquin Planner"
+    url = "/algonquin/"
+    weight = 4
+
 [pagination]
   pagerSize = 10
 
