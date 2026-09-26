@@ -28,10 +28,13 @@
     if (mode === "conservative" && e.k === "river") return null;
     if (e.k === "portage") {
       if (mode === "carries") return 1e6 + e.m;
-      if (mode === "meters") return e.m;
+      if (mode === "balanced" || mode === "meters") return e.m;
       return 1 + e.m / 1e7; // "edges": fewest hops, tie-broken by carry metres
     }
     if (mode === "carries") return 0.5;
+    // "balanced": crossing into another water body ≈ the effort of a 300 m carry,
+    // so routes that zigzag through many lakes pay for it even with few carries.
+    if (mode === "balanced") return e.k === "access" ? e.m : 300;
     if (mode === "meters") return Math.max(e.m, 0.001);
     return 1;
   }
@@ -140,7 +143,7 @@
     const seen = new Set();
     const out = [];
     for (const m of [mode].concat(
-        ["carries", "meters", "conservative", "edges"].filter(x => x !== mode))) {
+        ["balanced", "carries", "meters", "conservative", "edges"].filter(x => x !== mode))) {
       if (out.length >= (want || 3)) break;
       let ok = true;
       const nodeIds = [pointIds[0]];
@@ -156,6 +159,7 @@
       if (seen.has(key)) continue;
       seen.add(key);
       const portageLegs = legs.filter(e => e.k === "portage");
+      const lakes = new Set(nodeIds.filter(id => idx.nodeById.get(id)?.kind === "lake")).size;
       out.push({
         mode: m,
         res: {
@@ -163,12 +167,15 @@
           legs: legs,
           carries: portageLegs.length,
           portageM: portageLegs.reduce((s, e) => s + e.m, 0),
+          lakes: lakes,
           edges: legs.length,
         },
       });
     }
-    out.sort((a, b) => (a.res.carries - b.res.carries) || (a.res.portageM - b.res.portageM));
-    return out.slice(0, want || 3);
+    // the chosen model's route is the headline answer; the rest are alternatives
+    const rest = out.filter(o => o.mode !== mode)
+      .sort((a, b) => (a.res.carries - b.res.carries) || (a.res.portageM - b.res.portageM));
+    return out.filter(o => o.mode === mode).concat(rest).slice(0, want || 3);
   }
 
   // Path across a lake that stays inside the lake polygon: visibility graph
@@ -182,6 +189,23 @@
     const outers = polys.map(p => p[0]);
     const islands = polys.flatMap(p => p.slice(1));
     const allRings = outers.concat(islands);
+
+    // Landing anchors come from full-resolution geometry while the drawn lake
+    // polygons are simplified — anchors can sit just OUTSIDE the rings, which
+    // kills the visibility graph (every segment from outside crosses the shore).
+    // Snap any anchor that isn't inside to the nearest ring vertex.
+    function nearestVertex(p) {
+      let best = null, bd = Infinity;
+      for (const ring of allRings) {
+        for (const v of ring) {
+          const d = (v[0] - p[0]) * (v[0] - p[0]) + (v[1] - p[1]) * (v[1] - p[1]);
+          if (d < bd) { bd = d; best = v; }
+        }
+      }
+      return best ? [best[0], best[1]] : p;
+    }
+    const A = insideLake(ptA[0], ptA[1]) ? ptA : nearestVertex(ptA);
+    const B = insideLake(ptB[0], ptB[1]) ? ptB : nearestVertex(ptB);
 
     function segInt(p1, p2, p3, p4) {
       const d1 = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
@@ -217,12 +241,12 @@
       return false;
     }
 
-    const nodes = [{ x: ptA[0], y: ptA[1] }];
+    const nodes = [{ x: A[0], y: A[1] }];
     for (const ring of allRings) {
       const step = Math.max(1, Math.ceil(ring.length / 60));
       for (let i = 0; i < ring.length; i += step) nodes.push({ x: ring[i][0], y: ring[i][1] });
     }
-    nodes.push({ x: ptB[0], y: ptB[1] });
+    nodes.push({ x: B[0], y: B[1] });
 
     const n = nodes.length;
     const dist = new Array(n).fill(Infinity);
@@ -246,6 +270,11 @@
     if (!isFinite(dist[n - 1])) return null;
     const path = [];
     for (let v = n - 1; v !== -1; v = prev[v]) path.unshift([nodes[v].x, nodes[v].y]);
+    // a bare 2-point crossing refines to nothing — inject a midpoint so
+    // refinePath can bend it off the straight chord
+    if (path.length === 2) {
+      path.splice(1, 0, [(path[0][0] + path[1][0]) / 2, (path[0][1] + path[1][1]) / 2]);
+    }
     return path;
   }
 
