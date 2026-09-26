@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Algonquin canoe routes — directions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, "Segoe UI", sans-serif; }
+  #map { position: absolute; inset: 0; }
+  .side {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 350px; z-index: 1000;
+    background: #fff; box-shadow: 2px 0 10px rgba(0,0,0,.25);
+    display: flex; flex-direction: column;
+  }
+  .side h1 { font-size: 15px; margin: 12px 14px 2px; }
+  .side .sub { color: #667; margin: 0 14px 8px; font-size: 11px; }
+  #points { margin: 2px 0; }
+  .field { position: relative; margin: 6px 14px; }
+  .field label { font-size: 11px; color: #445; font-weight: 600; }
+  .field input {
+    width: 100%; box-sizing: border-box; padding: 7px 30px 7px 9px; font-size: 13px;
+    border: 1px solid #bbb; border-radius: 6px;
+  }
+  .field .rm {
+    position: absolute; right: 6px; top: 55%; transform: translateY(-40%);
+    border: 0; background: #eee; color: #666; border-radius: 50%;
+    width: 20px; height: 20px; cursor: pointer; font-size: 11px; line-height: 1;
+  }
+  .ac {
+    position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1200;
+    border: 1px solid #bbb; border-top: 0; max-height: 240px; overflow: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,.15); display: none;
+  }
+  .ac div { padding: 6px 9px; cursor: pointer; }
+  .ac div:hover { background: #eef4fb; }
+  .ac .k { color: #889; font-size: 10px; margin-left: 6px; }
+  .tools { display: flex; gap: 10px; margin: 2px 14px; }
+  .tools button, .opts select {
+    font-size: 12px; padding: 5px 8px; border: 1px solid #bbb; border-radius: 6px;
+    background: #fff; cursor: pointer;
+  }
+  .go {
+    display: block; width: calc(100% - 28px); margin: 8px 14px 2px;
+    padding: 10px; font-size: 14px; font-weight: 700; letter-spacing: .3px;
+    background: #1a6db3; color: #fff; border: 0; border-radius: 8px; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(26,109,179,.35);
+  }
+  .go:hover { background: #155d99; }
+  #options { margin: 6px 14px 0; }
+  .optcard {
+    border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .optcard:hover { background: #f4f8fc; }
+  .optcard.sel { border-color: #1a6db3; background: #eef4fb; box-shadow: 0 0 0 1px #1a6db3 inset; }
+  .optcard .t { font-weight: 700; }
+  .optcard .m { color: #667; font-size: 11px; }
+  #summary { margin: 4px 14px 2px; font-size: 12px; color: #333; }
+  #legs { overflow: auto; flex: 1; margin: 4px 14px 12px; border-top: 1px solid #eee; }
+  .leg { padding: 7px 4px; border-bottom: 1px solid #f2f2f2; display: flex; gap: 7px; }
+  .leg .n { color: #98a; min-width: 20px; text-align: right; font-weight: 600; }
+  .leg .b { flex: 1; }
+  .leg .p { color: #b35c00; font-weight: 600; }
+  .leg .r { color: #1f78b4; }
+  .leg .warn { color: #b30000; font-size: 11px; }
+  .wpdiv { margin: 5px 4px; padding: 6px 9px; background: #eef4fb; color: #14538c;
+    border: 1px solid #cfe1f2; border-radius: 6px; font-weight: 600; }
+  .warnbox {
+    margin: 6px 14px 0; padding: 7px 9px; background: #fdf2f2; color: #b30000;
+    border: 1px solid #f3cccc; border-radius: 6px; font-size: 12px; display: none;
+  }
+  .legend {
+    position: absolute; bottom: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,.95);
+    padding: 8px 11px; border-radius: 8px; font-size: 11px; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
+  .sw.portage { border-style: dashed; border-color: #b35c00; }
+  .sw.reach { border-color: #41b6c4; }
+  .sw.route { border-color: #d95f02; border-style: solid; border-width: 5px; height: 0; }
+  .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
+  .carry-badge span, .wp-badge span {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    color: #fff; font-size: 12px; font-weight: 700;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  .carry-badge span { background: #d95f02; }
+  .wp-badge span { background: #1a6db3; }
+  .ap-badge span {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 24px; height: 20px; padding: 0 3px;
+    background: #fff; color: #14538c; font-size: 11px; font-weight: 700;
+    border: 2px solid #1a6db3; border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+  }
+  .leg-zoom { cursor: pointer; }
+  .leg-zoom:hover { background: #eef4fb; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="side">
+  <h1>Algonquin canoe routes — directions</h1>
+  <div class="sub">Graph from OpenStreetMap + official Algonquin data. Page built: <b id="bts">?</b>. Type or click a lake to plan; add stops for multi-day routes.</div>
+  <div id="points"></div>
+  <div class="tools">
+    <button id="addStop">+ add stop</button>
+    <button id="swap" title="reverse route">⇅ reverse</button>
+  </div>
+  <div class="opts">
+    <select id="mode">
+      <option value="carries">fewest carries</option>
+      <option value="meters">least total carrying</option>
+      <option value="conservative">portages only (no river paddling)</option>
+      <option value="edges">fewest steps</option>
+    </select>
+    <label style="font-size:11px"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
+  </div>
+  <button class="go" id="go">Directions</button>
+  <div id="options"></div>
+  <div id="summary"></div>
+  <div class="warnbox" id="warnbox"></div>
+  <div id="legs"></div>
+</div>
+<div class="legend">
+  <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach</div>
+  <div><span class="sw portage"></span>portage &nbsp; <span class="sw route"></span>your route</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="router.js"></script>
+<script>
+const DATA = __DATA__;
+const idx = Router.buildIndex(DATA);
+document.getElementById('bts').textContent = document.lastModified;
+if (!document.getElementById('go')) {   // self-heal: recreate the Directions button if absent
+  const btn = document.createElement('button');
+  btn.id = 'go'; btn.className = 'go'; btn.textContent = 'Directions';
+  const anchor = document.getElementById('options');
+  anchor.parentNode.insertBefore(btn, anchor);
+}
+
+const map = L.map('map', { preferCanvas: true });
+const topoTiles = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: 'Map data: &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
+});
+const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>'
+});
+topoTiles.addTo(map);
+L.control.layers({ 'OpenTopoMap (terrain)': topoTiles, 'Light (CARTO)': cartoTiles }, null, { position: 'bottomleft' }).addTo(map);
+
+map.createPane('routePane');
+map.getPane('routePane').style.zIndex = 450;
+const routeRenderer = L.canvas({ pane: 'routePane', padding: 0.3 });
+
+const LBASE = { color: '#3182bd', weight: 1, fillColor: '#a6cee3', fillOpacity: .5 };
+const LROUTE = { color: '#1a6db3', weight: 3, fillColor: '#ffd54f', fillOpacity: .85 };
+const lakeLayers = {};   // every member way id -> its leaflet layer
+const lakeGeoms = {};    // every member way id -> its geometry
+const lakes = L.geoJSON(DATA.lakes, {
+  renderer: L.canvas({ padding: 0.3 }),
+  style: () => LBASE,
+  onEachFeature: (f, l) => {
+    const p = f.properties;
+    for (const id of (p.ids || [p.osm_id])) { lakeLayers[id] = l; lakeGeoms[id] = f.geometry; }
+    l.bindTooltip(p.name || 'unnamed water', { sticky: true });
+    l.bindPopup(`<b>${p.name || 'unnamed water'}</b><br>kind: ${p.kind}<br>area: ${p.area_ha} ha
+      <br><button data-act="0" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as start</button>
+      <button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>`);
+  }
+}).addTo(map);
+let highlightedLakes = [];
+function highlightLakes(nodeIds) {
+  highlightedLakes.forEach(l => l.setStyle(LBASE));
+  highlightedLakes = [];
+  for (const id of nodeIds) {
+    const l = lakeLayers[id];
+    if (l && !highlightedLakes.includes(l)) { l.setStyle(LROUTE); highlightedLakes.push(l); }
+  }
+}
+
+const reaches = L.layerGroup().addTo(map);
+for (const rid in DATA.reaches) {
+  const rc = DATA.reaches[rid];
+  for (const line of rc.lines) {
+    L.polyline(line, { color: '#41b6c4', weight: 2, opacity: .75 })
+      .bindTooltip((rc.n || 'unnamed waterway') + ' (reach)', { sticky: true })
+      .addTo(reaches);
+  }
+}
+
+const PORTAGE_BASE = { color: '#b35c00', weight: 3, dashArray: '6 5', opacity: .9 };
+const PORTAGE_ROUTE = { color: '#e07b00', weight: 5, opacity: 1 };
+const portageLayers = {};   // osm way id -> its leaflet layer
+const portages = L.geoJSON({ type: 'FeatureCollection', features:
+  DATA.edges.filter(e => e.k === 'portage').map(e => ({
+    type: 'Feature',
+    geometry: { type: 'LineString', coordinates: e.g },
+    properties: { m: e.m, n: e.n, o: e.o, oid: e.id }
+  }))
+}, {
+  renderer: L.canvas({ padding: 0.3 }),
+  style: () => PORTAGE_BASE,
+  onEachFeature: (f, l) => {
+    const p = f.properties;
+    portageLayers[p.oid] = l;
+    const warn = p.o && p.o.length ? ` ⚠ ${p.o.join(', ')}` : '';
+    l.bindTooltip(`P ${p.m} m${warn}`, { sticky: true });
+    l.bindPopup(`<b>Portage — ${p.m} m</b>${p.n ? '<br>' + p.n : ''}${warn ? '<br>⚠ obstacles nearby: ' + p.o.join(', ') : ''}`);
+  }
+}).addTo(map);
+let highlightedPortages = [];
+function highlightPortages(osmIds) {
+  highlightedPortages.forEach(l => l.setStyle(PORTAGE_BASE));
+  highlightedPortages = [];
+  for (const oid of osmIds) {
+    const l = portageLayers[oid];
+    if (l && !highlightedPortages.includes(l)) { l.setStyle(PORTAGE_ROUTE); highlightedPortages.push(l); }
+  }
+}
+
+const routeLayer = L.layerGroup().addTo(map);
+
+// official access points (numbered #1–#29)
+const aps = L.layerGroup().addTo(map);
+for (const ap of DATA.official) {
+  L.marker([ap.lat, ap.lon], {
+    icon: L.divIcon({ className: 'ap-badge', html: `<span>${ap.num}</span>`, iconSize: [26, 20] })
+  })
+    .bindTooltip(`Access Point #${ap.num}: ${ap.name.replace(/^Access Point #\d+: /, '')}`, { direction: 'top' })
+    .bindPopup(`<b>Access Point #${ap.num}</b><br>${ap.name.replace(/^Access Point #\d+: /, '')}${ap.approx ? '<br><span style="color:#889">launch position approximate — see official map</span>' : ''}
+      <br><button data-act="0" data-id="${ap.id}" data-name="${ap.name}">Set as start</button>
+      <button data-act="end" data-id="${ap.id}" data-name="${ap.name}">Set as destination</button>`)
+    .addTo(aps);
+}
+
+// ---------- point rows ----------
+const pointsBox = document.getElementById('points');
+const rows = [];   // { wrapper, input }
+function makeRow(label, removable) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'field';
+  wrapper.innerHTML = `<label>${label}</label>
+    <input autocomplete="off" placeholder="type a lake, river or access point…"/>
+    <div class="ac"></div>
+    ${removable ? '<button class="rm" title="remove stop">✕</button>' : ''}`;
+  const input = wrapper.querySelector('input');
+  attachAC(input, wrapper.querySelector('.ac'));
+  const row = { wrapper: wrapper, input: input };
+  if (removable) {
+    wrapper.querySelector('.rm').onclick = () => {
+      const k = rows.indexOf(row);
+      if (k >= 0) rows.splice(k, 1);
+      wrapper.remove();
+    };
+  }
+  return row;
+}
+function initRows() {
+  rows.length = 0;
+  pointsBox.innerHTML = '';
+  const from = makeRow('From');
+  const to = makeRow('Destination');
+  rows.push(from, to);
+  pointsBox.appendChild(from.wrapper);
+  pointsBox.appendChild(to.wrapper);
+}
+function addStop() {
+  if (rows.length >= 7) return;
+  const row = makeRow('Stop ' + (rows.length - 1), true);
+  rows.splice(rows.length - 1, 0, row);
+  pointsBox.insertBefore(row.wrapper, rows[rows.length - 1].wrapper);
+  // renumber stop labels
+  for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
+  row.input.focus();
+}
+function attachAC(input, ac) {
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { ac.style.display = 'none'; return; }
+    const hits = idx.search.filter(s => s.name.toLowerCase().includes(q)).slice(0, 12);
+    if (!hits.length) { ac.style.display = 'none'; return; }
+    ac.innerHTML = '';
+    for (const h of hits) {
+      const d = document.createElement('div');
+      d.innerHTML = `${h.name}<span class="k">${h.kind}</span>`;
+      d.onclick = () => {
+        input.value = h.name;
+        input.dataset.id = h.id;
+        ac.style.display = 'none';
+      };
+      ac.appendChild(d);
+    }
+    ac.style.display = 'block';
+  }
+  input.addEventListener('input', render);
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', () => setTimeout(() => { ac.style.display = 'none'; }, 150));
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') {
+      const first = ac.querySelector('div');
+      if (first) first.click();
+    }
+  });
+}
+initRows();
+document.getElementById('addStop').onclick = addStop;
+document.getElementById('swap').onclick = () => {
+  const vals = rows.map(r => ({ v: r.input.value, id: r.input.dataset.id })).reverse();
+  rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; });
+};
+
+function setField(which, id) {   // which: row index or 'end'
+  const k = which === 'end' ? rows.length - 1 : Number(which);
+  const node = idx.nodeById.get(id);
+  if (!node || !rows[k]) return;
+  rows[k].input.value = node.name || 'unnamed water #' + id;
+  rows[k].input.dataset.id = id;
+}
+
+map.on('popupopen', ev => {
+  ev.popup.getElement().querySelectorAll('button[data-act]').forEach(b => {
+    b.onclick = () => setField(b.dataset.act, Number(b.dataset.id));
+  });
+});
+
+// ---------- directions ----------
+const modeLabel = m => ({
+  carries: 'fewest carries', meters: 'least total carrying',
+  conservative: 'portages only', edges: 'fewest steps'
+}[m] || m);
+
+function drawRoute(opt, pointIds) {
+  routeLayer.clearLayers();
+  highlightLakes(opt.res.nodeIds);
+  highlightPortages(opt.res.legs.filter(e => e.k === 'portage').map(e => e.id));
+  const res = opt.res;
+  let segCount = 0;
+  function addLine(coords, style) {
+    const latlngs = coords.map(c => [c[1], c[0]]);   // GeoJSON [lon,lat] -> Leaflet [lat,lng]
+    L.polyline(latlngs, { renderer: routeRenderer, ...style, color: '#ffffff', weight: style.weight + 4, opacity: .9 }).addTo(routeLayer);
+    L.polyline(latlngs, { renderer: routeRenderer, ...style }).addTo(routeLayer);
+    for (const c of coords) pts.push(L.latLng(c[1], c[0]));
+    segCount++;
+  }
+  const nameOf = id => {
+    const n = idx.nodeById.get(id);
+    return n.name || 'unnamed water #' + id;
+  };
+  const grouped = [];
+  for (let i = 1; i < res.nodeIds.length; i++) {
+    grouped.push({ from: res.nodeIds[i - 1], to: res.nodeIds[i], e: res.legs[i - 1] });
+  }
+  const anchorIn = [], anchorOut = [];
+  grouped.forEach((g, i) => {
+    if (g.e.g) {
+      anchorOut[i] = g.e.g[0];
+      anchorIn[i + 1] = g.e.g[g.e.g.length - 1];
+    }
+  });
+  const pts = [];
+  const stops = (pointIds || []).slice(1, -1);
+  let stepNo = 0;
+  let carryNo = 0;
+  let html = '';
+  for (let i = 0; i < grouped.length; i++) {
+    const g = grouped[i], e = g.e;
+    stepNo++;
+    const stepTag = `<span class="n">${stepNo}</span>`;
+    if (e.k === 'portage') {
+      carryNo++;
+      addLine(e.g, { color: '#d95f02', weight: 7, opacity: .95 });
+      const fromN = idx.nodeById.get(g.from);
+      const d0 = (e.g[0][0] - fromN.lon) ** 2 + (e.g[0][1] - fromN.lat) ** 2;
+      const d1 = (e.g[e.g.length - 1][0] - fromN.lon) ** 2 + (e.g[e.g.length - 1][1] - fromN.lat) ** 2;
+      const bp = d0 <= d1 ? e.g[0] : e.g[e.g.length - 1];
+      L.marker([bp[1], bp[0]], {
+        icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
+      }).addTo(routeLayer);
+      html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
+    } else if (e.k === 'access') {
+      if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
+      const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
+      html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${dir}${nameOf(e.s >= 1000000000000 ? e.s : e.d)}</span></div></div>`;
+    } else {
+      if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
+      const reachId = e.d < 0 ? e.d : e.s;
+      const nxt = grouped[i + 1];
+      const nextIsSameReach = nxt && nxt.e.k === 'river' && nxt.e.g && nxt.e.g.length >= 2 &&
+        ((nxt.e.s === reachId || nxt.e.d === reachId));
+      if (e.k === 'river' && nextIsSameReach && DATA.reaches[reachId]) {
+        const reachPt = e.g[e.g.length - 1];
+        const slice = Router.reachSlice(DATA.reaches[reachId].lines, reachPt, nxt.e.g[nxt.e.g.length - 1]);
+        if (slice && slice.length >= 2) {
+          addLine(slice, { color: '#1f78b4', weight: 6, opacity: .95 });
+          const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
+          html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
+          i++;
+          continue;
+        }
+      }
+      const label = e.k === 'channel' ? 'Paddle across the narrows' : 'Paddle';
+      if (e.k === 'channel' && e.g && lakeGeoms[g.from] && lakeGeoms[g.to]) {
+        const union = { type: 'MultiPolygon',
+          coordinates: [...lakeGeoms[g.from], ...lakeGeoms[g.to]] };
+        let cpath = Router.lakePath(e.g[0], e.g[1], union);
+        if (cpath) cpath = Router.refinePath(cpath, union, 40);
+        if (cpath) { addLine(cpath, { color: '#1f78b4', weight: 6, opacity: .95 }); continue; }
+      }
+      html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">via ' + e.n + '</span>' : ''}</div></div>`;
+    }
+    // waypoint divider
+    if (stops.length && stops.indexOf(g.to) >= 0) {
+      html += `<div class="wp">Reached stop: ${nameOf(g.to)}</div>`;
+      L.marker([idx.nodeById.get(g.to).lat, idx.nodeById.get(g.to).lon], {
+        icon: L.divIcon({ className: 'wp-badge', html: `<span>${stops.indexOf(g.to) + 1}</span>`, iconSize: [22, 22] })
+      }).addTo(routeLayer);
+    }
+  }
+  // across-water traversal: connect each intermediate node's landing to its take-out
+  for (let j = 1; j < res.nodeIds.length - 1; j++) {
+    const a1 = anchorIn[j], a2 = anchorOut[j];
+    const node = idx.nodeById.get(res.nodeIds[j]);
+    const feat = lakeGeoms[res.nodeIds[j]];
+    let path = feat ? Router.lakePath(a1, a2, feat) : null;
+    if (!a1 || !a2 || !node || node.kind === 'reach') continue;
+    if (path) {
+      path = Router.refinePath(path, feat, 40);
+      addLine(path, { color: '#1f78b4', weight: 6, opacity: .95 });
+    } else if (a1[0] === a2[0] && a1[1] === a2[1]) {
+      continue;
+    } else {
+      addLine([a1, a2], { color: '#1f78b4', weight: 6, opacity: .95 });
+    }
+  }
+  legsEl.innerHTML = html;
+  if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [40, 40] });
+  legsEl.querySelectorAll('.leg-zoom').forEach(el => {
+    el.onclick = () => {
+      const i = Number(el.dataset.i);
+      const g = grouped[i];
+      if (g && g.e.g) map.fitBounds(L.latLngBounds(g.e.g.map(c => L.latLng(c[1], c[0]))), { padding: [80, 80] });
+    };
+  });
+  const s0 = idx.nodeById.get(res.nodeIds[0]);
+  const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
+  L.circleMarker([s0.lat, s0.lon], { renderer: routeRenderer, radius: 8, color: '#00441b', fillColor: '#238b45', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
+  L.circleMarker([s1.lat, s1.lon], { renderer: routeRenderer, radius: 8, color: '#7f0000', fillColor: '#cb181d', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
+  return segCount;
+}
+
+let currentOptions = [];
+let selectedOption = 0;
+const summaryEl = document.getElementById('summary');
+const warnbox = document.getElementById('warnbox');
+const legsEl = document.getElementById('legs');
+const optionsEl = document.getElementById('options');
+let currentPoints = [];
+
+function renderOptionsPanel() {
+  if (!currentOptions.length) { optionsEl.innerHTML = ''; return; }
+  let cards = '';
+  const nameOf = id => { const n = idx.nodeById.get(id); return n.name || null; };
+  currentOptions.forEach((o, i) => {
+    const via = o.res.nodeIds.map(nameOf).filter(nm => nm).slice(1, 4).join(' → ');
+    cards += `<div class="optcard ${i === selectedOption ? 'sel' : ''}" data-i="${i}">
+      <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m</div>
+      <div class="m">${modeLabel(o.mode)} · ${o.res.edges} steps · via ${via}${o.res.nodeIds.length > 5 ? '…' : ''}</div></div>`;
+  });
+  optionsEl.innerHTML = cards;
+  optionsEl.querySelectorAll('.optcard').forEach(c => {
+    c.onclick = () => {
+      selectedOption = Number(c.dataset.i);
+      renderOptionsPanel();
+      const o = currentOptions[selectedOption];
+      const segs = drawRoute(o, currentPoints);
+      summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${segs} segments drawn`;
+    };
+  });
+}
+
+document.getElementById('go').onclick = () => {
+  const goBtn = document.getElementById('go');
+  try {
+    goBtn.textContent = 'Routing…';
+    const pointIds = rows.map(r => (r.input.dataset.id ? Number(r.input.dataset.id) : null));
+    if (pointIds.some(x => !x)) {
+      summaryEl.textContent = 'Fill in every point (or remove empty stops).';
+      legsEl.innerHTML = ''; optionsEl.innerHTML = '';
+      routeLayer.clearLayers();
+      return;
+    }
+    const avoid = document.getElementById('avoid').checked;
+    const mode = document.getElementById('mode').value;
+    const options = Router.chainRoutes(DATA, idx, pointIds, mode, avoid, 3);
+    if (!options.length) {
+      summaryEl.textContent = 'No route found for at least one leg of the trip.';
+      warnbox.style.display = 'block';
+      warnbox.textContent = 'OSM coverage has gaps (some portages are unmapped). Try other points or uncheck obstacle avoidance.';
+      legsEl.innerHTML = ''; optionsEl.innerHTML = '';
+      routeLayer.clearLayers();
+      return;
+    }
+    warnbox.style.display = 'none';
+    currentOptions = options;
+    currentPoints = pointIds;
+    selectedOption = 0;
+    renderOptionsPanel();
+    const segs = drawRoute(options[0], pointIds);
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · ${segs} segments drawn`;
+  } catch (err) {
+    warnbox.style.display = 'block';
+    warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
+    console.error(err);
+  } finally {
+    goBtn.textContent = 'Directions';
+  }
+};
+
+// initial view around Canoe Lake
+map.setView(DATA.center, 12);
+</script>
+</body>
+</html>

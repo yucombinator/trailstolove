@@ -5,3 +5,10 @@ public
 resources
 exampleSite/assets/css/dist
 exampleSite/package-lock.json
+# Algonquin map: built artifact kept as content/algonquin/app.html only
+content/algonquin/index.html
+
+tools/algonquin-graph/raw/
+tools/algonquin-graph/algonquin.duckdb
+tools/algonquin-graph/__pycache__/
+.DS_Store
