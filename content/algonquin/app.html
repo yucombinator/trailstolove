@@ -324,19 +324,23 @@ L.control.layers({ 'OpenTopoMap (terrain)': topoTiles, 'Light (CARTO)': cartoTil
 
 map.createPane('routePane');
 map.getPane('routePane').style.zIndex = 450;
+map.getPane('routePane').style.pointerEvents = 'none';
 const routeRenderer = L.canvas({ pane: 'routePane', padding: 0.3 });
 
+const vecRenderer = L.canvas({ padding: 0.3 });   // ONE canvas: lakes+reaches+roads+portages share hit-testing
 const LBASE = { color: '#2f6ea8', weight: 1.2, fillColor: '#9ecae9', fillOpacity: .8 };
 const LROUTE = { color: '#1a6db3', weight: 3, fillColor: '#ffd54f', fillOpacity: .85 };
 const lakeLayers = {};   // every member way id -> its leaflet layer
 const lakeGeoms = {};    // every member way id -> its geometry
 const lakes = L.geoJSON(DATA.lakes, {
-  renderer: L.canvas({ padding: 0.3 }),
+  renderer: vecRenderer,
   style: () => LBASE,
   onEachFeature: (f, l) => {
     const p = f.properties;
     for (const id of (p.ids || [p.osm_id])) { lakeLayers[id] = l; lakeGeoms[id] = f.geometry; }
-    l.bindTooltip(`<b>${p.name || 'unnamed water'}</b><span class="tt-k">${p.kind || ''}</span>`, { sticky: true });
+    // unnamed polygons don't soak up hovers — the named lake underneath wins
+    l.options.interactive = !!p.name;
+    if (p.name) l.bindTooltip(`<b>${p.name}</b><span class="tt-k">${p.kind || ''}</span>`, { sticky: true });
     l.bindPopup(`<b>${p.name || 'unnamed water'}</b><br>kind: ${p.kind}<br>area: ${p.area_ha} ha
       <br><button data-act="0" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as start</button>
       <button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>`);
@@ -356,7 +360,7 @@ const reaches = L.layerGroup().addTo(map);
 for (const rid in DATA.reaches) {
   const rc = DATA.reaches[rid];
   for (const line of rc.lines) {
-    L.polyline(line, { color: '#41b6c4', weight: 2, opacity: .75 })
+    L.polyline(line, { renderer: vecRenderer, color: '#41b6c4', weight: 2, opacity: .75 })
       .bindTooltip((rc.n || 'unnamed waterway') + ' (reach)', { sticky: true })
       .addTo(reaches);
   }
@@ -372,7 +376,7 @@ if (DATA.roads) {
     properties: {}
   })) }, {
     renderer: L.canvas({ padding: 0.3 }),
-    style: () => ({ color: '#8a6d4e', weight: 4, opacity: .6 }),
+    style: () => ({ renderer: vecRenderer, color: '#7a5f3f', weight: 4, opacity: .85 }),
     onEachFeature: (f, l) => l.bindTooltip(DATA.roads.name, { sticky: true })
   }).addTo(map);
 }
@@ -386,7 +390,7 @@ const portages = L.geoJSON({ type: 'FeatureCollection', features:
     properties: { m: e.m, n: e.n, o: e.o, oid: e.id }
   }))
 }, {
-  renderer: L.canvas({ padding: 0.3 }),
+  renderer: vecRenderer,
   style: () => PORTAGE_BASE,
   onEachFeature: (f, l) => {
     const p = f.properties;
