@@ -6,78 +6,124 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
+  :root {
+    --canvas: #f5f4ed; --surface: #fffef8; --surface-raised: rgba(255,254,248,.93);
+    --ink: #18362d; --ink-muted: #60756d; --line: #d9ddd3;
+    --accent: #176b4a; --accent-strong: #0c5237; --accent-soft: #dceadd;
+    --paddle: #1f78b4; --carry: #d95f02; --danger: #b30000;
+    --shadow: 0 12px 36px rgba(25,55,45,.14);
+  }
   html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, "Segoe UI", sans-serif; }
-  #map { position: absolute; inset: 0; }
+  #map { position: absolute; inset: 0; background: #eef2ec; }
+  /* faded basemap: desaturate + lift the tiles so the lake polygons pop */
+  .leaflet-tile-pane { opacity: .72; filter: saturate(.55) contrast(.88) brightness(1.04); }
   .side {
-    position: absolute; top: 0; left: 0; bottom: 0; width: 350px; z-index: 1000;
-    background: #fff; box-shadow: 2px 0 10px rgba(0,0,0,.25);
+    position: absolute; top: 0; left: 0; bottom: 0; width: 356px; z-index: 1000;
+    background: var(--surface); border-right: 1px solid var(--line);
+    box-shadow: var(--shadow);
     display: flex; flex-direction: column;
+    overflow-y: auto;
   }
-  .side h1 { font-size: 15px; margin: 12px 14px 2px; }
-  .side .sub { color: #667; margin: 0 14px 8px; font-size: 11px; }
+  .side-header { display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px 16px; border-bottom: 1px solid var(--line); }
+  .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); }
+  .brand-mark { width: 40px; height: 40px; border-radius: 50%; background: var(--accent);
+    color: var(--surface); display: grid; place-items: center; }
+  .brand-mark svg { width: 26px; height: 26px; }
+  .brand-name { display: block; font: 700 18px/1.05 Georgia, "Times New Roman", serif; }
+  .brand-sub { display: block; margin-top: 3px; color: var(--ink-muted);
+    font: 700 10px/1.05 -apple-system, "Segoe UI", sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+  .side-intro { padding: 14px 22px 12px; border-bottom: 1px solid var(--line); }
+  .eyebrow { margin: 0 0 8px; color: var(--accent); font: 800 10px/1 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .18em; text-transform: uppercase; }
+  .side-intro h1 { margin: 0; font: 500 20px/1.12 Georgia, "Times New Roman", serif;
+    letter-spacing: -.02em; color: var(--ink); }
+  .intro-copy { margin: 7px 0 10px; max-width: 300px; color: var(--ink-muted);
+    font: 12.5px/1.45 Georgia, "Times New Roman", serif; }
+  .chip { display: inline-flex; align-items: baseline; gap: 7px; padding: 7px 11px;
+    background: var(--accent-soft); color: var(--accent-strong); border-radius: 4px;
+    font: 800 10px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+  .chip b { font: 700 15px/1 Georgia, serif; letter-spacing: 0; }
+  .side-section { padding: 10px 22px 12px; border-bottom: 1px solid var(--line); }
+  .side-section.grow { padding-bottom: 8px; }
   #points { margin: 2px 0; }
-  .field { position: relative; margin: 6px 14px; }
-  .field label { font-size: 11px; color: #445; font-weight: 600; }
+  .field { position: relative; margin: 6px 0; }
+  .field label { font: 700 10px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-muted); }
   .field input {
-    width: 100%; box-sizing: border-box; padding: 7px 30px 7px 9px; font-size: 13px;
-    border: 1px solid #bbb; border-radius: 6px;
+    width: 100%; box-sizing: border-box; margin-top: 3px; padding: 7px 30px 7px 10px; font-size: 13px;
+    color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    outline: none;
   }
+  .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .field .rm {
-    position: absolute; right: 6px; top: 55%; transform: translateY(-40%);
-    border: 0; background: #eee; color: #666; border-radius: 50%;
+    position: absolute; right: 7px; bottom: 9px;
+    border: 0; background: var(--accent-soft); color: var(--accent-strong); border-radius: 50%;
     width: 20px; height: 20px; cursor: pointer; font-size: 11px; line-height: 1;
   }
   .ac {
-    position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1200;
-    border: 1px solid #bbb; border-top: 0; max-height: 240px; overflow: auto;
-    box-shadow: 0 4px 10px rgba(0,0,0,.15); display: none;
+    position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); z-index: 1200;
+    border: 1px solid var(--line); border-top: 0; max-height: 240px; overflow: auto;
+    box-shadow: var(--shadow); display: none; border-radius: 0 0 6px 6px;
   }
-  .ac div { padding: 6px 9px; cursor: pointer; }
-  .ac div:hover { background: #eef4fb; }
-  .ac .k { color: #889; font-size: 10px; margin-left: 6px; }
-  .tools { display: flex; gap: 10px; margin: 2px 14px; }
+  .ac div { padding: 7px 10px; cursor: pointer; }
+  .ac div:hover { background: var(--accent-soft); }
+  .ac .k { color: var(--ink-muted); font-size: 10px; margin-left: 6px; }
+  .tools { display: flex; gap: 8px; margin: 10px 0 2px; }
   .tools button, .opts select {
-    font-size: 12px; padding: 5px 8px; border: 1px solid #bbb; border-radius: 6px;
-    background: #fff; cursor: pointer;
+    font: 700 11px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .04em;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--surface); color: var(--accent-strong); cursor: pointer;
   }
+  .tools button:hover, .opts select:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .opts { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .opts select { flex: 1; min-width: 0; }
+  .opts .avoid { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; color: var(--ink-muted); white-space: nowrap; }
   .go {
-    display: block; width: calc(100% - 28px); margin: 8px 14px 2px;
-    padding: 10px; font-size: 14px; font-weight: 700; letter-spacing: .3px;
-    background: #1a6db3; color: #fff; border: 0; border-radius: 8px; cursor: pointer;
-    box-shadow: 0 2px 6px rgba(26,109,179,.35);
+    display: block; width: 100%; margin-top: 10px;
+    padding: 10px; font: 800 13px/1 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .06em; text-transform: uppercase;
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(23,107,74,.35);
   }
-  .go:hover { background: #155d99; }
-  #options { margin: 6px 14px 0; }
+  .go:hover { background: var(--accent-strong); }
+  #options { margin-top: 2px; }
   .optcard {
-    border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
-    cursor: pointer;
+    border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; margin-bottom: 7px;
+    cursor: pointer; background: var(--surface);
   }
-  .optcard:hover { background: #f4f8fc; }
-  .optcard.sel { border-color: #1a6db3; background: #eef4fb; box-shadow: 0 0 0 1px #1a6db3 inset; }
-  .optcard .t { font-weight: 700; }
-  .optcard .m { color: #667; font-size: 11px; }
-  #summary { margin: 4px 14px 2px; font-size: 12px; color: #333; }
-  #legs { overflow: auto; flex: 1; margin: 4px 14px 12px; border-top: 1px solid #eee; }
-  .leg { padding: 7px 4px; border-bottom: 1px solid #f2f2f2; display: flex; gap: 7px; }
-  .leg .n { color: #98a; min-width: 20px; text-align: right; font-weight: 600; }
-  .leg .b { flex: 1; }
-  .leg .p { color: #b35c00; font-weight: 600; }
-  .leg .r { color: #1f78b4; }
-  .leg .warn { color: #b30000; font-size: 11px; }
-  .wpdiv { margin: 5px 4px; padding: 6px 9px; background: #eef4fb; color: #14538c;
-    border: 1px solid #cfe1f2; border-radius: 6px; font-weight: 600; }
+  .optcard:hover { background: #f6f9f3; }
+  .optcard.sel { border-color: var(--accent); background: #eef6ef; box-shadow: 0 0 0 1px var(--accent) inset; }
+  .optcard .t { font-weight: 700; color: var(--ink); }
+  .optcard .m { color: var(--ink-muted); font-size: 11px; }
+  #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
+  #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
+  .wp { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
+    border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
+  .leg { padding: 8px 4px; border-bottom: 1px solid #eef0ea; display: flex; gap: 8px; }
+  .leg .n { color: var(--ink-muted); min-width: 20px; text-align: right; font-weight: 700; }
+  .leg .b { flex: 1; color: var(--ink); }
+  .leg .p { color: var(--carry); font-weight: 600; }
+  .leg .r { color: var(--paddle); }
+  .leg .warn { color: var(--danger); font-size: 11px; }
+  .wpdiv { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
+    border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
   .warnbox {
-    margin: 6px 14px 0; padding: 7px 9px; background: #fdf2f2; color: #b30000;
-    border: 1px solid #f3cccc; border-radius: 6px; font-size: 12px; display: none;
+    margin: 6px 0 0; padding: 8px 10px; background: #fdf2f2; color: var(--danger);
+    border: 1px solid #f3cccc; border-radius: 4px; font-size: 12px; display: none;
   }
   .legend {
-    position: absolute; bottom: 12px; right: 12px; z-index: 1000; background: rgba(255,255,255,.95);
-    padding: 8px 11px; border-radius: 8px; font-size: 11px; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    position: absolute; bottom: 14px; right: 14px; z-index: 1000; background: var(--surface-raised);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 8px 11px; font: 800 10px/1.7 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink);
+    box-shadow: var(--shadow);
   }
   .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
-  .sw.portage { border-style: dashed; border-color: #b35c00; }
+  .sw.portage { border-style: dashed; border-color: var(--carry); }
   .sw.reach { border-color: #41b6c4; }
-  .sw.route { border-color: #d95f02; border-style: solid; border-width: 5px; height: 0; }
+  .sw.route { border-color: var(--carry); border-style: solid; border-width: 5px; height: 0; }
   .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
   .carry-badge span, .wp-badge span {
     display: flex; align-items: center; justify-content: center;
@@ -85,43 +131,74 @@
     color: #fff; font-size: 12px; font-weight: 700;
     border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
-  .carry-badge span { background: #d95f02; }
-  .wp-badge span { background: #1a6db3; }
+  .carry-badge span { background: var(--carry); }
+  .wp-badge span { background: var(--paddle); }
   .ap-badge span {
     display: flex; align-items: center; justify-content: center;
     min-width: 24px; height: 20px; padding: 0 3px;
-    background: #fff; color: #14538c; font-size: 11px; font-weight: 700;
-    border: 2px solid #1a6db3; border-radius: 6px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    background: var(--surface); color: var(--accent-strong); font-size: 11px; font-weight: 700;
+    border: 2px solid var(--accent); border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
   }
   .leg-zoom { cursor: pointer; }
-  .leg-zoom:hover { background: #eef4fb; }
+  .leg-zoom:hover { background: #f2f7f1; }
+  .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
+    color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
+  .side-footer p { margin: 0 0 6px; }
+  .side-footer .meta { display: block; letter-spacing: .04em; }
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div class="side">
-  <h1>Algonquin canoe routes — directions</h1>
-  <div class="sub">Graph from OpenStreetMap + official Algonquin data. Page built: <b id="bts">?</b>. Type or click a lake to plan; add stops for multi-day routes.</div>
-  <div id="points"></div>
-  <div class="tools">
-    <button id="addStop">+ add stop</button>
-    <button id="swap" title="reverse route">⇅ reverse</button>
+  <header class="side-header">
+    <span class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" role="img" fill="currentColor">
+          <path d="M4 19.5c4.2 1.8 19.8 1.8 24 0l-2.8 5.5H6.8L4 19.5Z"/>
+          <path d="M11 12.5h4.5l1.2 6H9.8l1.2-6Zm8 0h3.4l1.6 6H17.8l1.2-6Z" opacity=".85"/>
+          <path d="M6 28c2.6-1.1 4.6-1.1 7.2 0 2.5 1.1 4.6 1.1 7.2 0 2.5-1.1 4.5-1.1 7 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Algonquin</span>
+        <span class="brand-sub">Canoe Route Map</span>
+      </span>
+    </span>
+  </header>
+  <div class="side-intro">
+    <p class="eyebrow">Plan your trip</p>
+    <h1>Find your way across the water.</h1>
+    <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in the park.</p>
+    <div class="chip" id="stats">loading&hellip;</div>
   </div>
-  <div class="opts">
-    <select id="mode">
-      <option value="carries">fewest carries</option>
-      <option value="meters">least total carrying</option>
-      <option value="conservative">portages only (no river paddling)</option>
-      <option value="edges">fewest steps</option>
-    </select>
-    <label style="font-size:11px"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
-  </div>
-  <button class="go" id="go">Directions</button>
-  <div id="options"></div>
-  <div id="summary"></div>
-  <div class="warnbox" id="warnbox"></div>
-  <div id="legs"></div>
+  <section class="side-section">
+    <div id="points"></div>
+    <div class="tools">
+      <button id="addStop">+ add stop</button>
+      <button id="swap" title="reverse route">&#8645; reverse</button>
+    </div>
+    <div class="opts">
+      <select id="mode">
+        <option value="carries">fewest carries</option>
+        <option value="meters">least total carrying</option>
+        <option value="conservative">portages only (no river paddling)</option>
+        <option value="edges">fewest steps</option>
+      </select>
+      <label class="avoid"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
+    </div>
+    <button class="go" id="go">Directions</button>
+  </section>
+  <section class="side-section grow">
+    <div id="options"></div>
+    <div id="summary"></div>
+    <div class="warnbox" id="warnbox"></div>
+    <div id="legs"></div>
+  </section>
+  <footer class="side-footer">
+    <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
+    <span class="meta">Built <b id="bts">?</b></span>
+  </footer>
 </div>
 <div class="legend">
   <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach</div>
@@ -133,6 +210,12 @@
 const DATA = __DATA__;
 const idx = Router.buildIndex(DATA);
 document.getElementById('bts').textContent = document.lastModified;
+{
+  const nLakes = DATA.nodes.filter(n => n[2] === 'lake').length;
+  const nPort = new Set(DATA.edges.filter(e => e.k === 'portage').map(e => e.id)).size;
+  const el = document.getElementById('stats');
+  if (el) el.innerHTML = `<b>${nLakes.toLocaleString('en-CA')}</b> lakes &middot; <b>${nPort.toLocaleString('en-CA')}</b> portages`;
+}
 if (!document.getElementById('go')) {   // self-heal: recreate the Directions button if absent
   const btn = document.createElement('button');
   btn.id = 'go'; btn.className = 'go'; btn.textContent = 'Directions';
@@ -156,7 +239,7 @@ map.createPane('routePane');
 map.getPane('routePane').style.zIndex = 450;
 const routeRenderer = L.canvas({ pane: 'routePane', padding: 0.3 });
 
-const LBASE = { color: '#3182bd', weight: 1, fillColor: '#a6cee3', fillOpacity: .5 };
+const LBASE = { color: '#2f6ea8', weight: 1.2, fillColor: '#9ecae9', fillOpacity: .8 };
 const LROUTE = { color: '#1a6db3', weight: 3, fillColor: '#ffd54f', fillOpacity: .85 };
 const lakeLayers = {};   // every member way id -> its leaflet layer
 const lakeGeoms = {};    // every member way id -> its geometry
