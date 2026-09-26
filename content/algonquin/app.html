@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Algonquin Canoe Routes — interactive trip planner</title>
+<title>Algonquin Planner — canoe route planner for Algonquin Provincial Park</title>
 <meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least portage distance, or portages only."/>
 <link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
-<meta property="og:title" content="Algonquin Canoe Routes"/>
+<meta property="og:title" content="Algonquin Planner — Canoe Route Planner"/>
 <meta property="og:description" content="Point-to-point paddling directions across Algonquin Provincial Park — every named lake, portage and river."/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://hikewithyu.com/algonquin/"/>
@@ -243,8 +243,8 @@
         </svg>
       </span>
       <span class="brand-text">
-        <span class="brand-name">Algonquin</span>
-        <span class="brand-sub">Canoe Route Map</span>
+        <span class="brand-name">Algonquin Planner</span>
+        <span class="brand-sub">Canoe Route Planner</span>
       </span>
     </span>
   </header>
@@ -330,10 +330,10 @@
   <div><span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790464154"></script>
+<script src="router.js?v=1790465266"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790464154')
+fetch('router_data.json?v=1790465266')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -775,7 +775,7 @@ document.getElementById('go').onclick = () => {
     goBtn.textContent = 'Routing…';
     const pointIds = rows.map(r => (r.input.dataset.id ? Number(r.input.dataset.id) : null));
     if (pointIds.some(x => !x)) {
-      summaryEl.textContent = 'Fill in every point (or remove empty stops).';
+      summaryEl.textContent = 'Pick a start and destination — type a name or click a lake on the map.';
       legsEl.innerHTML = ''; optionsEl.innerHTML = '';
       routeLayer.clearLayers();
       return;
@@ -784,9 +784,13 @@ document.getElementById('go').onclick = () => {
     const mode = document.getElementById('mode').value;
     const options = Router.chainRoutes(DATA, idx, pointIds, mode, avoid, 3);
     if (!options.length) {
-      summaryEl.textContent = 'No route found for at least one leg of the trip.';
+      summaryEl.textContent = 'No route found between those points.';
       warnbox.style.display = 'block';
-      warnbox.textContent = 'OSM coverage has gaps (some portages are unmapped). Try other points or uncheck obstacle avoidance.';
+      warnbox.innerHTML = `<b>Couldn't connect these waters.</b><br>
+        Usually this means a portage or creek between them isn't mapped in OpenStreetMap yet,
+        or "avoid flagged obstacles" removed the only link.<br>
+        Try: access points or bigger lakes instead of small ponds, turn obstacle avoidance off,
+        or add a stop along the way.`;
       legsEl.innerHTML = ''; optionsEl.innerHTML = '';
       routeLayer.clearLayers();
       return;
