@@ -363,13 +363,13 @@ function drawRoute(opt, pointIds) {
   });
   const pts = [];
   const stops = (pointIds || []).slice(1, -1);
-  let stepNo = 0;
   let carryNo = 0;
   let html = '';
-  for (let i = 0; i < grouped.length; i++) {
-    const g = grouped[i], e = g.e;
-    stepNo++;
-    const stepTag = `<span class="n">${stepNo}</span>`;
+  let i = 0;
+  for (let gi = 0; gi < grouped.length; gi++) {
+    const g = grouped[gi], e = g.e;
+    i++;
+    const stepTag = `<span class="n">${i}</span>`;
     if (e.k === 'portage') {
       carryNo++;
       addLine(e.g, { color: '#d95f02', weight: 7, opacity: .95 });
@@ -403,12 +403,17 @@ function drawRoute(opt, pointIds) {
         }
       }
       const label = e.k === 'channel' ? 'Paddle across the narrows' : 'Paddle';
-      if (e.k === 'channel' && e.g && lakeGeoms[g.from] && lakeGeoms[g.to]) {
+      const gf = lakeGeoms[g.from], gt = lakeGeoms[g.to];
+      if (e.k === 'channel' && e.g && gf && gt) {
         const union = { type: 'MultiPolygon',
-          coordinates: [...lakeGeoms[g.from], ...lakeGeoms[g.to]] };
+          coordinates: [...gf.coordinates, ...gt.coordinates] };
         let cpath = Router.lakePath(e.g[0], e.g[1], union);
         if (cpath) cpath = Router.refinePath(cpath, union, 40);
-        if (cpath) { addLine(cpath, { color: '#1f78b4', weight: 6, opacity: .95 }); continue; }
+        if (cpath) {
+          addLine(cpath, { color: '#1f78b4', weight: 6, opacity: .95 });
+          html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}</div></div>`;
+          continue;
+        }
       }
       html += `<div class="leg leg-zoom" data-i="${i}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">via ' + e.n + '</span>' : ''}</div></div>`;
     }

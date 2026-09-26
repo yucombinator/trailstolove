@@ -264,14 +264,14 @@
       for (const ring of rings) {
         for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
           const ax = ring[j][0], ay = ring[j][1];
-          const bx = ring[i][0], by = ring[i][1];
-          const dx = bx - ax, dy = by - ay;
+          const cx = ring[i][0], cy = ring[i][1];
+          const dx = cx - ax, dy = cy - ay;
           const L2 = dx * dx + dy * dy;
           let t = L2 ? ((px - ax) * dx + (py - ay) * dy) / L2 : 0;
           t = Math.max(0, Math.min(1, t));
-          const cx = ax + t * dx, cy = ay + t * dy;
-          const d = Math.hypot(px - cx, py - cy);
-          if (d < bd) { bd = d; bx = cx; by = cy; }
+          const px2 = ax + t * dx, py2 = ay + t * dy;
+          const d = Math.hypot(px - px2, py - py2);
+          if (d < bd) { bd = d; bx = px2; by = py2; }
         }
       }
       if (!isFinite(bd) || bd >= margin) return [px, py];
