@@ -643,8 +643,9 @@ function drawRoute(opt, pointIds) {
       L.marker([bp[1], bp[0]], {
         icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
       }).addTo(routeLayer);
-      // uphill-direction arrow at the middle of the carried portage line
-      if (e.el !== null && e.el !== undefined && Math.abs(e.el) >= 3 && e.g.length >= 2) {
+      // uphill-direction arrow at the middle of the carried portage line —
+      // only when it's actually steep (5%+ grade); flat carries get no arrow
+      if (e.el !== null && e.el !== undefined && e.m > 0 && Math.abs(e.el) / e.m >= 0.05 && e.g.length >= 2) {
         const gp = e.g;
         const k = Math.floor((gp.length - 1) / 2);
         const midPt = gp[k];
