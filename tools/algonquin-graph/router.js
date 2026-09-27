@@ -379,9 +379,52 @@
       for (const ring of allRings) if (inRing(px, py, ring)) n++;
       return n % 2 === 1;
     }
+    // Hit-testing a 1500-vertex ring for every candidate segment is what made
+    // big lakes (Opeongo) fall back to a straight line: pre-simplify the rings
+    // for collision tests, and give each test segment a bounding box.
+    // Collision rings keep enough points to hold the shoreline shape, but the
+    // visibility graph needs density proportional to perimeter: a flat budget
+    // leaves 2.3 km between nodes on a 138 km lake like Opeongo, so the graph
+    // can no longer chain around the shore and the crossing fails outright.
+    const TEST_PTS = 240;
+    function perim(ring) {
+      let s = 0;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        s += Math.hypot((ring[i][0] - ring[j][0]) * 78000, (ring[i][1] - ring[j][1]) * 111320);
+      }
+      return s;
+    }
+    function budget(ring) {
+      // ~150 m per node, clamped to something a browser can chew on
+      return Math.max(48, Math.min(900, Math.round(perim(ring) / 150)));
+    }
+    function simplify(ring, cap) {
+      if (ring.length <= cap) return ring;
+      const step = ring.length / cap;
+      const out = [];
+      for (let i = 0; i < cap; i++) out.push(ring[Math.floor(i * step) % ring.length]);
+      return out;
+    }
+    const testRings = allRings.map(r => simplify(r, Math.max(TEST_PTS, budget(r))));
+    // per-segment bbox: [minx, miny, maxx, maxy]
+    const segBoxes = testRings.map(ring => {
+      const boxes = new Float64Array(ring.length * 4);
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        boxes[i * 4] = Math.min(ring[j][0], ring[i][0]);
+        boxes[i * 4 + 1] = Math.min(ring[j][1], ring[i][1]);
+        boxes[i * 4 + 2] = Math.max(ring[j][0], ring[i][0]);
+        boxes[i * 4 + 3] = Math.max(ring[j][1], ring[i][1]);
+      }
+      return boxes;
+    });
     function blocked(px, py, qx, qy) {
-      for (const ring of allRings) {
+      const lox = Math.min(px, qx), hix = Math.max(px, qx);
+      const loy = Math.min(py, qy), hiy = Math.max(py, qy);
+      for (let ri = 0; ri < testRings.length; ri++) {
+        const ring = testRings[ri], boxes = segBoxes[ri];
         for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const o = i * 4;
+          if (boxes[o] > hix || boxes[o + 2] < lox || boxes[o + 1] > hiy || boxes[o + 3] < loy) continue;
           const a = { x: ring[j][0], y: ring[j][1] };
           const b = { x: ring[i][0], y: ring[i][1] };
           if (segInt({ x: px, y: py }, { x: qx, y: qy }, a, b)) return true;
@@ -390,33 +433,87 @@
       return false;
     }
 
+    // Entry and exit sometimes sit on the same shoreline vertex (a lake you
+    // paddle into and straight back out of). The visibility graph cannot help
+    // there and the inside test on a boundary point is a coin flip, so a
+    // near-zero crossing is simply the two points.
+    const spanM = Math.hypot((B[0] - A[0]) * 78000, (B[1] - A[1]) * 111320);
+    if (spanM < 60) return [A, B];
+
+    // Fast path: on open water the paddler takes a near-straight line. If
+    // nothing obstructs the chord, take it (with a midpoint so refinePath can
+    // still smooth it) and skip the visibility graph entirely.
+    const directOk = !blocked(A[0], A[1], B[0], B[1]) &&
+      insideLake((A[0] + B[0]) / 2, (A[1] + B[1]) / 2);
+    if (directOk) return [A, [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2], B];
+
+    // A dense visibility graph is quadratic; with ~900 nodes on a big lake
+    // that is hundreds of millions of tests and would hang the browser. Keep
+    // the graph to a safe node count, and instead of one global step, do a
+    // two-tier search: coarse graph first, then re-run locally on the arc that
+    // the coarse pass found, where the shoreline detail actually matters.
+    const MAX_NODES = 320;
+    const ringsSorted = testRings.slice().sort((x, y) => y.length - x.length);
+    const perimSorted = ringsSorted.map(perim).sort((a, b) => b - a);
+    const biggest = perimSorted[0] || 1;
+    const cap = Math.max(40, Math.min(MAX_NODES, Math.round(biggest / 150)));
     const nodes = [{ x: A[0], y: A[1] }];
-    for (const ring of allRings) {
-      const step = Math.max(1, Math.ceil(ring.length / 60));
+    for (const ring of testRings) {
+      const step = Math.max(1, Math.ceil(ring.length / cap));
       for (let i = 0; i < ring.length; i += step) nodes.push({ x: ring[i][0], y: ring[i][1] });
     }
     nodes.push({ x: B[0], y: B[1] });
 
-    const n = nodes.length;
-    const dist = new Array(n).fill(Infinity);
-    const prev = new Array(n).fill(-1);
-    dist[0] = 0;
-    const done = new Array(n).fill(false);
-    for (;;) {
-      let u = -1, du = Infinity;
-      for (let i = 0; i < n; i++) if (!done[i] && dist[i] < du) { du = dist[i]; u = i; }
-      if (u === -1 || u === n - 1) break;
-      done[u] = true;
-      for (let v = 0; v < n; v++) {
-        if (done[v]) continue;
-        if (blocked(nodes[u].x, nodes[u].y, nodes[v].x, nodes[v].y)) continue;
-        const mx = (nodes[u].x + nodes[v].x) / 2, my = (nodes[u].y + nodes[v].y) / 2;
-        if (!insideLake(mx, my)) continue;
-        const d = Math.hypot(nodes[v].x - nodes[u].x, nodes[v].y - nodes[u].y);
-        if (du + d < dist[v]) { dist[v] = du + d; prev[v] = u; }
+    function search() {
+      const n = nodes.length;
+      const dist = new Array(n).fill(Infinity);
+      const prev = new Array(n).fill(-1);
+      dist[0] = 0;
+      const done = new Array(n).fill(false);
+      for (;;) {
+        let u = -1, du = Infinity;
+        for (let i = 0; i < n; i++) if (!done[i] && dist[i] < du) { du = dist[i]; u = i; }
+        if (u === -1 || u === n - 1) break;
+        done[u] = true;
+        for (let v = 0; v < n; v++) {
+          if (done[v]) continue;
+          if (blocked(nodes[u].x, nodes[u].y, nodes[v].x, nodes[v].y)) continue;
+          const mx = (nodes[u].x + nodes[v].x) / 2, my = (nodes[u].y + nodes[v].y) / 2;
+          if (!insideLake(mx, my)) continue;
+          const d = Math.hypot(nodes[v].x - nodes[u].x, nodes[v].y - nodes[u].y);
+          if (du + d < dist[v]) { dist[v] = du + d; prev[v] = u; }
+        }
       }
+      if (!isFinite(dist[n - 1])) return null;
+      const path = [];
+      for (let v = n - 1; v !== -1; v = prev[v]) path.unshift([nodes[v].x, nodes[v].y]);
+      return path;
     }
-    if (!isFinite(dist[n - 1])) return null;
+
+    let coarse = search();
+    if (!coarse) return null;
+    if (coarse.length < 3) return coarse;
+    // If the winning route is short in node terms but long on the ground, the
+    // coarse pass squeezed through a gap the real shoreline would not allow —
+    // refine around the anchors with a denser local graph.
+    const runLen = Math.hypot((coarse[coarse.length - 1][0] - coarse[0][0]) * 78000,
+                              (coarse[coarse.length - 1][1] - coarse[0][1]) * 111320);
+    if (runLen > 4000 && cap < ringsSorted[0].length) {
+      const dense = ringsSorted[0];
+      const saved = testRings[0];
+      testRings[0] = dense;                       // full-resolution ring
+      const extra = [];
+      const step = Math.max(1, Math.ceil(dense.length / MAX_NODES));
+      for (let i = 0; i < dense.length; i += step) extra.push({ x: dense[i][0], y: dense[i][1] });
+      nodes.length = 0;
+      nodes.push({ x: A[0], y: A[1] });
+      for (const q of extra) nodes.push(q);
+      nodes.push({ x: B[0], y: B[1] });
+      const fine = search();
+      testRings[0] = saved;
+      if (fine && fine.length > coarse.length) return fine;
+    }
+    return coarse;
     const path = [];
     for (let v = n - 1; v !== -1; v = prev[v]) path.unshift([nodes[v].x, nodes[v].y]);
     // a bare 2-point crossing refines to nothing — inject a midpoint so
