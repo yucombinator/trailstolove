@@ -148,6 +148,7 @@
   .sw.reach { border-color: #41b6c4; }
   .sw.road { border-color: #8a6d4e; border-width: 6px; }
   .pa-leg { color: var(--carry); font-size: 12px; font-weight: 900; margin-right: 4px; }
+  .camp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4caf7d; border: 1px solid #2f7d4f; margin-right: 5px; vertical-align: middle; }
   .sw.route { border-color: var(--carry); border-style: solid; border-width: 5px; height: 0; }
   .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
   .carry-badge span, .wp-badge span {
@@ -197,6 +198,19 @@
   .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
   .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
+  .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 46px; height: 5px; border-radius: 3px; background: var(--line); border: 0; cursor: pointer; z-index: 2; }
+  @media (max-width: 768px) {
+    .side { top: auto; height: 46%; width: 100%; border-right: 0; border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(0,0,0,.2); transition: height .22s ease; }
+    .side.collapsed { height: 88px; overflow: hidden; }
+    .side-handle { display: block; }
+    .side-header { padding: 20px 16px 6px; }
+    .brand-name { font-size: 15px; }
+    .side-intro { display: none; }
+    .side-section { padding: 8px 16px 10px; }
+    .legend { font-size: 9px; padding: 6px 8px; bottom: 8px; right: 8px; }
+  }
   .side-footer p { margin: 0 0 6px; }
   .side-footer .meta { display: block; letter-spacing: .04em; }
   /* planning-tool notice */
@@ -234,6 +248,7 @@
 <div id="map"></div>
 <div class="side">
   <header class="side-header">
+    <button class="side-handle" id="sideHandle" aria-label="toggle panel"></button>
     <span class="brand">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 32 32" role="img" fill="currentColor">
@@ -327,13 +342,13 @@
 </div>
 <div class="legend">
   <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach &nbsp; <span class="sw road"></span>Hwy 60</div>
-  <div><span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
+  <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790466385"></script>
+<script src="router.js?v=1790476485"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790466385')
+fetch('router_data.json?v=1790476485')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -421,6 +436,21 @@ if (DATA.roads) {
     onEachFeature: (f, l) => l.bindTooltip(DATA.roads.name, { sticky: true })
   }).addTo(map);
 }
+
+// backcountry campsites (green dots; hover = site + lake)
+const campLayer = L.geoJSON({ type: 'FeatureCollection', features: (DATA.campsites || []).map(c => ({
+  type: 'Feature',
+  geometry: { type: 'Point', coordinates: [c[4], c[3]] },
+  properties: { ref: c[2], name: c[1], water: (idx.nodeById.get(c[5]) || {}).name || 'lake' }
+})) }, {
+  renderer: vecRenderer,
+  pointToLayer: (f, ll) => L.circleMarker(ll, { renderer: vecRenderer, radius: 3,
+    color: '#2f7d4f', weight: 1, fillColor: '#4caf7d', fillOpacity: .9 }),
+  onEachFeature: (f, l) => {
+    const nm = [f.properties.ref ? '#' + f.properties.ref : null, f.properties.name].filter(Boolean).join(' ') || 'Campsite';
+    l.bindTooltip(`${nm} — ${f.properties.water}`, { direction: 'top' });
+  }
+}).addTo(map);
 
 const PORTAGE_ROUTE = { color: '#e07b00', weight: 5, opacity: 1 };
 const portageLayers = {};   // osm way id -> its leaflet layer
@@ -536,6 +566,11 @@ function attachAC(input, ac) {
   });
 }
 initRows();
+const sideEl = document.querySelector('.side');
+document.getElementById('sideHandle').onclick = () => {
+  const c = sideEl.classList.toggle('collapsed');
+  sideEl.style.height = c ? '88px' : '';   // inline: immune to specificity surprises
+};
 document.getElementById('addStop').onclick = addStop;
 document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
 document.getElementById('avoid').addEventListener('change', e => track('avoid_toggle', { enabled: e.target.checked }));
@@ -558,6 +593,23 @@ map.on('popupopen', ev => {
     b.onclick = () => setField(b.dataset.act, Number(b.dataset.id));
   });
 });
+
+// ---------- shareable URLs: restore a route from the hash ----------
+function applyHashRoute() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (!h.get('r')) return false;
+  const names = h.get('r').split('~').map(decodeURIComponent);
+  const ids = names.map(nm => (idx.search.find(s => s.name === nm) || {}).id);
+  if (!names.length || ids.some(x => !x)) return false;
+  if (h.get('m')) document.getElementById('mode').value = h.get('m');
+  if (h.get('a')) document.getElementById('avoid').checked = true;
+  while (rows.length > names.length) { const rm = rows[rows.length - 2]; const k = rows.indexOf(rm); if (k > 0 && rows[k].wrapper.querySelector('.rm')) { rows.splice(k, 1); rm.wrapper.remove(); } else break; }
+  while (rows.length < names.length) addStop();
+  rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2]; });
+  track('route_from_url', { points: names.length, mode: h.get('m') || 'balanced' });
+  document.getElementById('go').click();
+  return true;
+}
 
 // ---------- sample routes (onboarding; hidden after the first navigation) ----------
 const SAMPLES = [
@@ -590,6 +642,7 @@ function runSample(s) {
     b.onclick = () => runSample(SAMPLES[Number(b.dataset.s)]);
   });
 })();
+
 
 // ---------- directions ----------
 const modeLabel = m => ({
@@ -627,13 +680,19 @@ function drawRoute(opt, pointIds) {
     }
   });
   const pts = [];
+  let paddleM = 0;
+  const hav2 = (a, b) => { const k = Math.PI / 180;
+    const x = Math.sin((b[1] - a[1]) * k / 2) ** 2 + Math.cos(a[1] * k) * Math.cos(b[1] * k) * Math.sin((b[0] - a[0]) * k / 2) ** 2;
+    return 12742000 * Math.asin(Math.sqrt(x)); };
   const stops = (pointIds || []).slice(1, -1);
   let carryNo = 0;
   let html = '';
   let i = 0;
   for (let gi = 0; gi < grouped.length; gi++) {
     const g = grouped[gi], e = g.e;
-    i++;
+    // way-split lakes: m=0 shared-shore hops inside one named water = no step
+    const foldStep = e.k === 'channel' && e.m === 0 && nameOf(g.from) === nameOf(g.to);
+    if (!foldStep) i++;
     const stepTag = `<span class="n">${i}</span>`;
     if (e.k === 'portage') {
       carryNo++;
@@ -660,16 +719,17 @@ function drawRoute(opt, pointIds) {
         }).addTo(routeLayer);
       }
       const elTxt = (e.el === null || e.el === undefined) ? ''
-        : Math.abs(e.el) < 3 ? '<span class="el">≈ flat</span>'
-        : e.el > 0 ? `<span class="el up">↑ ${e.el} m up</span>`
-        : `<span class="el down">↓ ${-e.el} m down</span>`;
+        : (Math.abs(e.el) < 3 && Math.abs(e.ed || 0) < 3) ? '<span class="el">≈ flat</span>'
+        : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
+          ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
       html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
       html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${dir}${nameOf(e.s >= 1000000000000 ? e.s : e.d)}</span></div></div>`;
     } else {
-      if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
+      if (e.g && e.g.length >= 2) { addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 }); paddleM += hav2(e.g[0], e.g[e.g.length - 1]); }
+      if (foldStep) continue;
       const reachId = e.d < 0 ? e.d : e.s;
       const nxt = grouped[i + 1];
       const nextIsSameReach = nxt && nxt.e.k === 'river' && nxt.e.g && nxt.e.g.length >= 2 &&
@@ -679,6 +739,7 @@ function drawRoute(opt, pointIds) {
         const slice = Router.reachSlice(DATA.reaches[reachId].lines, reachPt, nxt.e.g[nxt.e.g.length - 1]);
         if (slice && slice.length >= 2) {
           addLine(slice, { color: '#1f78b4', weight: 6, opacity: .95 });
+          for (let q = 1; q < slice.length; q++) paddleM += hav2(slice[q - 1], slice[q]);
           const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
           html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
           i++;
@@ -694,6 +755,7 @@ function drawRoute(opt, pointIds) {
         if (cpath) cpath = Router.refinePath(cpath, union, 40);
         if (cpath) {
           addLine(cpath, { color: '#1f78b4', weight: 6, opacity: .95 });
+          for (let q = 1; q < cpath.length; q++) paddleM += hav2(cpath[q - 1], cpath[q]);
           html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}</div></div>`;
           continue;
         }
@@ -718,10 +780,12 @@ function drawRoute(opt, pointIds) {
     if (path) {
       path = Router.refinePath(path, feat, 40);
       addLine(path, { color: '#1f78b4', weight: 6, opacity: .95 });
+      for (let q = 1; q < path.length; q++) paddleM += hav2(path[q - 1], path[q]);
     } else if (a1[0] === a2[0] && a1[1] === a2[1]) {
       continue;
     } else {
       addLine([a1, a2], { color: '#1f78b4', weight: 6, opacity: .95 });
+      paddleM += hav2(a1, a2);
     }
   }
   legsEl.innerHTML = html;
@@ -737,7 +801,7 @@ function drawRoute(opt, pointIds) {
   const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
   L.circleMarker([s0.lat, s0.lon], { renderer: routeRenderer, radius: 8, color: '#00441b', fillColor: '#238b45', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
   L.circleMarker([s1.lat, s1.lon], { renderer: routeRenderer, radius: 8, color: '#7f0000', fillColor: '#cb181d', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
-  return segCount;
+  return { segs: segCount, paddleM };
 }
 
 let currentOptions = [];
@@ -765,7 +829,7 @@ function renderOptionsPanel() {
       renderOptionsPanel();
       const o = currentOptions[selectedOption];
       const segs = drawRoute(o, currentPoints);
-      summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${o.res.lakes} lakes · ${segs} segments drawn`;
+      summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${o.res.lakes} lakes · ≈ ${(segs.paddleM / 1000).toFixed(1)} km paddling`;
     };
   });
 }
@@ -802,6 +866,10 @@ document.getElementById('go').onclick = () => {
     selectedOption = 0;
     const samplesEl = document.getElementById('samples');
     if (samplesEl) samplesEl.style.display = 'none';   // onboarding done
+    history.replaceState(null, '', '#r=' + pointIds.map(id => {
+      const n = idx.nodeById.get(id);
+      return encodeURIComponent((n && n.name) || String(id));
+    }).join('~') + '&m=' + mode + (avoid ? '&a=1' : ''));
     track('plan_route', {
       mode: mode,
       carries: options[0].res.carries,
@@ -812,7 +880,7 @@ document.getElementById('go').onclick = () => {
     });
     renderOptionsPanel();
     const segs = drawRoute(options[0], pointIds);
-    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ${segs} segments drawn`;
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(segs.paddleM / 1000).toFixed(1)}</b> km paddling`;
   } catch (err) {
     warnbox.style.display = 'block';
     warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
@@ -824,6 +892,12 @@ document.getElementById('go').onclick = () => {
 
 // initial view around Canoe Lake
 map.setView(DATA.center, 12);
+
+// restore a shared route from the URL hash (after all handlers are wired)
+if (!applyHashRoute()) {
+  const samplesEl = document.getElementById('samples');
+  if (samplesEl) samplesEl.style.display = '';
+}
 
 // debug handle (console access to the closure)
 window.__app = { map, lakes, lakeGeoms, idx, currentOptions: () => currentOptions };

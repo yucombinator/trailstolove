@@ -1,0 +1,54 @@
+# Nightly data refresh for the Algonquin Planner:
+# re-fetch OSM + conditions inputs, rebuild the graph, commit if anything changed.
+name: Refresh planner data
+
+on:
+  schedule:
+    - cron: "20 4 * * *"   # 04:20 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: planner-refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch OSM (roads, campsites, water, portages, access)
+        run: python3 tools/algonquin-graph/fetch_osm.py
+
+      - name: Parse graph
+        run: |
+          cd tools/algonquin-graph
+          python3 parse_osm.py
+          python3 build_access_geo.py
+          python3 fetch_elevations.py
+          python3 build_page.py
+
+      - name: Deploy refreshed app into the page bundle
+        run: |
+          cp tools/algonquin-graph/index.html content/algonquin/app.html
+          cp tools/algonquin-graph/router_data.json content/algonquin/router_data.json
+          cp tools/algonquin-graph/router.js content/algonquin/router.js
+
+      - name: Commit if data changed
+        run: |
+          git config user.name "planner-refresh-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add content/algonquin tools/algonquin-graph/data
+          if git diff --cached --quiet; then
+            echo "No data changes — skipping commit"
+          else
+            git commit -m "Nightly planner data refresh ($(date -u +%F))"
+            git push
+          fi

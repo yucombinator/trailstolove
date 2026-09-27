@@ -5,7 +5,7 @@
   function buildIndex(data) {
     const nodeById = new Map();
     for (const n of data.nodes) {
-      nodeById.set(n[0], { id: n[0], name: n[1], kind: n[2], lat: n[3], lon: n[4] });
+      nodeById.set(n[0], { id: n[0], name: n[1], kind: n[2], lat: n[3], lon: n[4], dm: n[5] || 0 });
     }
     const adj = new Map();
     for (const e of data.edges) {
@@ -19,11 +19,11 @@
     return { nodeById, adj, search };
   }
 
-  function cost(e, mode, avoidObstacles, penalty) {
+  function cost(e, mode, avoidObstacles, penalty, idx) {
     if (avoidObstacles && e.o && e.o.length) return null;
     if (penalty) {
       const f = penalty.get(e);
-      if (f) return cost(e, mode, avoidObstacles, null) * f;
+      if (f) return cost(e, mode, avoidObstacles, null, idx) * f;
     }
     if (mode === "conservative" && e.k === "river") return null;
     if (e.k === "portage") {
@@ -32,9 +32,18 @@
       return 1 + e.m / 1e7; // "edges": fewest hops, tie-broken by carry metres
     }
     if (mode === "carries") return 0.5;
-    // "balanced": crossing into another water body ≈ the effort of a 300 m carry,
-    // so routes that zigzag through many lakes pay for it even with few carries.
-    if (mode === "balanced") return e.k === "access" ? e.m : 300;
+    // "balanced": crossing into another water body costs its size (a big lake is
+    // real paddling), floored at a 300 m-carry equivalent, capped at 1.2 km.
+    // m=0 channels joining two ways of the SAME water are free-ish (not a lake hop).
+    if (mode === "balanced") {
+      if (e.k === "access") return e.m;
+      if (e.m === 0 && idx) {
+        const a = idx.nodeById.get(e.s), b = idx.nodeById.get(e.d);
+        if (a && b && a.name && a.name === b.name) return 1;
+      }
+      const t = idx && idx.nodeById.get(e.d);
+      return t && t.dm ? Math.min(1200, Math.max(300, t.dm * 0.4)) : 300;
+    }
     if (mode === "meters") return Math.max(e.m, 0.001);
     return 1;
   }
@@ -81,7 +90,7 @@
       const out = idx.adj.get(u) || [];
       for (let i = 0; i < out.length; i++) {
         const e = out[i];
-        const c = cost(e, mode, avoidObstacles, penalty);
+        const c = cost(e, mode, avoidObstacles, penalty, idx);
         if (c === null) continue;
         const nd = d + c;
         if (nd < (dist.has(e.d) ? dist.get(e.d) : Infinity)) {
@@ -159,7 +168,9 @@
       if (seen.has(key)) continue;
       seen.add(key);
       const portageLegs = legs.filter(e => e.k === "portage");
-      const lakes = new Set(nodeIds.filter(id => idx.nodeById.get(id)?.kind === "lake")).size;
+      // distinct lakes by NAME (way-split lakes are several nodes, one lake)
+      const lakeNames = new Set(nodeIds.map(id => (idx.nodeById.get(id) || {}).name)
+        .filter((n, i, arr) => n && arr.indexOf(n) === i));
       out.push({
         mode: m,
         res: {
@@ -167,7 +178,7 @@
           legs: legs,
           carries: portageLegs.length,
           portageM: portageLegs.reduce((s, e) => s + e.m, 0),
-          lakes: lakes,
+          lakes: lakeNames.size,
           edges: legs.length,
         },
       });

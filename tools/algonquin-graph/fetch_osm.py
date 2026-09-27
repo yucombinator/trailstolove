@@ -31,9 +31,10 @@ def run(name: str, query: str, tries: int = 6) -> dict:
     if out.exists():
         try:
             cached = json.loads(out.read_text())
-            if cached.get("elements"):
-                print(f"[resume] {name}: cached ({len(cached['elements'])} elements)", flush=True)
-                return cached
+            # trust any cached Overpass response: empty results are real results
+            # (the runtime-timeout case never gets cached — the remark check rejects it)
+            print(f"[resume] {name}: cached ({len(cached.get('elements', []))} elements)", flush=True)
+            return cached
         except Exception:  # noqa: BLE001
             pass  # corrupt cache: refetch
     last = None
@@ -133,6 +134,10 @@ def main() -> None:
     fetch_tiled("roads",
                 'way["highway"]["ref"~"^60$"]{{bbox}};'
                 'way["name"="Highway 60"]{{bbox}};')
+
+    # 5e) Backcountry campsites (site nodes/ways on lakes).
+    fetch_tiled("campsites",
+                'nwr["tourism"="camp_site"]{{bbox}};')
 
     # 6) Waterways for paddle links (tiled: ways + their child nodes).
     merged = {}

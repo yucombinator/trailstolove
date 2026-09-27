@@ -477,14 +477,43 @@ def main():
     (DATA / "reach_lines.json").write_text(json.dumps(reach_ways, ensure_ascii=False))
     with open(DATA / "water.csv", "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["id", "name", "kind", "lat", "lon", "area_m2", "major"])
+        w.writerow(["id", "name", "kind", "lat", "lon", "area_m2", "major", "dm"])
         for oid, lk in lakes.items():
+            # crossing scale: bbox diagonal in metres (paddling-distance proxy)
+            b = lk["bbox"]
+            dm = round(hav(b[0], b[1], b[2], b[3]))
             w.writerow([oid, lk["name"] or "", lk["kind"],
                         round(lk["lat"], 6), round(lk["lon"], 6),
-                        round(lk["area"]), 1 if lk["name"] else 0])
+                        round(lk["area"]), 1 if lk["name"] else 0, dm])
         for r in reaches:
             w.writerow([r["reach_id"], r["name"], "reach",
-                        r["lat"], r["lon"], 0, 0])
+                        r["lat"], r["lon"], 0, 0, round(r["length_m"] / 2)])
+
+    # ---------- 7d) backcountry campsites ----------
+    camps = []
+    for el in load("campsites")["elements"]:
+        t = el.get("tags", {})
+        if el["type"] == "node":
+            lat, lon = el["lat"], el["lon"]
+        else:
+            g = el.get("geometry") or []
+            if not g:
+                continue
+            lat, lon = g[0]["lat"], g[0]["lon"]
+        if not inside_park(lat, lon, 300.0):
+            continue
+        wid, _ = resolve(lat, lon, 250.0)
+        if wid is None:
+            continue
+        camps.append({"osm_id": el["id"], "name": t.get("name") or "",
+                      "ref": t.get("ref") or "", "lat": round(lat, 6),
+                      "lon": round(lon, 6), "water_id": int(wid)})
+    with open(DATA / "campsites.csv", "w", newline="") as f:
+        wr = csv.DictWriter(f, ["osm_id", "name", "ref", "lat", "lon", "water_id"])
+        wr.writeheader()
+        wr.writerows(camps)
+    print(f"campsites: {len(camps)}", flush=True)
+
 
     with open(DATA / "portages.csv", "w", newline="") as f:
         wr = csv.DictWriter(f, ["osm_id", "name", "length_m", "p0_lat", "p0_lon",

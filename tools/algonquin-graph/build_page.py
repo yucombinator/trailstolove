@@ -100,7 +100,7 @@ def main():
         name = r["name"] or None
         water[wid] = {"name": name, "kind": r["kind"], "lat": float(r["lat"]),
                       "lon": float(r["lon"]), "area": float(r["area_m2"])}
-        nodes.append([wid, name, r["kind"], float(r["lat"]), float(r["lon"])])
+        nodes.append([wid, name, r["kind"], float(r["lat"]), float(r["lon"]), int(r["dm"])])
 
     # ---- edges: portages ----
     pgeo = {e["id"]: e.get("geometry") or [] for e in
@@ -110,19 +110,18 @@ def main():
         if r["edge_kind"] == "portage":
             obstacles.setdefault(int(r["edge_id"]), []).append(r["type"])
 
-    # portage steepness: elevation gain from p0 (from_id end) to p1 (to_id end)
-    elev = {}
-    elev_csv = DATA / "elevations.csv"
-    if elev_csv.exists():
-        with open(elev_csv, newline="") as f:
+    # portage steepness: cumulative climb/descent along the trail (p0 -> p1)
+    climbs = {}
+    climbs_csv = DATA / "climbs.csv"
+    if climbs_csv.exists():
+        with open(climbs_csv, newline="") as f:
             for r in csv.DictReader(f):
-                elev[(r["lat"], r["lon"])] = float(r["elev"])
+                climbs[int(r["osm_id"])] = (int(r["up"]), int(r["down"]))
     def portage_gain(p):
-        e0 = elev.get((p["p0_lat"], p["p0_lon"]))
-        e1 = elev.get((p["p1_lat"], p["p1_lon"]))
-        if e0 is None or e1 is None:
-            return None
-        return round(e1 - e0)
+        c = climbs.get(int(p["osm_id"]))
+        if c is None:
+            return (None, None)
+        return c
 
     edges = []
     portage_geo = {}
@@ -140,16 +139,16 @@ def main():
         line = [[r5(q["lon"]), r5(q["lat"])] for q in g]
         m = round(float(p["length_m"]))
         o = sorted(set(obstacles.get(oid, [])))
-        el = portage_gain(p)   # gain in metres from p0 (a end) to p1 (b end)
+        el, ed = portage_gain(p)   # cumulative up/down (metres) from p0 (a end) to p1 (b end)
         # orient geometry so g[0] sits on the s-side of each directed edge
         if a == int(p["from_id"]):
             g_fwd, g_rev = line, line[::-1]
         else:
             g_fwd, g_rev = line[::-1], line
         edges.append({"s": a, "d": b, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
-                      "o": o, "g": g_fwd, "el": el})
+                      "o": o, "g": g_fwd, "el": el, "ed": ed})
         edges.append({"s": b, "d": a, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
-                      "o": o, "g": g_rev, "el": (-el if el is not None else None)})
+                      "o": o, "g": g_rev, "el": ed, "ed": el})
         portage_geo[oid] = line
     print(f"portage edges: {len(edges)}")
 
@@ -349,6 +348,9 @@ def main():
     center = water[CENTER_ID]
 
     roads = json.loads((DATA / "roads.json").read_text()) if (DATA / "roads.json").exists() else None
+    campsites = [[int(c["osm_id"]), c["name"] or None, c["ref"] or None,
+                  float(c["lat"]), float(c["lon"]), int(c["water_id"])]
+                 for c in load_csv("campsites.csv")] if (DATA / "campsites.csv").exists() else []
 
     data = {
         "center": [round(center["lat"], 6), round(center["lon"], 6)],
@@ -358,6 +360,7 @@ def main():
         "reaches": reaches,
         "official": data_official,
         "roads": roads,
+        "campsites": campsites,
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     (DATA / "router_data.json").write_text(payload)
