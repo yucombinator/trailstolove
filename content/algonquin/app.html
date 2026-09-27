@@ -358,10 +358,10 @@
   <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790495057"></script>
+<script src="router.js?v=1790495392"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790495057')
+fetch('router_data.json?v=1790495392')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -765,13 +765,24 @@ function drawRoute(opt, pointIds) {
       const nextIsSameReach = nxt && nxt.e.k === 'river' && nxt.e.g && nxt.e.g.length >= 2 &&
         ((nxt.e.s === reachId || nxt.e.d === reachId));
       if (e.k === 'river' && nextIsSameReach && DATA.reaches[reachId]) {
-        const reachPt = e.g[e.g.length - 1];
-        const slice = Router.reachSlice(DATA.reaches[reachId].lines, reachPt, nxt.e.g[nxt.e.g.length - 1]);
+        const reach = DATA.reaches[reachId];
+        const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
+        const slice = Router.reachSlice(reach.lines, e.g, nxt.e.g);
         if (slice && slice.length >= 2) {
           addLine(slice, { color: '#1f78b4', weight: 6, opacity: .95 });
           for (let q = 1; q < slice.length; q++) paddleM += hav2(slice[q - 1], slice[q]);
-          const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
           html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
+          i++;
+          continue;
+        }
+        // no mapped centreline between the two touch points (narrow/unmapped
+        // creek): draw the straight creek axis dashed so it is still visible
+        const pa = Router.reachPointOn(reach.lines, e.g);
+        const pb = Router.reachPointOn(reach.lines, nxt.e.g);
+        if (pa && pb && (pa[0] !== pb[0] || pa[1] !== pb[1])) {
+          addLine([pa, pb], { color: '#1f78b4', weight: 4, opacity: .8, dashArray: '4 4' });
+          paddleM += hav2(pa, pb);
+          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'} <em>(approximate)</em></span></div></div>`;
           i++;
           continue;
         }

@@ -5,7 +5,7 @@
   function buildIndex(data) {
     const nodeById = new Map();
     for (const n of data.nodes) {
-      nodeById.set(n[0], { id: n[0], name: n[1], kind: n[2], lat: n[3], lon: n[4] });
+      nodeById.set(n[0], { id: n[0], name: n[1], kind: n[2], lat: n[3], lon: n[4], dm: n[5] || 0 });
     }
     const adj = new Map();
     for (const e of data.edges) {
@@ -19,11 +19,11 @@
     return { nodeById, adj, search };
   }
 
-  function cost(e, mode, avoidObstacles, penalty) {
+  function cost(e, mode, avoidObstacles, penalty, idx) {
     if (avoidObstacles && e.o && e.o.length) return null;
     if (penalty) {
       const f = penalty.get(e);
-      if (f) return cost(e, mode, avoidObstacles, null) * f;
+      if (f) return cost(e, mode, avoidObstacles, null, idx) * f;
     }
     if (mode === "conservative" && e.k === "river") return null;
     if (e.k === "portage") {
@@ -32,9 +32,18 @@
       return 1 + e.m / 1e7; // "edges": fewest hops, tie-broken by carry metres
     }
     if (mode === "carries") return 0.5;
-    // "balanced": crossing into another water body ≈ the effort of a 300 m carry,
-    // so routes that zigzag through many lakes pay for it even with few carries.
-    if (mode === "balanced") return e.k === "access" ? e.m : 300;
+    // "balanced": crossing into another water body costs its size (a big lake is
+    // real paddling), floored at a 300 m-carry equivalent, capped at 1.2 km.
+    // m=0 channels joining two ways of the SAME water are free-ish (not a lake hop).
+    if (mode === "balanced") {
+      if (e.k === "access") return e.m;
+      if (e.m === 0 && idx) {
+        const a = idx.nodeById.get(e.s), b = idx.nodeById.get(e.d);
+        if (a && b && a.name && a.name === b.name) return 1;
+      }
+      const t = idx && idx.nodeById.get(e.d);
+      return t && t.dm ? Math.min(1200, Math.max(300, t.dm * 0.4)) : 300;
+    }
     if (mode === "meters") return Math.max(e.m, 0.001);
     return 1;
   }
@@ -81,7 +90,7 @@
       const out = idx.adj.get(u) || [];
       for (let i = 0; i < out.length; i++) {
         const e = out[i];
-        const c = cost(e, mode, avoidObstacles, penalty);
+        const c = cost(e, mode, avoidObstacles, penalty, idx);
         if (c === null) continue;
         const nd = d + c;
         if (nd < (dist.has(e.d) ? dist.get(e.d) : Infinity)) {
@@ -112,29 +121,64 @@
     };
   }
 
-  function reachSlice(lines, ptA, ptB) {
-    // lines: [[[lon,lat],...],...]; ptA/ptB: [lon, lat]
-    // Pick the line whose combined distance to both touch points is smallest,
-    // then slice between the two nearest indices on it.
-    function nearestIdx(line, p) {
-      let bi = 0, bd = Infinity;
-      for (let i = 0; i < line.length; i++) {
-        const dx = line[i][0] - p[0], dy = line[i][1] - p[1];
-        const d = dx * dx + dy * dy;
-        if (d < bd) { bd = d; bi = i; }
-      }
-      return { i: bi, d: bd };
-    }
-    let best = null;
+  // Reaches are stitched from many OSM ways (up to 266 lines for one river), so
+  // the path must be chained before slicing — otherwise narrow, segmented
+  // rivers return nothing and the drawn route has a gap.
+  const stitchCache = new WeakMap();
+  function stitchReach(lines) {
+    if (stitchCache.has(lines)) return stitchCache.get(lines);
+    const byStart = new Map();
     for (const line of lines) {
-      const a = nearestIdx(line, ptA);
-      const b = nearestIdx(line, ptB);
-      const sum = a.d + b.d;
-      if (!best || sum < best.sum) best = { line: line, a: a.i, b: b.i, sum: sum };
+      if (!line || line.length < 2) continue;
+      const k = line[0][0] + ',' + line[0][1];
+      if (!byStart.has(k)) byStart.set(k, line);
     }
-    if (!best) return null;
-    const lo = Math.min(best.a, best.b), hi = Math.max(best.a, best.b);
-    return best.line.slice(lo, hi + 1);
+    const out = [];
+    const used = new Set();
+    let cur = lines.find(l => l && l.length >= 2) || null;
+    while (cur) {
+      out.push(...cur);
+      used.add(cur);
+      const nx = byStart.get(cur[cur.length - 1][0] + ',' + cur[cur.length - 1][1]);
+      cur = nx && !used.has(nx) ? nx : null;
+    }
+    if (out.length < 2) out.push(...lines[0]);
+    stitchCache.set(lines, out);
+    return out;
+  }
+  function dist2(a, b) {
+    const dx = a[0] - b[0], dy = a[1] - b[1];
+    return dx * dx + dy * dy;
+  }
+  function nearestIdxOn(line, p) {
+    let bi = 0, bd = Infinity;
+    for (let i = 0; i < line.length; i++) {
+      const d = dist2(line[i], p);
+      if (d < bd) { bd = d; bi = i; }
+    }
+    return bi;
+  }
+  // Given the two river edge geometries, project each onto the stitched reach
+  // and return the path between the projections (nil when they coincide).
+  function reachSlice(lines, gA, gB) {
+    const stitched = stitchReach(lines);
+    const ptsA = Array.isArray(gA && gA[0]) ? gA : [gA];
+    const ptsB = Array.isArray(gB && gB[0]) ? gB : [gB];
+    let ia = -1, da = Infinity, ib = -1, db = Infinity;
+    for (const p of ptsA) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < da) { da = d; ia = i; } }
+    for (const p of ptsB) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < db) { db = d; ib = i; } }
+    if (ia < 0 || ib < 0) return null;
+    const lo = Math.min(ia, ib), hi = Math.max(ia, ib);
+    const slice = stitched.slice(lo, hi + 1);
+    return slice.length >= 2 ? slice : null;
+  }
+  // Point on the reach closest to an edge geometry (dashed creek fallback).
+  function reachPointOn(lines, g) {
+    const stitched = stitchReach(lines);
+    const pts = Array.isArray(g && g[0]) ? g : [g];
+    let best = null, bd = Infinity;
+    for (const p of pts) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < bd) { bd = d; best = stitched[i]; } }
+    return best;
   }
 
   // Chain Dijkstra legs over multiple waypoints, one combined route per cost model.
@@ -159,7 +203,9 @@
       if (seen.has(key)) continue;
       seen.add(key);
       const portageLegs = legs.filter(e => e.k === "portage");
-      const lakes = new Set(nodeIds.filter(id => idx.nodeById.get(id)?.kind === "lake")).size;
+      // distinct lakes by NAME (way-split lakes are several nodes, one lake)
+      const lakeNames = new Set(nodeIds.map(id => (idx.nodeById.get(id) || {}).name)
+        .filter((n, i, arr) => n && arr.indexOf(n) === i));
       out.push({
         mode: m,
         res: {
@@ -167,7 +213,7 @@
           legs: legs,
           carries: portageLegs.length,
           portageM: portageLegs.reduce((s, e) => s + e.m, 0),
-          lakes: lakes,
+          lakes: lakeNames.size,
           edges: legs.length,
         },
       });
@@ -286,6 +332,7 @@
       : (geometry.type === 'Polygon' ? [geometry.coordinates] : null);
     if (!polys) return points;
     const rings = polys.flatMap(p => p);
+    const DEG_M = 111320;   // metres per degree of latitude
 
     function pushOff(p) {
       const [px, py] = p;
@@ -303,10 +350,10 @@
           if (d < bd) { bd = d; bx = px2; by = py2; }
         }
       }
-      if (!isFinite(bd) || bd >= margin) return [px, py];
+      if (!isFinite(bd) || bd * DEG_M >= margin) return [px, py];
       const vx = px - bx, vy = py - by;
       const L = Math.hypot(vx, vy) || 1;
-      const push = margin - bd;
+      const push = (margin - bd * DEG_M) / DEG_M;   // displacement in degrees
       return [px + (vx / L) * push, py + (vy / L) * push];
     }
 
@@ -327,9 +374,20 @@
       }
     }
     out.push(pts2[pts2.length - 1]);
+    // guard: the spline must stay near the input path — on any wild excursion
+    // fall back to the unrefined path (which drawRoute can draw safely)
+    let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+    for (const p of pts2) {
+      if (p[0] < mnX) mnX = p[0]; if (p[0] > mxX) mxX = p[0];
+      if (p[1] < mnY) mnY = p[1]; if (p[1] > mxY) mxY = p[1];
+    }
+    const slack = 0.05;   // ~5 km — the spline may bulge, never wander
+    for (const p of out) {
+      if (p[0] < mnX - slack || p[0] > mxX + slack || p[1] < mnY - slack || p[1] > mxY + slack) return points;
+    }
     return out;
   }
 
-  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost, reachSlice: reachSlice, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
+  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
   global.Router = Router;
 })(typeof window !== "undefined" ? window : globalThis);

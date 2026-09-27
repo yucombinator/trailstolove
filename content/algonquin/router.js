@@ -121,29 +121,64 @@
     };
   }
 
-  function reachSlice(lines, ptA, ptB) {
-    // lines: [[[lon,lat],...],...]; ptA/ptB: [lon, lat]
-    // Pick the line whose combined distance to both touch points is smallest,
-    // then slice between the two nearest indices on it.
-    function nearestIdx(line, p) {
-      let bi = 0, bd = Infinity;
-      for (let i = 0; i < line.length; i++) {
-        const dx = line[i][0] - p[0], dy = line[i][1] - p[1];
-        const d = dx * dx + dy * dy;
-        if (d < bd) { bd = d; bi = i; }
-      }
-      return { i: bi, d: bd };
-    }
-    let best = null;
+  // Reaches are stitched from many OSM ways (up to 266 lines for one river), so
+  // the path must be chained before slicing — otherwise narrow, segmented
+  // rivers return nothing and the drawn route has a gap.
+  const stitchCache = new WeakMap();
+  function stitchReach(lines) {
+    if (stitchCache.has(lines)) return stitchCache.get(lines);
+    const byStart = new Map();
     for (const line of lines) {
-      const a = nearestIdx(line, ptA);
-      const b = nearestIdx(line, ptB);
-      const sum = a.d + b.d;
-      if (!best || sum < best.sum) best = { line: line, a: a.i, b: b.i, sum: sum };
+      if (!line || line.length < 2) continue;
+      const k = line[0][0] + ',' + line[0][1];
+      if (!byStart.has(k)) byStart.set(k, line);
     }
-    if (!best) return null;
-    const lo = Math.min(best.a, best.b), hi = Math.max(best.a, best.b);
-    return best.line.slice(lo, hi + 1);
+    const out = [];
+    const used = new Set();
+    let cur = lines.find(l => l && l.length >= 2) || null;
+    while (cur) {
+      out.push(...cur);
+      used.add(cur);
+      const nx = byStart.get(cur[cur.length - 1][0] + ',' + cur[cur.length - 1][1]);
+      cur = nx && !used.has(nx) ? nx : null;
+    }
+    if (out.length < 2) out.push(...lines[0]);
+    stitchCache.set(lines, out);
+    return out;
+  }
+  function dist2(a, b) {
+    const dx = a[0] - b[0], dy = a[1] - b[1];
+    return dx * dx + dy * dy;
+  }
+  function nearestIdxOn(line, p) {
+    let bi = 0, bd = Infinity;
+    for (let i = 0; i < line.length; i++) {
+      const d = dist2(line[i], p);
+      if (d < bd) { bd = d; bi = i; }
+    }
+    return bi;
+  }
+  // Given the two river edge geometries, project each onto the stitched reach
+  // and return the path between the projections (nil when they coincide).
+  function reachSlice(lines, gA, gB) {
+    const stitched = stitchReach(lines);
+    const ptsA = Array.isArray(gA && gA[0]) ? gA : [gA];
+    const ptsB = Array.isArray(gB && gB[0]) ? gB : [gB];
+    let ia = -1, da = Infinity, ib = -1, db = Infinity;
+    for (const p of ptsA) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < da) { da = d; ia = i; } }
+    for (const p of ptsB) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < db) { db = d; ib = i; } }
+    if (ia < 0 || ib < 0) return null;
+    const lo = Math.min(ia, ib), hi = Math.max(ia, ib);
+    const slice = stitched.slice(lo, hi + 1);
+    return slice.length >= 2 ? slice : null;
+  }
+  // Point on the reach closest to an edge geometry (dashed creek fallback).
+  function reachPointOn(lines, g) {
+    const stitched = stitchReach(lines);
+    const pts = Array.isArray(g && g[0]) ? g : [g];
+    let best = null, bd = Infinity;
+    for (const p of pts) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < bd) { bd = d; best = stitched[i]; } }
+    return best;
   }
 
   // Chain Dijkstra legs over multiple waypoints, one combined route per cost model.
@@ -353,6 +388,6 @@
     return out;
   }
 
-  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost, reachSlice: reachSlice, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
+  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
   global.Router = Router;
 })(typeof window !== "undefined" ? window : globalThis);
