@@ -373,10 +373,10 @@
   <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790497963"></script>
+<script src="router.js?v=1790499165"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790497963')
+fetch('router_data.json?v=1790499165')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
