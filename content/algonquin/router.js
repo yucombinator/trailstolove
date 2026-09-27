@@ -43,35 +43,37 @@
     if (g < 0.22) return { label: 'very steep', cls: 'r-vsteep' };
     return { label: 'brutal', cls: 'r-brutal' };
   }
+  // Cost of one edge under a routing goal. Four goals, all of them things a
+  // paddler actually weighs: how many carries, how far you walk, how hard they
+  // are, and a blend that also charges for the water you have to cross.
   function cost(e, mode, avoidObstacles, penalty, idx) {
     if (avoidObstacles && e.o && e.o.length) return null;
     if (penalty) {
       const f = penalty.get(e);
       if (f) return cost(e, mode, avoidObstacles, null, idx) * f;
     }
-    if (mode === "conservative" && e.k === "river") return null;
     if (e.k === "portage") {
-      if (mode === "carries") return 1e6 + e.m;
+      if (mode === "carries") return 1e6 + e.m;     // count first, metres only to break ties
       if (mode === "easiest") return carryEffort(e, 10);
-      if (mode === "balanced") return carryEffort(e, 3);
-      if (mode === "meters") return e.m;
-      return 1 + e.m / 1e7; // "edges": fewest hops, tie-broken by carry metres
+      if (mode === "meters") return e.m;              // the metres you actually walk
+      return carryEffort(e, 3);                     // "balanced"
     }
     if (mode === "carries") return 0.5;
+    // "meters" means least CARRYING, so paddling must only break ties between
+    // routes that walk the same distance. Charging paddling at full weight made
+    // this "shortest total route" instead: it preferred 1,116 m of carrying
+    // over a route that walked 846 m, because the latter paddled further.
+    if (mode === "meters") return e.m * 0.01;
     // "balanced": crossing into another water body costs its size (a big lake is
     // real paddling), floored at a 300 m-carry equivalent, capped at 1.2 km.
     // m=0 channels joining two ways of the SAME water are free-ish (not a lake hop).
-    if (mode === "balanced") {
-      if (e.k === "access") return e.m;
-      if (e.m === 0 && idx) {
-        const a = idx.nodeById.get(e.s), b = idx.nodeById.get(e.d);
-        if (a && b && a.name && a.name === b.name) return 1;
-      }
-      const t = idx && idx.nodeById.get(e.d);
-      return t && t.dm ? Math.min(1200, Math.max(300, t.dm * 0.4)) : 300;
+    if (e.k === "access") return e.m;
+    if (e.m === 0 && idx) {
+      const a = idx.nodeById.get(e.s), b = idx.nodeById.get(e.d);
+      if (a && b && a.name && a.name === b.name) return 1;
     }
-    if (mode === "meters") return Math.max(e.m, 0.001);
-    return 1;
+    const t = idx && idx.nodeById.get(e.d);
+    return t && t.dm ? Math.min(1200, Math.max(300, t.dm * 0.4)) : 300;
   }
 
   function dijkstra(data, idx, fromId, toId, mode, avoidObstacles, penalty) {
@@ -248,10 +250,9 @@
     const ib = nearestEndNode(g, pb);
     if (ia < 0 || ib < 0) return null;
     let path = walkReach(g, ia, ib);
-    if (!path) {
-      // endpoints on different components: still draw the axis if close
-      path = [pa.pt, pb.pt];
-    }
+    // No mapped waterway between the two landings: report that rather than
+    // inventing a straight chord, which drew a false line across the water.
+    if (!path) return null;
     // trim to the exact touch points
     const i1 = nearestIdxOn(path, pa.pt), i2 = nearestIdxOn(path, pb.pt);
     const lo = Math.min(i1, i2), hi = Math.max(i1, i2);
@@ -260,7 +261,7 @@
       if (i1 > i2) slice.reverse();               // travel direction A -> B
       return slice;
     }
-    return [pa.pt, pb.pt];
+    return null;
   }
   // graph node on the projected line closest to the projection
   function nearestEndNode(g, proj) {
@@ -290,7 +291,7 @@
     const seen = new Set();
     const out = [];
     for (const m of [mode].concat(
-        ["balanced", "carries", "meters", "conservative", "edges"].filter(x => x !== mode))) {
+        ["balanced", "easiest", "carries", "meters"].filter(x => x !== mode))) {
       if (out.length >= (want || 3)) break;
       let ok = true;
       const nodeIds = [pointIds[0]];
@@ -649,8 +650,45 @@
     }
     return out;
   }
-
-  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost,
-    carryRating: carryRating, carryEffort: carryEffort, gradeOf: gradeOf, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
+  // Tracks what has been drawn so a redundant connector is never painted twice.
+  // This lived inline in the page, where `opts && opts.force !== true` silently
+  // short-circuited on undefined and left the whole check permanently disabled.
+  // It lives here so a test can actually exercise it.
+  //
+  // A connector counts as already-covered only when it is essentially the SAME
+  // line as something drawn. Sharing a single landing point is not coverage:
+  // treating one coincident point as a match silently dropped whole stretches
+  // of river that merely started where a lake path ended.
+  function overlapTracker(tolM, coverFrac) {
+    const tol = tolM === undefined ? 30 : tolM;              // metres
+    const need = coverFrac === undefined ? 0.8 : coverFrac;  // fraction of samples
+    const drawn = [];
+    function covered(coords) {
+      if (!drawn.length || coords.length < 2) return false;
+      const step = Math.max(1, Math.floor(coords.length / 6));
+      let hits = 0, sampled = 0;
+      for (let i = 0; i < coords.length; i += step) {
+        sampled++;
+        const c = coords[i];
+        for (let k = 0; k < drawn.length; k++) {
+          if (Math.hypot((c[0] - drawn[k][0]) * 78000, (c[1] - drawn[k][1]) * 111320) < tol) {
+            hits++;
+            break;
+          }
+        }
+      }
+      return sampled > 0 && hits >= sampled * need;
+    }
+    return {
+      covered: covered,
+      add: coords => { for (const c of coords) drawn.push(c); },
+      size: () => drawn.length,
+      reset: () => { drawn.length = 0; },
+    };
+  }
+  // Only what the map calls, plus the seams worth testing. dijkstra/cost/
+  // carryEffort stay internal.
+  const Router = { buildIndex: buildIndex, overlapTracker: overlapTracker,
+    carryRating: carryRating, gradeOf: gradeOf, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
   global.Router = Router;
 })(typeof window !== "undefined" ? window : globalThis);

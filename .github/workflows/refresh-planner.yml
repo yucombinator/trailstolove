@@ -148,6 +148,18 @@ jobs:
           cp tools/algonquin-graph/router_data.json content/algonquin/router_data.json
           cp tools/algonquin-graph/router.js content/algonquin/router.js
 
+      # The app ships as three files that are produced by different steps, so a
+      # partial deploy is possible: a fresh app.html beside a stale router.js
+      # loads, renders, and only then dies with "Router.x is not a function" —
+      # which is exactly how overlapTracker broke route drawing. Verify the
+      # bundle we just deployed actually agrees with itself.
+      - name: Verify the deployed bundle agrees with itself
+        env:
+          ALGONQUIN_BUNDLE: content/algonquin
+        run: |
+          cd tools/algonquin-graph
+          python3 -m unittest discover -s tests -p "test_api*.py" -v
+
       - name: Commit if data changed
         run: |
           git config user.name "planner-refresh-bot"
