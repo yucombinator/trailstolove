@@ -51,6 +51,9 @@ jobs:
           fi
 
       - name: Fetch OSM (roads, campsites, water, portages, access)
+        env:
+          OVERPASS_TOLERANT: "1"     # a dead mirror must not kill the run
+          OVERPASS_BACKOFF: "20"
         run: python3 tools/algonquin-graph/fetch_osm.py
 
       - name: Parse graph
@@ -66,8 +69,18 @@ jobs:
       - name: Verify payload integrity
         run: |
           python3 - <<'PY'
-          import json, sys
+          import json, sys, os
           d = json.load(open('data/router_data.json'))
+          # A partial fetch (rate-limited tiles) must not silently shrink the
+          # graph. Compare against the payload that is live right now.
+          ref = 'content/algonquin/router_data.json'
+          if os.path.exists(ref):
+              prev = json.load(open(ref))
+              for key, label in (('edges', 'edges'), ('nodes', 'nodes')):
+                  before, after = len(prev.get(key, [])), len(d.get(key, []))
+                  if after < before * 0.95:
+                      sys.exit(f"payload shrank: {label} {before} -> {after} "
+                               "(incomplete OSM fetch; re-run to fill the cache)")
           p = [e for e in d['edges'] if e['k'] == 'portage']
           prof = sum(1 for e in p if e.get('pf'))
           climb = sum(1 for e in p if e.get('el') is not None)
