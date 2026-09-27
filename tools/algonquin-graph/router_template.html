@@ -5,10 +5,46 @@
 <title>Algonquin Planner — canoe route planner for Algonquin Provincial Park</title>
 <meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
 <link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
-<meta property="og:title" content="Algonquin Planner — Canoe Route Planner"/>
-<meta property="og:description" content="Point-to-point paddling directions across Algonquin Provincial Park — every named lake, portage and river."/>
+<meta property="og:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
+<meta property="og:description" content="Plan a canoe trip across Algonquin: point-to-point directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://hikewithyu.com/algonquin/"/>
+<meta property="og:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="The Algonquin Planner map showing a paddling route through Lake Opeongo with carries numbered and portage trails drawn in orange."/>
+<meta property="og:site_name" content="Hiking With Yu"/>
+<meta property="og:locale" content="en_CA"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
+<meta name="twitter:description" content="Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park."/>
+<meta name="twitter:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
+<meta name="twitter:image:alt" content="A canoe route through Lake Opeongo on the Algonquin Planner map."/>
+<!-- Structured data so this reads as the tool it is, not a thin app page.
+     The app is client-rendered, so the crawler never sees a route: this tells it
+     what the thing is and what it covers. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Algonquin Planner",
+  "url": "https://hikewithyu.com/algonquin/",
+  "image": "https://hikewithyu.com/images/og/algonquin-planner.jpg",
+  "description": "Canoe route planner for Algonquin Provincial Park: point-to-point paddling directions across every named lake, portage and river, with carry counts, carrying distances, climb profiles and park advisories.",
+  "applicationCategory": "TravelApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": "en-CA",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD" },
+  "about": {
+    "@type": "Place",
+    "name": "Algonquin Provincial Park",
+    "description": "Provincial park in Ontario, Canada, with an extensive interconnected network of lakes, rivers and portages suited to canoe tripping."
+  },
+  "keywords": "Algonquin canoe route planner, Algonquin portages, canoe trip planning Ontario, lake Opeongo, Algonquin Park canoeing"
+}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2216%22%20fill%3D%22%23176b4a%22%2F%3E%3Cpath%20d%3D%22M7%2018.5c3%201.3%2015%201.3%2018%200l-2.1%204.1H9.1L7%2018.5Z%22%20fill%3D%22%23fffef8%22%2F%3E%3Cpath%20d%3D%22M12.5%2013.5h3.4l.9%204.4h-5.2l.9-4.4Z%22%20fill%3D%22%23fffef8%22%20opacity%3D%22.9%22%2F%3E%3Cpath%20d%3D%22M8.5%2025.2c2-.9%203.6-.9%205.6%200s3.6.9%205.6%200c1.9-.9%203.5-.9%205.3%200%22%20fill%3D%22none%22%20stroke%3D%22%23fffef8%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E"/>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2216%22%20fill%3D%22%23176b4a%22%2F%3E%3Cpath%20d%3D%22M7%2018.5c3%201.3%2015%201.3%2018%200l-2.1%204.1H9.1L7%2018.5Z%22%20fill%3D%22%23fffef8%22%2F%3E%3Cpath%20d%3D%22M12.5%2013.5h3.4l.9%204.4h-5.2l.9-4.4Z%22%20fill%3D%22%23fffef8%22%20opacity%3D%22.9%22%2F%3E%3Cpath%20d%3D%22M8.5%2025.2c2-.9%203.6-.9%205.6%200s3.6.9%205.6%200c1.9-.9%203.5-.9%205.3%200%22%20fill%3D%22none%22%20stroke%3D%22%23fffef8%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E"/>
@@ -312,8 +348,8 @@
   </header>
   <div class="side-intro">
     <p class="eyebrow">Plan your trip</p>
-    <h1>Find your way across the water.</h1>
-    <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in the park.</p>
+    <h1>Plan a canoe route across Algonquin</h1>
+    <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park.</p>
     <div class="chip" id="stats">loading&hellip;</div>
   </div>
   <section class="side-section">
@@ -343,7 +379,8 @@
   <footer class="side-footer">
     <div id="conds" class="conds"></div>
     <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
-    <span class="meta">Built <b id="bts">?</b> · <a href="#" id="creditsLink">data sources &amp; credits</a></span>
+    <span class="meta">Built <b id="bts">?</b> · <a href="#" id="creditsLink">data sources &amp; credits</a> ·
+      <a href="mailto:me@yuchenhou.com?subject=Algonquin%20Planner%20feedback">feedback or a problem?</a></span>
   </footer>
 </div>
 <div class="notice-veil" id="noticeVeil">
