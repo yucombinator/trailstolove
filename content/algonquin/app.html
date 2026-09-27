@@ -383,10 +383,10 @@
   <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790535849"></script>
+<script src="router.js?v=1790536477"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790535849')
+fetch('router_data.json?v=1790536477')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -848,7 +848,26 @@ function drawRoute(opt, pointIds) {
   highlightPortages(opt.res.legs.filter(e => e.k === 'portage').map(e => e.id));
   const res = opt.res;
   let segCount = 0;
-  function addLine(coords, style) {
+  // Every drawn path is remembered so a straight stub is never painted on top of
+  // (or under) a real line that already covers the same water.
+  const drawnPts = [];
+  const pendingStubs = [];
+  function alreadyDrawn(coords) {
+    if (!drawnPts.length) return false;
+    const M = (a, b) => Math.hypot((a[0] - b[0]) * 78000, (a[1] - b[1]) * 111320);
+    for (let i = 0; i < coords.length; i += Math.max(1, Math.floor(coords.length / 6))) {
+      const c = coords[i];
+      for (let k = 0; k < drawnPts.length; k += 3) {
+        if (M(c, drawnPts[k]) < 30) return true;
+      }
+    }
+    return false;
+  }
+  function addLine(coords, style, opts) {
+    if (opts && opts.force !== true) {
+      if (alreadyDrawn(coords)) return;                  // superseded by a better line
+      for (const c of coords) drawnPts.push(c);
+    }
     const latlngs = coords.map(c => [c[1], c[0]]);   // GeoJSON [lon,lat] -> Leaflet [lat,lng]
     L.polyline(latlngs, { renderer: routeRenderer, ...style, color: '#ffffff', weight: style.weight + 4, opacity: .9 }).addTo(routeLayer);
     L.polyline(latlngs, { renderer: routeRenderer, ...style }).addTo(routeLayer);
@@ -927,7 +946,9 @@ function drawRoute(opt, pointIds) {
       // and then laying the reach slice or the curved lake path over it left
       // both visible, which is what produced the superfluous straight chords
       // across lakes that already had a proper line.
-      const stub = () => { if (e.g && e.g.length >= 2) { addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 }); paddleM += hav2(e.g[0], e.g[e.g.length - 1]); } };
+      // queued, not drawn: a straight stub is only worth showing where no
+      // real path was found, and the real paths are all in by the end
+      const stub = () => { if (e.g && e.g.length >= 2) pendingStubs.push(e.g); };
       if (foldStep) { stub(); continue; }
       const reachId = e.d < 0 ? e.d : e.s;
       const nxt = grouped[gi + 1];   // group index — `i` is the display step counter
@@ -1016,6 +1037,12 @@ function drawRoute(opt, pointIds) {
       addLine([a1, a2], { color: '#1f78b4', weight: 6, opacity: .95 });
       paddleM += hav2(a1, a2);
     }
+  }
+  // straight connectors last: draw only those not already covered by a real line
+  for (const st of pendingStubs) {
+    if (alreadyDrawn(st)) continue;
+    addLine(st, { color: '#1f78b4', weight: 6, opacity: .95 });
+    paddleM += hav2(st[0], st[st.length - 1]);
   }
   legsEl.innerHTML = html;
   const condsEl = document.getElementById('conds');
