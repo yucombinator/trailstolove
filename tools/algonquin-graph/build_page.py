@@ -5,6 +5,7 @@ Embeds a compact graph (nodes, edges with drawing geometry), simplified lake
 polygons and reach polylines. Routing runs client-side (Dijkstra in router.js).
 """
 import csv
+import hashlib
 import json
 import math
 import pathlib
@@ -439,8 +440,15 @@ def main():
     print(f"router_data.json: {len(payload) / 1e6:.1f} MB")
 
     template = (ROOT / "router_template.html").read_text()
-    build = str(int(max((ROOT / "router.js").stat().st_mtime,
-                        (ROOT / "router_data.json").stat().st_mtime)))
+    # Cache-bust from CONTENT, not mtime. An mtime stamp changes when a file is
+    # merely copied and does not change when its bytes do, so replacing
+    # router.js with a fixed one left the page requesting the URL the browser
+    # had already cached with the broken file. A hash changes exactly when the
+    # bytes change, and leaves the URL stable when nothing did.
+    h = hashlib.sha256()
+    for part in ("router.js", "router_data.json"):
+        h.update((ROOT / part).read_bytes())
+    build = h.hexdigest()[:12]
     html = template.replace("__DATA__", payload).replace("__BUILD__", build)
     (ROOT / "index.html").write_text(html)
     print(f"index.html: {(ROOT / 'index.html').stat().st_size / 1e6:.1f} MB")
