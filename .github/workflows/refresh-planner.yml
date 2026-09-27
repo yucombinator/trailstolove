@@ -17,12 +17,33 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      # The OSM tile cache is ~290 MB and stays out of git, so it rides the Actions
+      # cache instead. Without it every nightly run re-downloads every tile from
+      # Overpass and dies on rate limits. Rolling key: last good cache is restored
+      # and refreshed after each successful fetch.
+      - name: Restore OSM tile cache
+        uses: actions/cache@v4
+        with:
+          path: tools/algonquin-graph/raw
+          key: osm-tiles-${{ github.run_id }}
+          restore-keys: |
+            osm-tiles-
+
+      - name: Cache hit info
+        run: |
+          n=$(ls tools/algonquin-graph/raw/*.json 2>/dev/null | wc -l | tr -d ' ')
+          echo "cached OSM snapshots: $n"
+          if [ "$n" -lt 10 ]; then
+            echo "::warning::tile cache cold — this run does a full re-download and may be slow"
+          fi
 
       - name: Fetch OSM (roads, campsites, water, portages, access)
         run: python3 tools/algonquin-graph/fetch_osm.py
@@ -34,6 +55,29 @@ jobs:
           python3 build_access_geo.py
           python3 fetch_elevations.py
           python3 build_page.py
+
+      # Guards against the silent-drift class of bug: a stale generator writing
+      # a payload missing fields the UI reads (e.g. elevation profiles).
+      - name: Verify payload integrity
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open('data/router_data.json'))
+          p = [e for e in d['edges'] if e['k'] == 'portage']
+          prof = sum(1 for e in p if e.get('pf'))
+          climb = sum(1 for e in p if e.get('el') is not None)
+          camps = len(d.get('campsites') or [])
+          roads = bool(d.get('roads'))
+          dm = sum(1 for n in d['nodes'] if len(n) > 5)
+          print(f"portages={len(p)} profiles={prof} climb={climb} campsites={camps} roads={roads} dm_nodes={dm}")
+          bad = []
+          if len(p) and prof < len(p) * 0.9: bad.append("elevation profiles missing")
+          if len(p) and climb < len(p) * 0.9: bad.append("climb data missing")
+          if camps == 0: bad.append("no campsites")
+          if not roads: bad.append("no Hwy 60")
+          if bad:
+              sys.exit("payload incomplete: " + ", ".join(bad))
+          PY
 
       - name: Deploy refreshed app into the page bundle
         run: |
