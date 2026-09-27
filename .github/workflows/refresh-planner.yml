@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: "20 4 * * *"   # 04:20 UTC daily
   workflow_dispatch:
+  # Editing this file re-runs the refresh, so a pipeline fix proves itself
+  # immediately instead of waiting for the next cron slot.
+  push:
+    paths:
+      - .github/workflows/refresh-planner.yml
 
 permissions:
   contents: write
