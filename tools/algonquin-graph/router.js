@@ -19,6 +19,30 @@
     return { nodeById, adj, search };
   }
 
+  // Steepness of a carry: climb over horizontal run, 0 when unknown.
+  function gradeOf(e) {
+    if (!e.m || e.el === null || e.el === undefined || e.el <= 0) return 0;
+    return Math.min(e.el / e.m, 0.6);
+  }
+  // Carry effort in metres-equivalent. A canoe goes uphill badly, so grade is
+  // charged with a steep multiplier (2.5x at a 50% grade, capped) on top of
+  // the flat distance: 500 m flat costs 500, 500 m at 20% costs 800.
+  function carryEffort(e, k) {
+    const g = gradeOf(e);
+    return e.m * (1 + (k === undefined ? 3 : k) * g) + (e.el || 0) * 0.5;
+  }
+  // Human rating for the directions list.
+  function carryRating(e) {
+    const g = gradeOf(e);
+    if (!e.m) return null;
+    if (e.el === null || e.el === undefined) return { label: 'grade unknown', cls: 'r-unknown' };
+    if (e.el < 3) return { label: 'flat', cls: 'r-flat' };
+    if (g < 0.05) return { label: 'gentle', cls: 'r-flat' };
+    if (g < 0.10) return { label: 'moderate', cls: 'r-moderate' };
+    if (g < 0.15) return { label: 'steep', cls: 'r-steep' };
+    if (g < 0.22) return { label: 'very steep', cls: 'r-vsteep' };
+    return { label: 'brutal', cls: 'r-brutal' };
+  }
   function cost(e, mode, avoidObstacles, penalty, idx) {
     if (avoidObstacles && e.o && e.o.length) return null;
     if (penalty) {
@@ -28,7 +52,9 @@
     if (mode === "conservative" && e.k === "river") return null;
     if (e.k === "portage") {
       if (mode === "carries") return 1e6 + e.m;
-      if (mode === "balanced" || mode === "meters") return e.m;
+      if (mode === "easiest") return carryEffort(e, 10);
+      if (mode === "balanced") return carryEffort(e, 3);
+      if (mode === "meters") return e.m;
       return 1 + e.m / 1e7; // "edges": fewest hops, tie-broken by carry metres
     }
     if (mode === "carries") return 0.5;
@@ -465,6 +491,7 @@
     return out;
   }
 
-  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
+  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost,
+    carryRating: carryRating, carryEffort: carryEffort, gradeOf: gradeOf, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
   global.Router = Router;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -166,6 +166,13 @@
   .carry-badge span { background: var(--carry); }
   .el { font-weight: 700; font-size: 11px; }
   .prof { display: block; width: 108px; height: 22px; margin: 4px 0 2px; opacity: .9; }
+  .rate { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+  .rate.r-flat { background: #eef2ec; color: #4a6b58; }
+  .rate.r-moderate { background: #fdf3d8; color: #8a6512; }
+  .rate.r-steep { background: #fde8cf; color: #a3530b; }
+  .rate.r-vsteep { background: #fbdfd2; color: #b23a0e; }
+  .rate.r-brutal { background: #f9d3d3; color: #a51d1d; }
+  .rate.r-unknown { background: #eee; color: #888; }
   .el.up { color: #9a3412; }
   .el.down { color: #1a6b4a; }
   .portage-arrow span {
@@ -298,6 +305,7 @@
     <div class="opts">
       <select id="mode">
         <option value="balanced">balanced — carries + lakes crossed</option>
+        <option value="easiest">easiest carries — avoid steep portages</option>
         <option value="carries">fewest carries</option>
         <option value="meters">least total carrying</option>
         <option value="conservative">portages only (no river paddling)</option>
@@ -782,6 +790,7 @@ function profileSVG(pf, lenM) {
 }
 const modeLabel = m => ({
   balanced: 'balanced (carries + lakes)',
+  easiest: 'easiest carries (least climbing)',
   carries: 'fewest carries', meters: 'least total carrying',
   conservative: 'portages only', edges: 'fewest steps'
 }[m] || m);
@@ -857,7 +866,11 @@ function drawRoute(opt, pointIds) {
         : (Math.abs(e.el) < 3 && Math.abs(e.ed || 0) < 3) ? '<span class="el">≈ flat</span>'
         : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
           ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
+      const rate = Router.carryRating(e);
+      const rateTxt = rate
+        ? `<span class="rate ${rate.cls}">${rate.label}${/steep|brutal/.test(rate.cls) && e.m ? ' · ' + Math.round(100 * Router.gradeOf(e)) + '%' : ''}</span>`
+        : '';
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
@@ -980,7 +993,8 @@ function renderOptionsPanel() {
       const o = currentOptions[selectedOption];
       const segs = drawRoute(o, currentPoints);
       const sumTxt = `${o.res.carries} carries · ${(segs.paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
-      summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${o.res.lakes} lakes · ≈ ${(segs.paddleM / 1000).toFixed(1)} km paddling`;
+      const climbTot = Math.round(o.res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
+    summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${climbTot} m climb · ${o.res.lakes} lakes · ≈ ${(segs.paddleM / 1000).toFixed(1)} km paddling`;
       showRoute(sumTxt);
     };
   });
@@ -1032,7 +1046,8 @@ document.getElementById('go').onclick = () => {
     });
     renderOptionsPanel();
     const segs = drawRoute(options[0], pointIds);
-    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(segs.paddleM / 1000).toFixed(1)}</b> km paddling`;
+    const climb0 = Math.round(options[0].res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${climb0} m</b> climb · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(segs.paddleM / 1000).toFixed(1)}</b> km paddling`;
     showRoute(`${options[0].res.carries} carries · ${(segs.paddleM / 1000).toFixed(1)} km paddling`);
   } catch (err) {
     warnbox.style.display = 'block';
