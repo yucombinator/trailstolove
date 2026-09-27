@@ -92,6 +92,9 @@
   .ac div { padding: 7px 10px; cursor: pointer; }
   .ac div:hover { background: var(--accent-soft); }
   .ac .k { color: var(--ink-muted); font-size: 10px; margin-left: 6px; }
+  .ac .ac-more { color: var(--accent-strong); font-size: 11px; font-weight: 600;
+    background: var(--accent-soft); border-top: 1px solid var(--line); position: sticky; bottom: 0; }
+  .ac .ac-more:hover { background: #cfe3d2; }
   .tools { display: flex; gap: 8px; margin: 10px 0 2px; }
   .tools button, .opts select {
     font: 700 11px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .04em;
@@ -159,6 +162,7 @@
   }
   .carry-badge span { background: var(--carry); }
   .el { font-weight: 700; font-size: 11px; }
+  .prof { display: block; width: 108px; height: 22px; margin: 4px 0 2px; opacity: .9; }
   .el.up { color: #9a3412; }
   .el.down { color: #1a6b4a; }
   .portage-arrow span {
@@ -412,7 +416,8 @@ const lakes = L.geoJSON(DATA.lakes, {
     if (p.name) l.bindTooltip(`<b>${p.name}</b><span class="tt-k">${p.kind || ''}</span>`, { sticky: true });
     l.bindPopup(`<b>${p.name || 'unnamed water'}</b><br>kind: ${p.kind}<br>area: ${p.area_ha} ha
       <br><button data-act="0" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as start</button>
-      <button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>`);
+      <br><button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>
+      <br><button data-act="add" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Add after destination</button>`);
   }
 }).addTo(map);
 let highlightedLakes = [];
@@ -549,22 +554,72 @@ function addStop() {
   for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
   row.input.focus();
 }
+// Unnamed pond/wetland slivers are the bulk of the graph but useless to search:
+// rank named waters first, then access points, and only surface unnamed slivers
+// when the query clearly is not matching anything better (or ask for them).
+const UNNAMED_KINDS = new Set(['pond', 'reservoir', 'oxbow', 'wastewater']);
+let showUnnamed = false;
+function matchScore(h, q) {
+  const nm = h.name.toLowerCase();
+  let score = 0;
+  if (nm === q) score = 100;
+  else if (nm.startsWith(q)) score = 60;
+  else if (new RegExp('\\b' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(nm)) score = 40;
+  else score = 10;
+  if (h.kind === 'access') score += 6;
+  if (h.kind === 'lake') score += 4;
+  if (h.kind === 'reach') score += 2;
+  if (!h.name || UNNAMED_KINDS.has(h.kind)) score -= 25;
+  if (/lake|creek|river/.test(nm)) score += 3;
+  return score;
+}
 function attachAC(input, ac) {
   function render() {
     const q = input.value.trim().toLowerCase();
     if (!q) { ac.style.display = 'none'; return; }
-    const hits = idx.search.filter(s => s.name.toLowerCase().includes(q)).slice(0, 12);
+    const all = idx.search.filter(s => s.name.toLowerCase().includes(q));
+    const named = all.filter(s => s.name && !UNNAMED_KINDS.has(s.kind));
+    const unnamed = all.filter(s => !s.name || UNNAMED_KINDS.has(s.kind));
+    // named matches only, unless nothing named matched or the user asked for all
+    const pool = (named.length && !showUnnamed) ? named : all;
+    // collapse identical display names (way-split lakes, duplicate launch rows)
+    const seenName = new Set();
+    const dedup = pool.filter(s2 => {
+      const k = (s2.name || '#' + s2.id).toLowerCase() + '|' + s2.kind;
+      if (seenName.has(k)) return false;
+      seenName.add(k);
+      return true;
+    });
+    const hits = dedup.slice().sort((a, b) => matchScore(b, q) - matchScore(a, q)).slice(0, 12);
     if (!hits.length) { ac.style.display = 'none'; return; }
     ac.innerHTML = '';
     for (const h of hits) {
       const d = document.createElement('div');
-      d.innerHTML = `${h.name}<span class="k">${h.kind}</span>`;
+      const unnamedHit = !h.name || UNNAMED_KINDS.has(h.kind);
+      d.innerHTML = `${h.name || '(unnamed ' + h.kind + ')'}<span class="k">${h.kind}${unnamedHit ? ' · minor' : ''}</span>`;
       d.onclick = () => {
-        input.value = h.name;
+        input.value = h.name || 'unnamed water #' + h.id;
         input.dataset.id = h.id;
         ac.style.display = 'none';
       };
       ac.appendChild(d);
+    }
+    // toggle for the leftovers
+    const hidden = dedup.length - hits.length;
+    if (hidden > 0) {
+      const t = document.createElement('div');
+      t.className = 'ac-more';
+      t.innerHTML = showUnnamed
+        ? '↑ show named only'
+        : `+ ${hidden} more (unnamed ponds etc.)`;
+      t.onclick = () => { showUnnamed = !showUnnamed; render(); };
+      ac.appendChild(t);
+    } else if (showUnnamed && named.length) {
+      const t = document.createElement('div');
+      t.className = 'ac-more';
+      t.innerHTML = '↑ show named only';
+      t.onclick = () => { showUnnamed = false; render(); };
+      ac.appendChild(t);
     }
     ac.style.display = 'block';
   }
@@ -618,9 +673,37 @@ function setField(which, id) {   // which: row index or 'end'
   rows[k].input.dataset.id = id;
 }
 
+// The clicked lake becomes the new destination; the old destination is kept
+// in front of it as a waypoint (or as the new start if there was no start).
+function addAfterDestination(id) {
+  const k = rows.length - 1;
+  const destId = rows[k].input.dataset.id ? Number(rows[k].input.dataset.id) : null;
+  if (destId === null) { setField('end', id); return; }   // nothing chosen yet
+  if (destId === id) return;                             // already the destination
+  const cap = rows.length >= 7;                         // MAX_ROWS in addStop()
+  if (cap) {
+    // no room for another stop: the old destination becomes the new start
+    setField(0, destId);
+    setField('end', id);
+    relabelStops();
+    return;
+  }
+  addStop();                                            // grows rows by one, before dest
+  const moved = rows[rows.length - 2];                  // the former destination row
+  setField(rows.length - 2, destId);                    // old destination -> waypoint slot
+  setField('end', id);                                  // new destination
+  void moved;
+  relabelStops();
+}
+function relabelStops() {
+  for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
+}
 map.on('popupopen', ev => {
   ev.popup.getElement().querySelectorAll('button[data-act]').forEach(b => {
-    b.onclick = () => setField(b.dataset.act, Number(b.dataset.id));
+    b.onclick = () => {
+      if (b.dataset.act === 'add') addAfterDestination(Number(b.dataset.id));
+      else setField(b.dataset.act, Number(b.dataset.id));
+    };
   });
 });
 
@@ -675,6 +758,25 @@ function runSample(s) {
 
 
 // ---------- directions ----------
+// mini elevation-vs-distance profile for one portage (inline SVG, no deps)
+function profileSVG(pf, lenM) {
+  if (!pf || pf.length < 2) return '';
+  const W = 108, H = 22, pad = 1.5;
+  const lo = Math.min.apply(null, pf), hi = Math.max.apply(null, pf);
+  const span = (hi - lo) || 1;
+  const x = i => (i / (pf.length - 1)) * W;
+  const y = v => H - pad - ((v - lo) / span) * (H - 2 * pad);
+  const pts = pf.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  const area = 'M0,' + H + ' L' + pts.split(' ').map(q => q.replace(',', ',')).join(' L') + ' L' + W + ',' + H + ' Z';
+  const up = hi - pf[0], down = pf[pf.length - 1] - hi;
+  const title = `${hi - lo} m of relief` + (up > 3 ? ` · +${Math.round(up)} m up` : '') +
+                (down < -3 ? ` · ${Math.round(-down)} m down` : '') + ` over ${lenM} m`;
+  return `<svg class="prof" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="elevation profile">
+    <path d="${area}" fill="var(--carry)" opacity=".12"/>
+    <polyline points="${pts}" fill="none" stroke="var(--carry)" stroke-width="1.5"
+      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <title>${title}</title></svg>`;
+}
 const modeLabel = m => ({
   balanced: 'balanced (carries + lakes)',
   carries: 'fewest carries', meters: 'least total carrying',
@@ -752,7 +854,7 @@ function drawRoute(opt, pointIds) {
         : (Math.abs(e.el) < 3 && Math.abs(e.ed || 0) < 3) ? '<span class="el">≈ flat</span>'
         : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
           ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${e.o && e.o.length ? '<br><span class="warn">⚠ ' + e.o.join(', ') + ' nearby</span>' : ''}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';

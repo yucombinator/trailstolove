@@ -134,18 +134,31 @@ def main():
                     wr.writerow(["lat", "lon", "elev"])
                 wr.writerows(new_rows)
 
-    # climbs per portage (smoothed profile, p0 -> p1)
+    # climbs per portage (smoothed profile, p0 -> p1) + a compact sparkline
+    def profile(elevs, n=12):
+        """n samples, first/last anchored, resampled by index."""
+        sm = smooth(elevs)
+        if len(sm) < 2:
+            return ""
+        out = []
+        for i in range(n):
+            t = i * (len(sm) - 1) / (n - 1)
+            lo = int(t)
+            hi = min(lo + 1, len(sm) - 1)
+            out.append(sm[lo] + (sm[hi] - sm[lo]) * (t - lo))
+        return ";".join(f"{v:.0f}" for v in out)
+
     rows = []
     for oid, pts in trails.items():
         elevs = [cache.get(q) for q in pts]
         if any(e is None for e in elevs):
             continue
         up, down = climb_down(smooth(elevs))
-        rows.append((oid, up, down))
+        rows.append((oid, up, down, profile(elevs)))
 
     with open(CLIMBS_CSV, "w", newline="") as f:
         wr = csv.writer(f)
-        wr.writerow(["osm_id", "up", "down"])
+        wr.writerow(["osm_id", "up", "down", "prof"])
         wr.writerows(rows)
     print(f"climbs written: {len(rows)} portages "
           f"(steepest: {max(rows, key=lambda r: r[1])[1]} m up)")

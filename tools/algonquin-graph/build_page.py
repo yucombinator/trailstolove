@@ -116,11 +116,12 @@ def main():
     if climbs_csv.exists():
         with open(climbs_csv, newline="") as f:
             for r in csv.DictReader(f):
-                climbs[int(r["osm_id"])] = (int(r["up"]), int(r["down"]))
+                prof = [int(float(x)) for x in r["prof"].split(";")] if r.get("prof") else None
+                climbs[int(r["osm_id"])] = (int(r["up"]), int(r["down"]), prof)
     def portage_gain(p):
         c = climbs.get(int(p["osm_id"]))
         if c is None:
-            return (None, None)
+            return (None, None, None)
         return c
 
     edges = []
@@ -139,16 +140,16 @@ def main():
         line = [[r5(q["lon"]), r5(q["lat"])] for q in g]
         m = round(float(p["length_m"]))
         o = sorted(set(obstacles.get(oid, [])))
-        el, ed = portage_gain(p)   # cumulative up/down (metres) from p0 (a end) to p1 (b end)
+        el, ed, prof = portage_gain(p)   # cumulative up/down + sparkline, p0 (a end) -> p1 (b end)
         # orient geometry so g[0] sits on the s-side of each directed edge
         if a == int(p["from_id"]):
             g_fwd, g_rev = line, line[::-1]
         else:
             g_fwd, g_rev = line[::-1], line
         edges.append({"s": a, "d": b, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
-                      "o": o, "g": g_fwd, "el": el, "ed": ed})
+                      "o": o, "g": g_fwd, "el": el, "ed": ed, "pf": prof})
         edges.append({"s": b, "d": a, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
-                      "o": o, "g": g_rev, "el": ed, "ed": el})
+                      "o": o, "g": g_rev, "el": ed, "ed": el, "pf": prof[::-1] if prof else None})
         portage_geo[oid] = line
     print(f"portage edges: {len(edges)}")
 
