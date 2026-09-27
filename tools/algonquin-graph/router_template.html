@@ -137,20 +137,15 @@
   .leg .warn { color: var(--danger); font-size: 11px; }
   .wpdiv { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
     border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
-  .conds { margin: 8px 0 0; }
-  .conds .cond {
-    display: flex; gap: 7px; align-items: baseline; font-size: 11px; line-height: 1.4;
-    padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; border: 1px solid var(--line);
-    background: #f7f7f2;
+  .conds { margin: 0 0 4px; }
+  .conds .foot { color: var(--ink-muted); font-size: 9.5px; line-height: 1.4; }
+  .cond-flag {
+    display: inline-block; margin-left: 5px; padding: 1px 5px; border-radius: 3px;
+    font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    background: #fdf3d8; color: #8a6512; white-space: nowrap; cursor: help;
   }
-  .conds .cond .tag {
-    flex: 0 0 auto; font-size: 9px; font-weight: 800; letter-spacing: .08em;
-    text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: #eee; color: #666;
-  }
-  .conds .cond.low-water .tag { background: #fdf3d8; color: #8a6512; }
-  .conds .cond.closure .tag { background: #fbe0d6; color: #a3530b; }
-  .conds .cond.boil-water .tag { background: #f9d3d3; color: #a51d1d; }
-  .conds .stale { opacity: .75; font-style: italic; }
+  .cond-flag.closure { background: #fbe0d6; color: #a3530b; }
+  .cond-flag.boil-water { background: #f9d3d3; color: #a51d1d; }
   .warnbox {
     margin: 6px 0 0; padding: 8px 10px; background: #fdf2f2; color: var(--danger);
     border: 1px solid #f3cccc; border-radius: 4px; font-size: 12px; display: none;
@@ -330,7 +325,6 @@
     <button class="go" id="go">Directions</button>
   </section>
   <section class="side-section grow">
-    <div id="conds" class="conds"></div>
     <div id="samples"></div>
     <div id="options"></div>
     <div id="summary"></div>
@@ -338,6 +332,7 @@
     <div id="legs"></div>
   </section>
   <footer class="side-footer">
+    <div id="conds" class="conds"></div>
     <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
     <span class="meta">Built <b id="bts">?</b> · <a href="#" id="creditsLink">data sources &amp; credits</a></span>
   </footer>
@@ -783,25 +778,43 @@ function runSample(s) {
 })();
 
 
-// ---------- park conditions (fetched, with freshness) ----------
-(function renderConditions() {
-  const el = document.getElementById('conds');
+// ---------- park conditions (fetched) ----------
+// Advisories are noise unless they touch the route, so they are matched against
+// the waters on the selected route and shown inline on the leg they affect.
+// "checked <date>" always stays visible in the footer.
+const COND_FOOTER = () => {
   const rows = DATA.conds || [];
-  if (!el || !rows.length) { if (el) el.style.display = 'none'; return; }
-  const days = d => Math.floor((Date.now() - Date.parse(d + 'T00:00:00')) / 86400000);
-  const show = rows.filter(r => r.cat !== 'info' || /no closures/i.test(r.note));
   const stamp = rows.reduce((a, r) => (r.as_of > a ? r.as_of : a), '');
-  const age = stamp ? days(stamp) : null;
-  el.innerHTML = show.map(r => {
-    const stale = age !== null && age > 14;
-    return `<div class="cond ${r.cat} ${stale ? 'stale' : ''}">
-      <span class="tag">${r.cat}</span>
-      <span>${r.note}${stale ? ` <em>(checked ${stamp}, ${age}d ago — verify before you go)</em>` : ''}</span>
-    </div>`;
-  }).join('') + `<div class="cond" style="background:none;border:0;padding-top:0">
-    <span>checked ${stamp}${age !== null ? ` · ${age} day${age === 1 ? '' : 's'} ago` : ''}</span></div>`;
-})();
-
+  return stamp ? `<div class="cond foot"><span>Park advisories checked ${stamp} — verify before you go</span></div>` : '';
+};
+// Water names a condition refers to, matched loosely ("Canoe routes" -> Canoe).
+function condsForRoute(nodeIds) {
+  const rows = (DATA.conds || []).filter(r => r.cat !== 'info' && r.cat !== 'permit');
+  if (!rows.length) return [];
+  const names = nodeIds.map(id => (idx.nodeById.get(id) || {}).name)
+    .filter(Boolean).map(n => n.toLowerCase());
+  const out = [];
+  for (const r of rows) {
+    const note = r.note.toLowerCase();
+    const words = note.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+      .filter(w => w.length > 3);
+    const hit = words.some(w => names.some(n => n.includes(w) || w.includes(n)));
+    if (hit) out.push(r);
+  }
+  return out;
+}
+// tag the leg that runs through a water mentioned by a live advisory
+function legCond(nodeId) {
+  const rows = (DATA.conds || []).filter(r => r.cat !== 'info' && r.cat !== 'permit');
+  if (!rows.length) return '';
+  const node = idx.nodeById.get(nodeId);
+  if (!node || !node.name) return '';
+  const n = node.name.toLowerCase();
+  const hit = rows.find(r => r.note.toLowerCase().includes(n) || n.includes(
+    r.note.toLowerCase().split(/[^a-z0-9]+/).find(w => w.length > 4) || ''));
+  if (!hit) return '';
+  return `<span class="cond-flag ${hit.cat}" title="${hit.note.replace(/"/g, '&quot;')}">${hit.cat === 'low-water' ? 'low water' : hit.cat}</span>`;
+}
 // ---------- directions ----------
 // mini elevation-vs-distance profile for one portage (inline SVG, no deps)
 function profileSVG(pf, lenM) {
@@ -923,7 +936,7 @@ function drawRoute(opt, pointIds) {
         if (slice && slice.length >= 2) {
           addLine(slice, { color: '#1f78b4', weight: 6, opacity: .95 });
           for (let q = 1; q < slice.length; q++) paddleM += hav2(slice[q - 1], slice[q]);
-          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
+          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}${legCond(nxt.to)}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
           gi++;       // consume the paired river leg (one step already counted)
           continue;
         }
@@ -949,7 +962,7 @@ function drawRoute(opt, pointIds) {
         if (cpath) {
           addLine(cpath, { color: '#1f78b4', weight: 6, opacity: .95 });
           for (let q = 1; q < cpath.length; q++) paddleM += hav2(cpath[q - 1], cpath[q]);
-          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}</div></div>`;
+          html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${legCond(g.to)}<br><span style="color:#667">${e.n || ''}</span></div></div>`;
           continue;
         }
       }
@@ -963,13 +976,30 @@ function drawRoute(opt, pointIds) {
       }).addTo(routeLayer);
     }
   }
-  // across-water traversal: connect each intermediate node's landing to its take-out
+  // across-water traversal: connect each intermediate node's landing to its
+  // take-out. A node can be a lake, or a reach (a waterway) that the route
+  // merely passes through — e.g. Timberwolf Creek -> Misty Lake -> Petawawa
+  // River, where Misty Lake is a reach and skipping it left the two river
+  // stubs visibly disconnected. Reach nodes get their centreline instead.
   for (let j = 1; j < res.nodeIds.length - 1; j++) {
     const a1 = anchorIn[j], a2 = anchorOut[j];
     const node = idx.nodeById.get(res.nodeIds[j]);
+    if (!a1 || !a2 || !node) continue;
+    if (node.kind === 'reach') {
+      const rid = res.nodeIds[j];
+      const lines = (DATA.reaches[rid] || {}).lines;
+      if (lines && lines.length) {
+        const pt = Router.reachPointOn(lines, [a1]);
+        const pt2 = Router.reachPointOn(lines, [a2]);
+        if (pt && pt2 && (pt[0] !== pt2[0] || pt[1] !== pt2[1])) {
+          addLine([pt, pt2], { color: '#1f78b4', weight: 6, opacity: .95 });
+          paddleM += hav2(pt, pt2);
+        }
+      }
+      continue;
+    }
     const feat = lakeGeoms[res.nodeIds[j]];
     let path = feat ? Router.lakePath(a1, a2, feat) : null;
-    if (!a1 || !a2 || !node || node.kind === 'reach') continue;
     if (path) {
       path = Router.refinePath(path, feat, 40);
       addLine(path, { color: '#1f78b4', weight: 6, opacity: .95 });
@@ -982,6 +1012,8 @@ function drawRoute(opt, pointIds) {
     }
   }
   legsEl.innerHTML = html;
+  const condsEl = document.getElementById('conds');
+  if (condsEl) condsEl.innerHTML = COND_FOOTER();
   const fitPad = p => {
     const sh = window.innerWidth <= 768 ? sideEl.getBoundingClientRect().height : 0;
     return [p, p, p + sh + 10, p];
@@ -1102,7 +1134,7 @@ if (!applyHashRoute()) {
 }
 
 // debug handle (console access to the closure)
-window.__app = { map, lakes, lakeGeoms, idx, currentOptions: () => currentOptions };
+window.__app = { map, lakes, lakeGeoms, idx, routeLayer, currentOptions: () => currentOptions };
 })
   .catch(err => {
     console.error(err);
