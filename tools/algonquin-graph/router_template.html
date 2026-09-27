@@ -200,16 +200,28 @@
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
   .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
     width: 46px; height: 5px; border-radius: 3px; background: var(--line); border: 0; cursor: pointer; z-index: 2; }
+  .side-peek { display: none; }
   @media (max-width: 768px) {
-    .side { top: auto; height: 46%; width: 100%; border-right: 0; border-top: 1px solid var(--line);
+    .side { top: auto; height: 54%; width: 100%; border-right: 0; border-top: 1px solid var(--line);
       box-shadow: 0 -8px 24px rgba(0,0,0,.2); transition: height .22s ease; }
-    .side.collapsed { height: 88px; overflow: hidden; }
-    .side-handle { display: block; }
-    .side-header { padding: 20px 16px 6px; }
-    .brand-name { font-size: 15px; }
+    .side.collapsed { height: 78px; overflow: hidden; }
+    .side-handle { display: block; position: absolute; top: 0; left: 0; right: 0; width: 100%;
+      height: 22px; background: none; }
+    .side-handle::after { content: ''; position: absolute; left: 50%; top: 7px; transform: translateX(-50%);
+      width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+    .side-header { padding: 24px 16px 6px; align-items: center; gap: 10px; }
+    .side-header .brand-sub { display: none; }
+    .side-peek { display: block; flex: 1; min-width: 0; color: var(--ink-muted); font-size: 11px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
     .side-intro { display: none; }
     .side-section { padding: 8px 16px 10px; }
-    .legend { font-size: 9px; padding: 6px 8px; bottom: 8px; right: 8px; }
+    .field input { min-height: 40px; font-size: 16px; }   /* 16px: no iOS focus-zoom */
+    .tools button, .opts select, .go { min-height: 40px; font-size: 14px; }
+    .opts { flex-direction: column; align-items: stretch; gap: 6px; }
+    .opts .avoid { padding: 4px 0; }
+    .go { position: sticky; bottom: 0; }
+    .legend { bottom: calc(var(--sheet-h, 0px) + 10px); right: 8px; font-size: 9px; padding: 6px 8px; }
+    .legend > div { display: inline; margin-right: 8px; }
   }
   .side-footer p { margin: 0 0 6px; }
   .side-footer .meta { display: block; letter-spacing: .04em; }
@@ -261,6 +273,7 @@
         <span class="brand-name">Algonquin Planner</span>
         <span class="brand-sub">Canoe Route Planner</span>
       </span>
+      <span class="side-peek" id="peek"></span>
     </span>
   </header>
   <div class="side-intro">
@@ -566,11 +579,28 @@ function attachAC(input, ac) {
   });
 }
 initRows();
+
+function showRoute(txt) {
+  const el = document.getElementById('peek');
+  if (el) el.textContent = txt;
+  if (window.innerWidth <= 768) {          // results are behind the sheet: open it
+    sideEl.classList.remove('collapsed');
+    sideEl.style.height = '';
+    setTimeout(syncSheetVar, 260);
+  }
+}
 const sideEl = document.querySelector('.side');
+function syncSheetVar() {
+  document.documentElement.style.setProperty('--sheet-h',
+    window.innerWidth <= 768 ? Math.round(sideEl.getBoundingClientRect().height) + 'px' : '0px');
+}
+window.addEventListener('resize', syncSheetVar);
 document.getElementById('sideHandle').onclick = () => {
   const c = sideEl.classList.toggle('collapsed');
-  sideEl.style.height = c ? '88px' : '';   // inline: immune to specificity surprises
+  sideEl.style.height = c ? '78px' : '';   // inline: immune to specificity surprises
+  setTimeout(syncSheetVar, 260);
 };
+setTimeout(syncSheetVar, 300);
 document.getElementById('addStop').onclick = addStop;
 document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
 document.getElementById('avoid').addEventListener('change', e => track('avoid_toggle', { enabled: e.target.checked }));
@@ -789,12 +819,16 @@ function drawRoute(opt, pointIds) {
     }
   }
   legsEl.innerHTML = html;
-  if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [40, 40] });
+  const fitPad = p => {
+    const sh = window.innerWidth <= 768 ? sideEl.getBoundingClientRect().height : 0;
+    return [p, p, p + sh + 10, p];
+  };
+  if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: fitPad(40) });
   legsEl.querySelectorAll('.leg-zoom').forEach(el => {
     el.onclick = () => {
       const i = Number(el.dataset.i);
       const g = grouped[i];
-      if (g && g.e.g) map.fitBounds(L.latLngBounds(g.e.g.map(c => L.latLng(c[1], c[0]))), { padding: [80, 80] });
+      if (g && g.e.g) map.fitBounds(L.latLngBounds(g.e.g.map(c => L.latLng(c[1], c[0]))), { padding: fitPad(80) });
     };
   });
   const s0 = idx.nodeById.get(res.nodeIds[0]);
@@ -829,7 +863,9 @@ function renderOptionsPanel() {
       renderOptionsPanel();
       const o = currentOptions[selectedOption];
       const segs = drawRoute(o, currentPoints);
+      const sumTxt = `${o.res.carries} carries · ${(segs.paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
       summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${o.res.lakes} lakes · ≈ ${(segs.paddleM / 1000).toFixed(1)} km paddling`;
+      showRoute(sumTxt);
     };
   });
 }
@@ -881,6 +917,7 @@ document.getElementById('go').onclick = () => {
     renderOptionsPanel();
     const segs = drawRoute(options[0], pointIds);
     summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(segs.paddleM / 1000).toFixed(1)}</b> km paddling`;
+    showRoute(`${options[0].res.carries} carries · ${(segs.paddleM / 1000).toFixed(1)} km paddling`);
   } catch (err) {
     warnbox.style.display = 'block';
     warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
