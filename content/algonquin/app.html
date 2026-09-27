@@ -137,6 +137,20 @@
   .leg .warn { color: var(--danger); font-size: 11px; }
   .wpdiv { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
     border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
+  .conds { margin: 8px 0 0; }
+  .conds .cond {
+    display: flex; gap: 7px; align-items: baseline; font-size: 11px; line-height: 1.4;
+    padding: 6px 8px; border-radius: 4px; margin-bottom: 4px; border: 1px solid var(--line);
+    background: #f7f7f2;
+  }
+  .conds .cond .tag {
+    flex: 0 0 auto; font-size: 9px; font-weight: 800; letter-spacing: .08em;
+    text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: #eee; color: #666;
+  }
+  .conds .cond.low-water .tag { background: #fdf3d8; color: #8a6512; }
+  .conds .cond.closure .tag { background: #fbe0d6; color: #a3530b; }
+  .conds .cond.boil-water .tag { background: #f9d3d3; color: #a51d1d; }
+  .conds .stale { opacity: .75; font-style: italic; }
   .warnbox {
     margin: 6px 0 0; padding: 8px 10px; background: #fdf2f2; color: var(--danger);
     border: 1px solid #f3cccc; border-radius: 4px; font-size: 12px; display: none;
@@ -316,6 +330,7 @@
     <button class="go" id="go">Directions</button>
   </section>
   <section class="side-section grow">
+    <div id="conds" class="conds"></div>
     <div id="samples"></div>
     <div id="options"></div>
     <div id="summary"></div>
@@ -373,10 +388,10 @@
   <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790499165"></script>
+<script src="router.js?v=1790533625"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790499165')
+fetch('router_data.json?v=1790533625')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -767,6 +782,25 @@ function runSample(s) {
   });
 })();
 
+
+// ---------- park conditions (fetched, with freshness) ----------
+(function renderConditions() {
+  const el = document.getElementById('conds');
+  const rows = DATA.conds || [];
+  if (!el || !rows.length) { if (el) el.style.display = 'none'; return; }
+  const days = d => Math.floor((Date.now() - Date.parse(d + 'T00:00:00')) / 86400000);
+  const show = rows.filter(r => r.cat !== 'info' || /no closures/i.test(r.note));
+  const stamp = rows.reduce((a, r) => (r.as_of > a ? r.as_of : a), '');
+  const age = stamp ? days(stamp) : null;
+  el.innerHTML = show.map(r => {
+    const stale = age !== null && age > 14;
+    return `<div class="cond ${r.cat} ${stale ? 'stale' : ''}">
+      <span class="tag">${r.cat}</span>
+      <span>${r.note}${stale ? ` <em>(checked ${stamp}, ${age}d ago — verify before you go)</em>` : ''}</span>
+    </div>`;
+  }).join('') + `<div class="cond" style="background:none;border:0;padding-top:0">
+    <span>checked ${stamp}${age !== null ? ` · ${age} day${age === 1 ? '' : 's'} ago` : ''}</span></div>`;
+})();
 
 // ---------- directions ----------
 // mini elevation-vs-distance profile for one portage (inline SVG, no deps)

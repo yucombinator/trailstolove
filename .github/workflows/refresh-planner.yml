@@ -4,7 +4,10 @@ name: Refresh planner data
 
 on:
   schedule:
-    - cron: "20 4 * * *"   # 04:20 UTC daily
+    # 06:20 and 18:20 UTC: the volatile part (park conditions) gets checked
+    # twice a day; the OSM groups below are age-gated inside fetch_osm.py, so a
+    # run only spends requests on the snapshots that are actually stale.
+    - cron: "20 6,18 * * *"
   workflow_dispatch:
   # Editing this file re-runs the refresh, so a pipeline fix proves itself
   # immediately instead of waiting for the next cron slot.
@@ -50,7 +53,10 @@ jobs:
             echo "::warning::tile cache cold — this run does a full re-download and may be slow"
           fi
 
-      - name: Fetch OSM (roads, campsites, water, portages, access)
+      - name: Refresh park conditions (daily-ish; this is what actually moves)
+        run: python3 tools/algonquin-graph/fetch_conditions.py
+
+      - name: Fetch OSM groups that are past their age budget
         env:
           OVERPASS_TOLERANT: "1"     # a dead mirror must not kill the run
           OVERPASS_BACKOFF: "20"
@@ -87,7 +93,11 @@ jobs:
           camps = len(d.get('campsites') or [])
           roads = bool(d.get('roads'))
           dm = sum(1 for n in d['nodes'] if len(n) > 5)
-          print(f"portages={len(p)} profiles={prof} climb={climb} campsites={camps} roads={roads} dm_nodes={dm}")
+          conds = d.get("conds") or []
+          print(f"portages={len(p)} profiles={prof} climb={climb} "
+                f"campsites={camps} roads={roads} dm_nodes={dm} conds={len(conds)}")
+          if not conds:
+              bad.append("no park conditions")
           bad = []
           if len(p) and prof < len(p) * 0.9: bad.append("elevation profiles missing")
           if len(p) and climb < len(p) * 0.9: bad.append("climb data missing")

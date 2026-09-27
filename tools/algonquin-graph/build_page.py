@@ -353,6 +353,14 @@ def main():
                   float(c["lat"]), float(c["lon"]), int(c["water_id"])]
                  for c in load_csv("campsites.csv")] if (DATA / "campsites.csv").exists() else []
 
+    # trip-affecting conditions (fetch_conditions.py) — shown in the app with a
+    # freshness stamp, because a stale advisory is worse than none
+    conds = []
+    if (DATA / "conditions.csv").exists():
+        for r in load_csv("conditions.csv"):
+            conds.append({"cat": r["category"], "scope": r["scope"] or "park-wide",
+                          "note": r["note"], "src": r["source"], "as_of": r["as_of"]})
+
     data = {
         "center": [round(center["lat"], 6), round(center["lon"], 6)],
         "nodes": nodes,
@@ -362,6 +370,7 @@ def main():
         "official": data_official,
         "roads": roads,
         "campsites": campsites,
+        "conds": conds,
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     (DATA / "router_data.json").write_text(payload)

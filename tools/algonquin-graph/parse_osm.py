@@ -619,49 +619,33 @@ def main():
         wr.writeheader()
         wr.writerows(off_rows)
 
-    # ---------- 9) conditions seed (official sources) ----------
-    conds = [
-        ("low-water", "Varley Lake",
-         "Low water: Varley Lake from Carl Wilson Lake; may not be passable; seek alternate route.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("low-water", "Latour Creek",
-         "Low water: Latour Creek north of Rosebary Lake (between P1370 and P845); near Tim River Access Point #2.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("low-water", "Carcajou Creek",
-         "Low water: Carcajou Creek north toward Greenleaf Lake; near Grand Lake/Achray Access Point #22.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("low-water", "Craig Lake",
-         "Low water reported at Craig Lake; may not be passable.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("low-water", "David Creek",
-         "Low water: David Creek off Mubwayaka Lake.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("low-water", "Timberwolf Lake",
-         "Low water: the creek between Timberwolf Lake and Misty Lake.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("closure", "Provoking Falls",
-         "Provoking Falls bridge (Highland Backpacking Trail) CLOSED; bridge removed; re-route adds ~2.5 km.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("closure", "Highview Cabin",
-         "Highview Ranger Cabin closed for the 2026 season for repairs.",
-         "https://www.ontarioparks.ca/park/algonquin/alerts", "2026-09-25"),
-        ("permit", "park-wide",
-         "Interior (backcountry) camping requires an advance reservation and backcountry permit via Ontario Parks reservation service.",
-         "https://reservations.ontarioparks.ca", "2026-09-24"),
-        ("info", "park-wide",
-         "Every portage is signed with a yellow sign listing the connecting water bodies and the portage length in metres.",
-         "https://www.algonquinpark.on.ca/visit/camping/portages.php", "2026-09-24"),
-        ("info", "park-wide",
-         "29 official backcountry access points ring the park and the Highway 60 corridor.",
-         "https://www.algonquinpark.on.ca/visit/camping/access-points-for-backcountry-canoeing.php", "2026-09-24"),
-    ]
-    with open(DATA / "conditions.csv", "w", newline="") as f:
-        wr = csv.writer(f)
-        wr.writerow(["category", "scope", "note", "source", "as_of"])
-        wr.writerows(conds)
+    # ---------- 9) conditions ----------
+    # fetch_conditions.py owns this file now (it scrapes the live advisories).
+    # Only seed it when nothing has been scraped yet, so a parse never
+    # overwrites fresher park data with hand-written text.
+    cond_path = DATA / "conditions.csv"
+    if not cond_path.exists() or cond_path.stat().st_size == 0:
+        conds = [
+            ("low-water", "Varley Lake",
+             "Low water: Varley Lake from Carl Wilson Lake; may not be passable; seek alternate route.",
+             "https://www.ontarioparks.ca/park/algonquin/alerts", "seed"),
+            ("closure", "Provoking Falls",
+             "Provoking Falls bridge (Highland Backpacking Trail) closed; re-route adds ~2.5 km.",
+             "https://www.algonquinpark.on.ca/news/algonquin_park_advisories.php", "seed"),
+            ("permit", "park-wide",
+             "Interior (backcountry) camping requires an advance reservation and backcountry permit via Ontario Parks.",
+             "https://reservations.ontarioparks.ca", "seed"),
+        ]
+        with open(cond_path, "w", newline="") as f:
+            wr = csv.writer(f)
+            wr.writerow(["category", "scope", "note", "source", "as_of"])
+            wr.writerows(conds)
+        print("conditions: seeded (fetch_conditions.py has not run yet)")
+    else:
+        n = sum(1 for _ in open(cond_path)) - 1
+        latest = max((r["as_of"] for r in csv.DictReader(open(cond_path))), default="?")
+        print(f"conditions: {n} rows kept from fetch_conditions.py (as_of {latest})")
 
-    n_res = sum(1 for p in portages if p["from_id"] is not None and p["to_id"] is not None
-                and p["from_id"] != p["to_id"])
     print(f"water nodes: {len(lakes)} + {len(reaches)} reaches | "
           f"portages: {len(portages)} (fully resolved: {n_res}) | "
           f"links: {len(links)} | obstacles: {len(obstacles)} "

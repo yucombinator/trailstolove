@@ -31,6 +31,49 @@ MIRRORS = [
 TOLERANT = os.environ.get("OVERPASS_TOLERANT", "1") != "0"
 BACKOFF = int(os.environ.get("OVERPASS_BACKOFF", "30"))
 MISSING: list[str] = []
+# Overpass is one API, but the park is not uniform: 48 MB of lake polygons and
+# 75 MB of waterway geometry change on a multi-year cadence, while campsites and
+# access points churn season to season. Each group declares how old its snapshot
+# may get; anything fresher than its budget is skipped outright. Fetch only what
+# is stale, and the whole refresh drops from ~100 tiles to ~24 on a daily run.
+# Ages in days. 0 = always fetch.
+GROUP_MAX_AGE_DAYS = {
+    "park_boundary": 365,   # boundary relations do not move
+    "water_geom": 180,      # lake shorelines: multi-year
+    "waterways": 180,       # river/stitch geometry: multi-year
+    "portages": 45,         # re-routes and retagging happen
+    "obstacles": 45,        # dams and weirs get built
+    "access": 45,           # put-ins added occasionally
+    "amenities": 90,        # parking/rental anchors for access pins
+    "roads": 365,           # Hwy 60: decade-scale changes
+    "campsites": 10,        # sites renumbered / reclassified / closed
+}
+FORCE = {g.strip() for g in os.environ.get("OVERPASS_FORCE", "").split(",") if g.strip()}
+SKIPPED: list[str] = []
+
+
+def snapshot_age_days(name: str):
+    """Age of a group's merged snapshot in days, or None if it has never been built."""
+    f = RAW / f"{name}.json"
+    if not f.exists():
+        return None
+    return (time.time() - f.stat().st_mtime) / 86400.0
+
+
+def group_due(name: str) -> bool:
+    """False when the cached snapshot is younger than its policy allows."""
+    if name in FORCE:
+        return True
+    budget = GROUP_MAX_AGE_DAYS.get(name, 0)
+    if budget == 0:
+        return True
+    age = snapshot_age_days(name)
+    if age is not None and age < budget:
+        print(f"[fresh] {name}: snapshot is {age:.0f}d old (budget {budget}d) — skipping",
+              flush=True)
+        SKIPPED.append(name)
+        return False
+    return True
 
 
 def run(name: str, query: str, tries: int = 6, backoff: int | None = None) -> dict:
@@ -104,6 +147,11 @@ def main() -> None:
             lat += step_lat
 
     def fetch_tiled(name: str, body: str, tries: int = 4, pause: float = 8.0) -> dict:
+        if not group_due(name):
+            try:
+                return json.loads((RAW / f"{name}.json").read_text())
+            except Exception:  # noqa: BLE001
+                return {"elements": []}
         merged = {}
         for i, (s, w, n, e) in enumerate(tiles()):
             bbox = f"({s:.4f},{w:.4f},{n:.4f},{e:.4f})"
@@ -176,6 +224,11 @@ def main() -> None:
     (RAW / "waterways.json").write_text(json.dumps({"elements": list(merged.values())}))
     print(f"[ok] waterways: {len(merged)} elements (tiled)", flush=True)
 
+    if SKIPPED:
+        print(f"[skip] {len(SKIPPED)} group(s) within their age budget, not refetched: "
+              f"{', '.join(sorted(set(SKIPPED)))}", flush=True)
+    if FORCE:
+        print(f"[force] forced refetch: {', '.join(sorted(FORCE))}", flush=True)
     if MISSING:
         print(f"[warn] {len(MISSING)} snapshot(s) unavailable this run: {', '.join(sorted(set(MISSING)))}", flush=True)
         print("[warn] they are retried on the next run; the cache converges tile by tile", flush=True)
