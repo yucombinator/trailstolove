@@ -923,14 +923,19 @@ function drawRoute(opt, pointIds) {
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
       html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${dir}${nameOf(e.s >= 1000000000000 ? e.s : e.d)}</span></div></div>`;
     } else {
-      if (e.g && e.g.length >= 2) { addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 }); paddleM += hav2(e.g[0], e.g[e.g.length - 1]); }
-      if (foldStep) continue;
+      // The straight stub is the FALLBACK, not the default: drawing it up front
+      // and then laying the reach slice or the curved lake path over it left
+      // both visible, which is what produced the superfluous straight chords
+      // across lakes that already had a proper line.
+      const stub = () => { if (e.g && e.g.length >= 2) { addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 }); paddleM += hav2(e.g[0], e.g[e.g.length - 1]); } };
+      if (foldStep) { stub(); continue; }
       const reachId = e.d < 0 ? e.d : e.s;
       const nxt = grouped[gi + 1];   // group index — `i` is the display step counter
       const nextIsSameReach = nxt && nxt.e.k === 'river' && nxt.e.g && nxt.e.g.length >= 2 &&
         ((nxt.e.s === reachId || nxt.e.d === reachId));
       if (e.k === 'river' && nextIsSameReach && DATA.reaches[reachId]) {
         const reach = DATA.reaches[reachId];
+        // (no stub here: the slice below replaces it)
         const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
         const slice = Router.reachSlice(reach.lines, e.g, nxt.e.g);
         if (slice && slice.length >= 2) {
@@ -966,6 +971,7 @@ function drawRoute(opt, pointIds) {
           continue;
         }
       }
+      stub();
       html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">via ' + e.n + '</span>' : ''}</div></div>`;
     }
     // waypoint divider
