@@ -340,21 +340,49 @@
     const allRings = outers.concat(islands);
 
     // Landing anchors come from full-resolution geometry while the drawn lake
-    // polygons are simplified — anchors can sit just OUTSIDE the rings, which
-    // kills the visibility graph (every segment from outside crosses the shore).
-    // Snap any anchor that isn't inside to the nearest ring vertex.
-    function nearestVertex(p) {
+    // polygons are simplified, so an anchor can sit slightly OUTSIDE the rings —
+    // and every segment from outside crosses the shore, killing the search.
+    // Snap to the nearest point ON a ring (perpendicular foot, not just the
+    // nearest vertex: on a 50 km shoreline the vertices are hundreds of metres
+    // apart, which is how Burnt Island's 7 km crossing used to fail).
+    function snapToShore(p) {
       let best = null, bd = Infinity;
       for (const ring of allRings) {
-        for (const v of ring) {
-          const d = (v[0] - p[0]) * (v[0] - p[0]) + (v[1] - p[1]) * (v[1] - p[1]);
-          if (d < bd) { bd = d; best = v; }
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const ax = ring[j][0], ay = ring[j][1];
+          const bx = ring[i][0], by = ring[i][1];
+          const dx = bx - ax, dy = by - ay;
+          const L2 = dx * dx + dy * dy;
+          let t = L2 ? ((p[0] - ax) * dx + (p[1] - ay) * dy) / L2 : 0;
+          t = Math.max(0, Math.min(1, t));
+          const fx = ax + t * dx, fy = ay + t * dy;
+          const d = (p[0] - fx) * (p[0] - fx) + (p[1] - fy) * (p[1] - fy);
+          if (d < bd) { bd = d; best = [fx, fy]; }
         }
       }
-      return best ? [best[0], best[1]] : p;
+      return best || p;
     }
-    const A = insideLake(ptA[0], ptA[1]) ? ptA : nearestVertex(ptA);
-    const B = insideLake(ptB[0], ptB[1]) ? ptB : nearestVertex(ptB);
+    const A = settle(insideLake(ptA[0], ptA[1]) ? ptA : snapToShore(ptA));
+    const B = settle(insideLake(ptB[0], ptB[1]) ? ptB : snapToShore(ptB));
+    // A point sitting exactly ON the shoreline breaks both the inside test
+    // (ray casting through a vertex is a coin flip) and the blocked test, so
+    // the anchor is always resolved to a spot just inside the water: keep it
+    // if it is already clearly in, otherwise walk to the nearest ring-vertex
+    // pair whose midpoint is inside.
+    function settle(p) {
+      if (insideLake(p[0], p[1])) return p;
+      let best = null, bd = Infinity;
+      for (const ring of allRings) {
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const mx = (ring[j][0] + ring[i][0]) / 2, my = (ring[j][1] + ring[i][1]) / 2;
+          if (!insideLake(mx, my)) continue;
+          const d = (p[0] - mx) * (p[0] - mx) + (p[1] - my) * (p[1] - my);
+          if (d < bd) { bd = d; best = [mx, my]; }
+        }
+      }
+      return best || p;
+    }
+
 
     function segInt(p1, p2, p3, p4) {
       const d1 = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
@@ -386,6 +414,11 @@
     // visibility graph needs density proportional to perimeter: a flat budget
     // leaves 2.3 km between nodes on a 138 km lake like Opeongo, so the graph
     // can no longer chain around the shore and the crossing fails outright.
+    // Below this many vertices, hit-test the ring as-is: simplifying it is what
+    // broke crossings on mid-size lakes (Burnt Island, Little Otterslide), where
+    // the coarse ring no longer threads the real shoreline. The cost stays
+    // acceptable because a small ring has few segments to test.
+    const EXACT_RING = 400;
     const TEST_PTS = 240;
     function perim(ring) {
       let s = 0;
@@ -405,7 +438,7 @@
       for (let i = 0; i < cap; i++) out.push(ring[Math.floor(i * step) % ring.length]);
       return out;
     }
-    const testRings = allRings.map(r => simplify(r, Math.max(TEST_PTS, budget(r))));
+    const testRings = allRings.map(r => r.length <= EXACT_RING ? r : simplify(r, Math.max(TEST_PTS, budget(r))));
     // per-segment bbox: [minx, miny, maxx, maxy]
     const segBoxes = testRings.map(ring => {
       const boxes = new Float64Array(ring.length * 4);
@@ -452,11 +485,18 @@
     // the graph to a safe node count, and instead of one global step, do a
     // two-tier search: coarse graph first, then re-run locally on the arc that
     // the coarse pass found, where the shoreline detail actually matters.
+    // Small rings are cheap to hit-test in full, and subsampling them is what
+    // loses narrow water crossings: every other vertex of a 130-vertex lake can
+    // miss the thread between two lobes. Only big rings get sampled, and even
+    // then the local retry uses full resolution.
+    const FULL_BELOW = 300;
     const MAX_NODES = 320;
     const ringsSorted = testRings.slice().sort((x, y) => y.length - x.length);
     const perimSorted = ringsSorted.map(perim).sort((a, b) => b - a);
     const biggest = perimSorted[0] || 1;
-    const cap = Math.max(40, Math.min(MAX_NODES, Math.round(biggest / 150)));
+    const exact = ringsSorted[0].length <= FULL_BELOW;
+    const cap = exact ? ringsSorted[0].length
+                      : Math.max(40, Math.min(MAX_NODES, Math.round(biggest / 150)));
     const nodes = [{ x: A[0], y: A[1] }];
     for (const ring of testRings) {
       const step = Math.max(1, Math.ceil(ring.length / cap));
@@ -490,15 +530,37 @@
       return path;
     }
 
+    // Last resort when the graph finds nothing (a pinched lake where the entry
+    // and exit sit on opposite lobes): bow the chord toward open water rather
+    // than letting the caller draw a straight line across the shoreline.
+    function bowedLine() {
+      const mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+      if (insideLake(mid[0], mid[1]) && !blocked(A[0], A[1], B[0], B[1])) {
+        return [A, mid, B];
+      }
+      // pull the midpoint to the nearest interior point that actually opens up
+      let best = null, bd = Infinity;
+      for (const ring of allRings) {
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const mx = (ring[j][0] + ring[i][0]) / 2, my = (ring[j][1] + ring[i][1]) / 2;
+          if (!insideLake(mx, my)) continue;
+          if (blocked(A[0], A[1], mx, my) || blocked(mx, my, B[0], B[1])) continue;
+          const d = (mid[0] - mx) * (mid[0] - mx) + (mid[1] - my) * (mid[1] - my);
+          if (d < bd) { bd = d; best = [mx, my]; }
+        }
+      }
+      return best ? [A, best, B] : null;
+    }
+
     let coarse = search();
-    if (!coarse) return null;
+    if (!coarse) return bowedLine();
     if (coarse.length < 3) return coarse;
     // If the winning route is short in node terms but long on the ground, the
     // coarse pass squeezed through a gap the real shoreline would not allow —
     // refine around the anchors with a denser local graph.
     const runLen = Math.hypot((coarse[coarse.length - 1][0] - coarse[0][0]) * 78000,
                               (coarse[coarse.length - 1][1] - coarse[0][1]) * 111320);
-    if (runLen > 4000 && cap < ringsSorted[0].length) {
+    if (runLen > 2000 && cap < ringsSorted[0].length) {
       const dense = ringsSorted[0];
       const saved = testRings[0];
       testRings[0] = dense;                       // full-resolution ring
