@@ -761,7 +761,7 @@ function drawRoute(opt, pointIds) {
       if (e.g && e.g.length >= 2) { addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 }); paddleM += hav2(e.g[0], e.g[e.g.length - 1]); }
       if (foldStep) continue;
       const reachId = e.d < 0 ? e.d : e.s;
-      const nxt = grouped[i + 1];
+      const nxt = grouped[gi + 1];   // group index — `i` is the display step counter
       const nextIsSameReach = nxt && nxt.e.k === 'river' && nxt.e.g && nxt.e.g.length >= 2 &&
         ((nxt.e.s === reachId || nxt.e.d === reachId));
       if (e.k === 'river' && nextIsSameReach && DATA.reaches[reachId]) {
@@ -772,7 +772,7 @@ function drawRoute(opt, pointIds) {
           addLine(slice, { color: '#1f78b4', weight: 6, opacity: .95 });
           for (let q = 1; q < slice.length; q++) paddleM += hav2(slice[q - 1], slice[q]);
           html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span></div></div>`;
-          i++;
+          gi++;       // consume the paired river leg (one step already counted)
           continue;
         }
         // no mapped centreline between the two touch points (narrow/unmapped
@@ -783,7 +783,7 @@ function drawRoute(opt, pointIds) {
           addLine([pa, pb], { color: '#1f78b4', weight: 4, opacity: .8, dashArray: '4 4' });
           paddleM += hav2(pa, pb);
           html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'} <em>(approximate)</em></span></div></div>`;
-          i++;
+          gi++;       // consume the paired river leg (one step already counted)
           continue;
         }
       }
