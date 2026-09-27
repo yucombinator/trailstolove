@@ -55,11 +55,15 @@
     if (e.k === "portage") {
       if (mode === "carries") return 1e6 + e.m;     // count first, metres only to break ties
       if (mode === "easiest") return carryEffort(e, 10);
-      if (mode === "meters") return e.m;
+      if (mode === "meters") return e.m;              // the metres you actually walk
       return carryEffort(e, 3);                     // "balanced"
     }
     if (mode === "carries") return 0.5;
-    if (mode === "meters") return Math.max(e.m, 0.001);
+    // "meters" means least CARRYING, so paddling must only break ties between
+    // routes that walk the same distance. Charging paddling at full weight made
+    // this "shortest total route" instead: it preferred 1,116 m of carrying
+    // over a route that walked 846 m, because the latter paddled further.
+    if (mode === "meters") return e.m * 0.01;
     // "balanced": crossing into another water body costs its size (a big lake is
     // real paddling), floored at a 300 m-carry equivalent, capped at 1.2 km.
     // m=0 channels joining two ways of the SAME water are free-ish (not a lake hop).
@@ -646,8 +650,45 @@
     }
     return out;
   }
-  // Only what the map actually calls. dijkstra/cost/carryEffort stay internal.
-  const Router = { buildIndex: buildIndex,
+  // Tracks what has been drawn so a redundant connector is never painted twice.
+  // This lived inline in the page, where `opts && opts.force !== true` silently
+  // short-circuited on undefined and left the whole check permanently disabled.
+  // It lives here so a test can actually exercise it.
+  //
+  // A connector counts as already-covered only when it is essentially the SAME
+  // line as something drawn. Sharing a single landing point is not coverage:
+  // treating one coincident point as a match silently dropped whole stretches
+  // of river that merely started where a lake path ended.
+  function overlapTracker(tolM, coverFrac) {
+    const tol = tolM === undefined ? 30 : tolM;              // metres
+    const need = coverFrac === undefined ? 0.8 : coverFrac;  // fraction of samples
+    const drawn = [];
+    function covered(coords) {
+      if (!drawn.length || coords.length < 2) return false;
+      const step = Math.max(1, Math.floor(coords.length / 6));
+      let hits = 0, sampled = 0;
+      for (let i = 0; i < coords.length; i += step) {
+        sampled++;
+        const c = coords[i];
+        for (let k = 0; k < drawn.length; k++) {
+          if (Math.hypot((c[0] - drawn[k][0]) * 78000, (c[1] - drawn[k][1]) * 111320) < tol) {
+            hits++;
+            break;
+          }
+        }
+      }
+      return sampled > 0 && hits >= sampled * need;
+    }
+    return {
+      covered: covered,
+      add: coords => { for (const c of coords) drawn.push(c); },
+      size: () => drawn.length,
+      reset: () => { drawn.length = 0; },
+    };
+  }
+  // Only what the map calls, plus the seams worth testing. dijkstra/cost/
+  // carryEffort stay internal.
+  const Router = { buildIndex: buildIndex, overlapTracker: overlapTracker,
     carryRating: carryRating, gradeOf: gradeOf, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
   global.Router = Router;
 })(typeof window !== "undefined" ? window : globalThis);

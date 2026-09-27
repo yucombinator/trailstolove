@@ -156,6 +156,17 @@
     letter-spacing: .1em; text-transform: uppercase; color: var(--ink);
     box-shadow: var(--shadow);
   }
+  /* open by default on desktop, where there is room; collapsed on small
+     screens so it stops eating the map */
+  .legend > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .legend > summary::-webkit-details-marker { display: none; }
+  .legend > summary::after { content: '▾'; font-size: 9px; opacity: .6; }
+  .legend[open] > summary::after { content: '▴'; }
+  .legend:not([open]) { padding: 7px 10px; }
+  .legend-body { margin-top: 4px; }
   .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
   .sw.portage { border-style: dashed; border-color: var(--carry); }
   .sw.reach { border-color: #41b6c4; }
@@ -243,7 +254,8 @@
     .opts .avoid { padding: 4px 0; }
     .go { position: sticky; bottom: 0; }
     .legend { bottom: calc(var(--sheet-h, 0px) + 10px); right: 8px; font-size: 9px; padding: 6px 8px; }
-    .legend > div { display: inline; margin-right: 8px; }
+    .legend-body > div { display: inline; margin-right: 8px; }
+    .legend-body { max-width: 62vw; }
   }
   .side-footer p { margin: 0 0 6px; }
   .side-footer .meta { display: block; letter-spacing: .04em; }
@@ -375,10 +387,13 @@
     <div class="row"><button class="primary" id="creditsClose">Close</button></div>
   </div>
 </div>
-<div class="legend">
-  <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach &nbsp; <span class="sw road"></span>Hwy 60 &nbsp; <span class="sw park"></span>park boundary</div>
-  <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
-</div>
+<details class="legend" id="legend">
+  <summary>Legend</summary>
+  <div class="legend-body">
+    <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach &nbsp; <span class="sw road"></span>Hwy 60 &nbsp; <span class="sw park"></span>park boundary</div>
+    <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
+  </div>
+</details>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="router.js?v=__BUILD__"></script>
 <script>
@@ -664,12 +679,31 @@ initRows();
 function showRoute(txt) {
   const el = document.getElementById('peek');
   if (el) el.textContent = txt;
-  if (window.innerWidth <= 768) {          // results are behind the sheet: open it
+  if (window.innerWidth <= 768) {
+    // results are behind the sheet: open it, then take the user to them.
+    // Opening alone was not enough — the Directions button sits above the fold
+    // on a phone, so the itinerary appeared to have done nothing.
     sideEl.classList.remove('collapsed');
     sideEl.style.height = '';
-    setTimeout(syncSheetVar, 260);
+    setTimeout(() => {
+      syncSheetVar();
+      const target = document.getElementById('summary');
+      if (target && target.scrollIntoView) {
+        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (e) { sideEl.scrollTop = target.offsetTop - 8; }
+      }
+    }, 280);
   }
 }
+
+// The legend is a fixed overlay. On a phone it covers a chunk of map, so start
+// it collapsed there; desktop has room, so it starts open. Either way the user
+// can toggle it.
+const legendEl = document.getElementById('legend');
+const narrowMQ = window.matchMedia('(max-width: 768px)');
+function syncLegend() { if (legendEl) legendEl.open = !narrowMQ.matches; }
+syncLegend();
+if (narrowMQ.addEventListener) narrowMQ.addEventListener('change', syncLegend);
 const sideEl = document.querySelector('.side');
 function syncSheetVar() {
   document.documentElement.style.setProperty('--sheet-h',
@@ -853,34 +887,17 @@ function drawRoute(opt, pointIds) {
   const res = opt.res;
 
   // Every drawn path is remembered so a straight stub is never painted on top of
-  // a real line that already covers the same water.
-  const drawnPts = [];
+  // a real line that already covers the same water. The coverage rule itself
+  // lives in router.js so it can be tested; this is one instance per route.
+  // `pendingStubs` holds connectors until every real line is in, so a stub is
+  // only painted where nothing better exists.
   const pendingStubs = [];
-  // A connector is redundant only when it is essentially the SAME line as one
-  // already drawn. Sharing a landing point is not being covered: treating a
-  // single coincident point as a match silently dropped whole stretches of
-  // river that merely started where a lake path ended.
-  function alreadyDrawn(coords) {
-    if (!drawnPts.length) return false;
-    const M = (a, b) => Math.hypot((a[0] - b[0]) * 78000, (a[1] - b[1]) * 111320);
-    const step = Math.max(1, Math.floor(coords.length / 6));
-    let hits = 0, sampled = 0;
-    for (let i = 0; i < coords.length; i += step) {
-      sampled++;
-      const c = coords[i];
-      for (let k = 0; k < drawnPts.length; k++) {
-        if (M(c, drawnPts[k]) < 30) { hits++; break; }
-      }
-    }
-    return sampled > 0 && hits * 5 >= sampled * 4;   // >= 80% of it is already there
-  }
+  const overlap = Router.overlapTracker();
   // Draw one line. Returns false when it was dropped as already-covered, so the
-  // caller can skip its distance. There is deliberately no force/bypass flag:
-  // an optional one that short-circuited on undefined once left this whole check
-  // permanently disabled.
+  // caller can skip its distance.
   function addLine(coords, style) {
-    if (alreadyDrawn(coords)) return false;
-    for (const c of coords) drawnPts.push(c);
+    if (overlap.covered(coords)) return false;
+    overlap.add(coords);
     const latlngs = coords.map(c => [c[1], c[0]]);   // GeoJSON [lon,lat] -> Leaflet [lat,lng]
     L.polyline(latlngs, { renderer: routeRenderer, ...style, color: '#ffffff', weight: style.weight + 4, opacity: .9 }).addTo(routeLayer);
     L.polyline(latlngs, { renderer: routeRenderer, ...style }).addTo(routeLayer);
@@ -895,7 +912,15 @@ function drawRoute(opt, pointIds) {
   const straight = (a, b) => { if (a && b) pendingStubs.push([a, b]); };
   const nameOf = id => {
     const n = idx.nodeById.get(id);
-    return n.name || 'unnamed water #' + id;
+    if (n.name) return n.name;
+    // river reaches carry their name on the reach record, not the graph node,
+    // so without this the itinerary said "unnamed water #-1164"
+    if (n.kind === 'reach') {
+      const rc = DATA.reaches[id];
+      if (rc && rc.n) return rc.n;
+    }
+    // a genuinely unnamed body reads better as its kind than as a node id
+    return n.kind && n.kind !== 'reach' ? `unnamed ${n.kind}` : `unnamed waterway #${id}`;
   };
   // Add a paddling line and bill its length only if it really got drawn —
   // otherwise a segment covered by two passes would count twice.
@@ -936,7 +961,73 @@ function drawRoute(opt, pointIds) {
   let html = '';
   let i = 0;
   let gi = 0;
+
+  // Paddling INSIDE a water body has no leg of its own: the graph jumps from the
+  // landing to the take-out, so the distance you actually paddle appeared
+  // nowhere in the itinerary — a route could read "5 carries, 2 short paddles"
+  // while the summary said 76 km of paddling. Compute each traverse once, so
+  // the legs list can show it between the carries and the map can draw the
+  // very same path without paying for it twice.
+  const traverseCache = new Map();
+  const traverseOf = j => {
+    if (traverseCache.has(j)) return traverseCache.get(j);
+    const a1 = anchorIn[j], a2 = anchorOut[j];
+    const node = idx.nodeById.get(res.nodeIds[j]);
+    let out = null;
+    if (a1 && a2 && node) {
+      if (node.kind === 'reach') {
+        const lines = (DATA.reaches[res.nodeIds[j]] || {}).lines;
+        if (lines && lines.length) {
+          const slice = Router.reachSlice(lines, [a1], [a2]);
+          if (slice && slice.length >= 2) {
+            out = { coords: slice, guess: false };
+          } else {
+            const pt = Router.reachPointOn(lines, [a1]);
+            const pt2 = Router.reachPointOn(lines, [a2]);
+            if (pt && pt2 && (pt[0] !== pt2[0] || pt[1] !== pt2[1])) out = { coords: [pt, pt2], guess: true };
+          }
+        }
+      } else {
+        const feat = lakeGeoms[res.nodeIds[j]];
+        let path = feat ? Router.lakePath(a1, a2, feat) : null;
+        if (path) { path = Router.refinePath(path, feat, 40); out = { coords: path, guess: false }; }
+        else if (!(a1[0] === a2[0] && a1[1] === a2[1])) out = { coords: [a1, a2], guess: true };
+      }
+    }
+    if (out) {
+      out.m = 0;
+      for (let q = 1; q < out.coords.length; q++) out.m += hav2(out.coords[q - 1], out.coords[q]);
+    }
+    traverseCache.set(j, out);
+    return out;
+  };
+
+  // Consecutive nodes of the same lake are one crossing to a paddler, so
+  // buffer them and emit a single step per water body.
+  let run = null;
+  const flushRun = () => {
+    if (!run) return;
+    i++;
+    const km = (run.m / 1000).toFixed(run.m < 10000 ? 2 : 1);
+    html += `<div class="leg leg-zoom" data-i="${gi}"><span class="n">${i}</span><div class="b">` +
+            `<span class="r">Paddle ${km} km</span> — ${run.name}` +
+            `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}</div></div>`;
+    run = null;
+  };
+  // a reach inside a consumed same-reach pair is folded into that pair's row
+  const shownTraverses = new Set();
+  const noteTraverse = j => {
+    if (shownTraverses.has(j)) return;
+    if (j < 1 || j >= res.nodeIds.length - 1) return;
+    const t = traverseOf(j);
+    if (!t || t.m < 100) return;
+    const name = nameOf(res.nodeIds[j]);
+    if (run && run.name === name) { run.m += t.m; run.guess = run.guess && t.guess; }
+    else { flushRun(); run = { name: name, m: t.m, guess: t.guess }; }
+  };
+
   while (gi < grouped.length) {
+    flushRun();
     const g = grouped[gi], e = g.e;
     let consumed = 1;          // legs this step covers; a same-reach pair is 2
     // way-split lakes: m=0 shared-shore hops inside one named water = no step
@@ -1000,9 +1091,16 @@ function drawRoute(opt, pointIds) {
           // (no stub here: the slice below replaces it)
           const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
           const slice = Router.reachSlice(reach.lines, e.g, nxt.e.g);
+          const mt = traverseOf(gi + 1);
           if (slice && slice.length >= 2) {
             addPaddle(slice);
-            html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}${legCond(nxt.to)}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span>${obsWarn(e)}</div></div>`;
+            // The reach between the two legs is where the real distance lives;
+            if (mt && mt.m >= 100) {
+              shownTraverses.add(gi + 1);
+              html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle ${(mt.m / 1000).toFixed(2)} km</span> — ${fromLake} → ${toLake}${legCond(nxt.to)}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span>${obsWarn(e)}</div></div>`;
+            } else {
+              html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}${legCond(nxt.to)}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span>${obsWarn(e)}</div></div>`;
+            }
             consumed = 2;
             handled = true;
           } else {
@@ -1018,7 +1116,12 @@ function drawRoute(opt, pointIds) {
             }
           }
         }
-        if (!handled) {
+        // A river link's job is to attach a lake to its waterway; the paddling
+        // itself is the reach traverse, already itemised. These legs are just
+        // touch-point spurs of a metre or two, so their rows were pure noise
+        // between the carries.
+        const bareRiverLink = e.k === 'river' && e.m < 50;
+        if (!handled && !bareRiverLink) {
           const label = e.k === 'channel' ? 'Paddle across the narrows' : 'Paddle';
           const gf = lakeGeoms[g.from], gt = lakeGeoms[g.to];
           let cpath = null;
@@ -1040,45 +1143,29 @@ function drawRoute(opt, pointIds) {
     }
     // The divider belongs to the end of the step, which is not always g.to — a
     // same-reach pair ends two legs along. Emitted from one place on purpose:
-    // when the drawing branches below did their own `continue`, a stop the route
-    // had genuinely reached lost its divider and its map badge.
+    // when the drawing branches did their own `continue`, a stop the route had
+    // genuinely reached lost its divider and its map badge.
     waypointDivider(grouped[gi + consumed - 1].to);
+    // A same-reach pair skips a reach node on its way through, and that node is
+    // where the river's actual paddling distance lives — itemise it too.
+    if (consumed === 2) noteTraverse(gi + 1);
+    noteTraverse(gi + consumed);        // the paddling inside the body just reached
     gi += consumed;
   }
-  // across-water traversal: connect each intermediate node's landing to its
-  // take-out. A node can be a lake, or a reach (a waterway) that the route
-  // merely passes through — e.g. Timberwolf Creek -> Misty Lake -> Petawawa
-  // River, where Misty Lake is a reach and skipping it left the two river
-  // stubs visibly disconnected. Reach nodes get their centreline instead.
+  flushRun();
+
+  // Draw the traverses computed above. Same path, same distance as the legs
+  // list — the itinerary and the map can no longer disagree. Order still
+  // matters: real lines are laid down here, straight connectors last, so the
+  // dedupe always sees the good line first.
   for (let j = 1; j < res.nodeIds.length - 1; j++) {
-    const a1 = anchorIn[j], a2 = anchorOut[j];
-    const node = idx.nodeById.get(res.nodeIds[j]);
-    if (!a1 || !a2 || !node) continue;
-    if (node.kind === 'reach') {
-      const lines = (DATA.reaches[res.nodeIds[j]] || {}).lines;
-      if (lines && lines.length) {
-        // follow the mapped waterway between the two landings — a bare chord
-        // across a meandering river is not a paddling line
-        const slice = Router.reachSlice(lines, [a1], [a2]);
-        if (slice && slice.length >= 2) {
-          addPaddle(slice);
-          continue;
-        }
-        const pt = Router.reachPointOn(lines, [a1]);
-        const pt2 = Router.reachPointOn(lines, [a2]);
-        if (pt && pt2 && (pt[0] !== pt2[0] || pt[1] !== pt2[1])) straight(pt, pt2);
-      }
-      continue;
-    }
-    const feat = lakeGeoms[res.nodeIds[j]];
-    let path = feat ? Router.lakePath(a1, a2, feat) : null;
-    if (path) {
-      path = Router.refinePath(path, feat, 40);
-      addPaddle(path);
-    } else if (a1[0] === a2[0] && a1[1] === a2[1]) {
-      continue;
+    const t = traverseOf(j);
+    if (!t) continue;
+    if (t.guess) {
+      if (t.coords.length === 2) straight(t.coords[0], t.coords[1]);
+      else pendingStubs.push(t.coords);
     } else {
-      straight(a1, a2);          // billed at flush, and only if it survives
+      addPaddle(t.coords);
     }
   }
   // straight connectors last: addPaddle drops any already covered by a real

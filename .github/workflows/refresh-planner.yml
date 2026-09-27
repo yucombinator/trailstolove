@@ -70,6 +70,14 @@ jobs:
           python3 fetch_elevations.py
           python3 build_page.py
 
+      # Golden routes per cost model, the drawing invariants that keep
+      # regressing, and the pipeline units. These run on the freshly built
+      # payload, so a data refresh that breaks the router is caught here
+      # rather than on the live site. No test framework to install: node:test
+      # and unittest are both stdlib.
+      - name: Run tests
+        run: sh tools/algonquin-graph/tests/run.sh
+
       # Guards against the silent-drift class of bug: a stale generator writing
       # a payload missing fields the UI reads (e.g. elevation profiles).
       - name: Verify payload integrity
