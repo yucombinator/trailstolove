@@ -75,7 +75,7 @@ jobs:
       - name: Verify payload integrity
         run: |
           python3 - <<'PY'
-          import json, sys, os
+          import datetime, json, sys, os
           d = json.load(open('data/router_data.json'))
           # A partial fetch (rate-limited tiles) must not silently shrink the
           # graph. Compare against the payload that is live right now.
@@ -94,15 +94,42 @@ jobs:
           roads = bool(d.get('roads'))
           dm = sum(1 for n in d['nodes'] if len(n) > 5)
           conds = d.get("conds") or []
-          print(f"portages={len(p)} profiles={prof} climb={climb} "
-                f"campsites={camps} roads={roads} dm_nodes={dm} conds={len(conds)}")
-          if not conds:
-              bad.append("no park conditions")
+
           bad = []
           if len(p) and prof < len(p) * 0.9: bad.append("elevation profiles missing")
           if len(p) and climb < len(p) * 0.9: bad.append("climb data missing")
           if camps == 0: bad.append("no campsites")
           if not roads: bad.append("no Hwy 60")
+
+          # Park advisories are the safety-relevant part of this payload, and
+          # fetch_conditions.py deliberately keeps the previous file when a run
+          # extracts nothing (so a transient outage does not blank the briefing).
+          # That means a silently broken scrape used to pass this job green and
+          # ship stale advisories. So check the stamp, not just the row count.
+          if not conds:
+              bad.append("no park conditions at all")
+          else:
+              today = datetime.date.today()
+              stamps = []
+              for c in conds:
+                  try:
+                      stamps.append(datetime.date.fromisoformat(c.get("as_of") or ""))
+                  except ValueError:
+                      bad.append(f"unparseable as_of {c.get('as_of')!r}")
+              if stamps:
+                  newest = max(stamps)
+                  age = (today - newest).days
+                  oldest = min(stamps)
+                  print(f"advisories: {len(conds)} rows, newest as_of {newest} "
+                        f"({age}d old), oldest {oldest}")
+                  if age > 2:
+                      bad.append(f"advisories are {age}d stale (as_of {newest}); "
+                                 "the advisories scrape is probably broken")
+                  if age < 0:
+                      bad.append(f"advisories as_of {newest} is in the future")
+
+          print(f"portages={len(p)} profiles={prof} climb={climb} "
+                f"campsites={camps} roads={roads} dm_nodes={dm} conds={len(conds)}")
           if bad:
               sys.exit("payload incomplete: " + ", ".join(bad))
           PY

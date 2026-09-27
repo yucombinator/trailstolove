@@ -179,7 +179,13 @@ def main():
         rows.append((cat, scope, note, src, stamp))
 
     if not rows:
+        # Keep the previous file (a transient outage must not blank the safety
+        # briefing) and still exit 0, so one flaky fetch cannot block the OSM
+        # refresh downstream. But do not pass unnoticed: the CI payload check
+        # only notices once the as_of stamp goes stale, and the most likely
+        # cause here is the page's markup changing under the scraper.
         print("[warn] nothing extracted — keeping previous conditions.csv")
+        print("::error::advisories scrape produced no rows; the page layout may have changed")
         raise SystemExit(0)
 
     with open(OUT, "w", newline="") as f:
