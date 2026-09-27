@@ -44,6 +44,62 @@ def r5(v):
     return round(v, 5)
 
 
+
+def park_boundary():
+    """Park outline as GeoJSON. The OSM relation hands back its ring as several
+    open ways that only close once chained end-to-end, so stitch before using:
+    treating them as separate rings collapses the area to near zero."""
+    path = RAW / "park_boundary.json"
+    if not path.exists():
+        return {"type": "FeatureCollection", "features": []}
+    rel = next(e for e in json.loads(path.read_text())["elements"]
+               if e["type"] == "relation")
+
+    def same(a, b):
+        return abs(a["lon"] - b["lon"]) < 1e-7 and abs(a["lat"] - b["lat"]) < 1e-7
+
+    def stitch(ways):
+        rings, pool = [], [list(w) for w in ways]
+        while pool:
+            cur = pool.pop(0)
+            grew = True
+            while grew:                      # keep chaining until nothing abuts
+                grew = False
+                for w in pool:
+                    for tail, head, drop in ((cur[-1], w[0], 1), (cur[-1], w[-1], -1),
+                                             (cur[0], w[-1], -1), (cur[0], w[0], 1)):
+                        if not same(tail, head):
+                            continue
+                        piece = w[1:] if drop == 1 else w[-2::-1]
+                        cur = cur + piece if tail is cur[-1] else piece + cur
+                        pool.remove(w)
+                        grew = True
+                        break
+                    if grew:
+                        break
+            rings.append(cur)
+        return rings
+
+    # inner rings are sub-square-kilometre in-holdings; at map scale they are
+    # invisible clutter, so only the outer ring is drawn
+    rings = stitch([m["geometry"] for m in rel.get("members", [])
+                    if m.get("role") == "outer" and m.get("geometry")])
+    polys = []
+    for ring in rings:
+        if len(ring) < 3:
+            continue
+        coords = [[r5(p["lon"]), r5(p["lat"])] for p in ring]
+        if coords[0] != coords[-1]:
+            coords.append(coords[0])
+        polys.append([coords])
+    return {"type": "FeatureCollection", "features": [{
+        "type": "Feature",
+        "properties": {"name": rel.get("tags", {}).get("name", "park")},
+        "geometry": {"type": "MultiPolygon", "coordinates": polys},
+    }] if polys else []}
+
+
+
 def main():
     wgeo = {(e["type"], e["id"]): e for e in
             json.loads((RAW / "water_geom.json").read_text())["elements"]}
@@ -366,6 +422,7 @@ def main():
         "nodes": nodes,
         "edges": edges,
         "lakes": {"type": "FeatureCollection", "features": merged},
+        "park": park_boundary(),
         "reaches": reaches,
         "official": data_official,
         "roads": roads,
