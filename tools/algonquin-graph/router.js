@@ -646,8 +646,8 @@
     }
     return out;
   }
-
-  const Router = { buildIndex: buildIndex, dijkstra: dijkstra, cost: cost,
-    carryRating: carryRating, carryEffort: carryEffort, gradeOf: gradeOf, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
+  // Only what the map actually calls. dijkstra/cost/carryEffort stay internal.
+  const Router = { buildIndex: buildIndex,
+    carryRating: carryRating, gradeOf: gradeOf, reachSlice: reachSlice, reachPointOn: reachPointOn, chainRoutes: chainRoutes, lakePath: lakePath, refinePath: refinePath };
   global.Router = Router;
 })(typeof window !== "undefined" ? window : globalThis);

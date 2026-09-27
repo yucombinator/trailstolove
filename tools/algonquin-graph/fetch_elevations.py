@@ -2,10 +2,11 @@
 """Sample portage trail profiles for cumulative climb/descent.
 
 For every routed portage (has geometry + distinct endpoints), take up to 24
-points along the trail (endpoints + even spacing), fetch elevations via
-Open-Meteo (cached in data/elevations.csv), lightly smooth the profile and sum
-positive/negative deltas. Writes data/climbs.csv: osm_id,up,down  (metres,
-p0 -> p1 direction). The reverse direction swaps up/down.
+points along the trail (endpoints + even spacing), fetch elevations from the
+OpenTopoData SRTM90m endpoint (cached in data/elevations.csv), lightly smooth
+the profile and sum positive/negative deltas. Writes data/climbs.csv:
+osm_id,up,down,prof  (metres plus a compact sparkline, p0 -> p1 direction).
+The reverse direction swaps up/down.
 """
 import csv
 import json
@@ -124,7 +125,7 @@ def main():
         have = set()
         if ELEV_CSV.exists():
             with open(ELEV_CSV, newline="") as f:
-                have = {(r["lat"], r["lon"]) for r in csv.DictReader(f)}
+                have = {key(r["lat"], r["lon"]) for r in csv.DictReader(f)}
         new_rows = [(lat, lon, round(cache[(lat, lon)], 1)) for (lat, lon) in missing
                     if (lat, lon) in cache and (lat, lon) not in have]
         if new_rows:

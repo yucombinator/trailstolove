@@ -440,7 +440,7 @@ def main():
             lat, lon = g[0]["lat"], g[0]["lon"]
         if not inside_park(lat, lon, 1000.0):
             continue
-        wid, wd = resolve(lat, lon, 500.0)
+        wid, _ = resolve(lat, lon, 500.0)
         if wid is None:
             continue
         access.append({"osm_id": el["id"],
@@ -646,8 +646,12 @@ def main():
         latest = max((r["as_of"] for r in csv.DictReader(open(cond_path))), default="?")
         print(f"conditions: {n} rows kept from fetch_conditions.py (as_of {latest})")
 
+    # both endpoints snapped to a water node; a self-loop resolves but cannot route
+    n_res = sum(1 for p in portages if p["from_id"] is not None and p["to_id"] is not None)
+    n_self = sum(1 for p in portages if p["from_id"] is not None and p["from_id"] == p["to_id"])
     print(f"water nodes: {len(lakes)} + {len(reaches)} reaches | "
-          f"portages: {len(portages)} (fully resolved: {n_res}) | "
+          f"portages: {len(portages)} (both endpoints resolved: {n_res}, "
+          f"self-loops: {n_self}, routable: {n_res - n_self}) | "
           f"links: {len(links)} | obstacles: {len(obstacles)} "
           f"(attached to edges: {len(edge_obs)}) | access: {len(access)}")
 

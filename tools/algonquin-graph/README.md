@@ -17,20 +17,25 @@ Database: `algonquin.duckdb` (DuckDB v1.5.x, no extensions required)
 | `edge_obstacles` | Obstacle-to-edge attachments: within 100 m of a portage endpoint, or 50 m of a river reach (both directions of each link are flagged). |
 | `edge_flags` / `route_edges` | Per-edge obstacle booleans (`has_rapids`, `has_waterfall`, `has_dam`) — `route_edges` is the uniform directed edge list for routing. |
 | `access_osm` | Canoe launches mapped in OSM (`canoe=access_point`, `canoe_access=yes`, `leisure=slipway`, `amenity=boat_rental`), linked to the nearest water body. |
-| `access_official` | All 29 official backcountry access points (number, name, source URL) harvested from algonquinpark.on.ca. 25 join to mapped lakes by name. |
-| `conditions` | Special conditions: category (`low-water` / `closure` / `permit` / `info`), scope (water body name or `park-wide`), note, source URL, as-of date. Seeded from official Ontario Parks / Friends of Algonquin pages; extend freely. |
+| `access_official` | All 29 official backcountry access points (number, name, slug, source URL) harvested from algonquinpark.on.ca. |
+| `conditions` | Special conditions: category (`low-water` / `closure` / `boil-water` / `permit` / `info`), scope (water body name or `park-wide`), note, source URL, as-of date. Rebuilt wholesale by `fetch_conditions.py` from the official advisories page on each run — hand-edits do not survive. |
 | `nodes` | Uniform node list for routing: `water` UNION access points (access ids offset by 1e12). |
 
-Composite edge ids: portages use their OSM way id (positive); water links use
-`-(from_id * 2000000000 + to_id)` (negative; overflow-safe for current OSM id ranges);
-access edges use `2e12 + osm_id`. The same formula exists in `parse_osm.py` and
-`build_db.sql` — keep them in sync.
+Directed link ids are `-(from_id * 2000000000 + to_id)` (negative, overflow-safe
+for current OSM id ranges) and are written by `parse_osm.py` and consumed by
+`build_db.sql` — keep them in sync. The page build path does not use edge ids at
+all; it re-derives the same composite in `build_page.py` to attach river
+obstacles, and keys portage obstacles by OSM way id.
 
 ## How it was generated
 
-Everything comes from two sources: **OpenStreetMap** (the spatial backbone, ODbL
-licensed) and **official Algonquin/Ontario Parks web pages** (access list, notices).
-No portage difficulty ratings were invented — OSM does not carry them.
+Everything comes from four sources: **OpenStreetMap** (the spatial backbone,
+ODbL licensed), **official Algonquin/Ontario Parks web pages** (access list,
+notices), **OpenTopoData** (Copernicus SRTM 90 m elevations, used to derive
+carry climb profiles) and **OpenTopoMap / CARTO** basemap tiles. Portage
+difficulty is *not* in OSM — the ratings and steepness weighting shipped in the
+app are derived from the DEM, so treat them as guidance rather than ground
+truth.
 
 ### 1. `fetch_osm.py` — Overpass API → `raw/*.json`
 
@@ -91,18 +96,23 @@ references, zero edges with missing endpoints. `parse_osm.py` also exports
 
 ### 3b. `build_page.py` + `router.js` — interactive directions page
 
-`index.html` is a self-contained directions app (Leaflet from CDN, graph embedded
-as JSON, ~12 MB):
+`index.html` is a small directions app (65 KB, Leaflet from CDN) that fetches
+`router_data.json` (12.5 MB: the graph, lake polygons, reach lines, park
+boundary and conditions) and `router.js` alongside itself. Serve all three from
+one directory — `serve.py` does that with caching off, which the page needs so a
+rebuilt graph is picked up on reload.
 
 - **Graph**: all water nodes, every routable edge with drawing geometry — portages
   carry their full trail geometry, river/channel links carry a short touch-point
   spur, access links connect launches to their lake.
-- **Routing**: Dijkstra client-side (`router.js`), five cost models —
+- **Routing**: Dijkstra client-side (`router.js`), four cost models —
   *balanced* (default: portage metres + a 300 m-carry equivalent per water body
   crossed, so lake-zigzag routes lose to cleaner ones), fewest carries (pure
-  carry count), least total carrying, *portages only* (ignores mapped river
-  links — use this if you don't trust paddleable creeks), fewest steps — plus
-  an "avoid flagged obstacles" toggle.
+  carry count), least total carrying, easiest carries (weights carry effort, so
+  steep portages are avoided) — plus an "avoid flagged obstacles" toggle.
+- **Park boundary**: drawn as a faint dashed line beneath the water. The OSM
+  relation hands back its ring as separate open ways, so `build_page.py` chains
+  them end-to-end first; without that the ring has near-zero area.
 - **Endpoints**: type in the search boxes (any named water body, river reach or
   access point), or click a lake on the map and use the popup buttons.
 - **Official access-point pins** sit at the physical launch infrastructure, not the
@@ -111,7 +121,9 @@ as JSON, ~12 MB):
   (`build_access_geo.py` — `access_official_geo.csv` carries the chosen pin coordinates).
 - Route output: carries count, total carry metres, lakes crossed, step-by-step
   itinerary, and the route drawn with real portage trail geometry.
-- Rebuild with `python3 build_page.py` (needs `router_data.json` inputs from parse).
+- Rebuild with `python3 build_page.py`. It reads `data/*.csv` plus
+  `data/{reach_lines,roads}.json` and `raw/{water_geom,portages,park_boundary}.json`,
+  and writes both `router_data.json` and `index.html`.
 
 ### 4. Official data (no OSM)
 

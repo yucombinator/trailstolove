@@ -21,7 +21,8 @@ CREATE OR REPLACE TABLE water (
   lat     DOUBLE,
   lon     DOUBLE,
   area_m2 DOUBLE,
-  major   INTEGER    -- 1 = named feature
+  major   INTEGER,   -- 1 = named feature
+  dm      DOUBLE     -- bbox diagonal in metres: the scale of a crossing into it
 );
 INSERT INTO water SELECT * FROM read_csv_auto('data/water.csv', header = true);
 

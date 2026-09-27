@@ -14,8 +14,6 @@ RAW = ROOT / "raw"
 DATA = ROOT / "data"
 
 CENTER_ID = 2411726  # Canoe Lake
-VIEW_ID = CENTER_ID
-
 
 def load_csv(name):
     with open(DATA / name, newline="") as f:
@@ -52,8 +50,10 @@ def park_boundary():
     path = RAW / "park_boundary.json"
     if not path.exists():
         return {"type": "FeatureCollection", "features": []}
-    rel = next(e for e in json.loads(path.read_text())["elements"]
-               if e["type"] == "relation")
+    rel = next((e for e in json.loads(path.read_text())["elements"]
+                if e["type"] == "relation"), None)
+    if rel is None:          # a boundary is a nicety; never block the build on it
+        return {"type": "FeatureCollection", "features": []}
 
     def same(a, b):
         return abs(a["lon"] - b["lon"]) < 1e-7 and abs(a["lat"] - b["lat"]) < 1e-7
@@ -161,10 +161,15 @@ def main():
     # ---- edges: portages ----
     pgeo = {e["id"]: e.get("geometry") or [] for e in
             json.loads((RAW / "portages.json").read_text())["elements"]}
-    obstacles = {}
+    obstacles = {}       # portage osm_id -> obstacle types
+    river_obs = {}       # directed water-link composite -> obstacle types
     for r in load_csv("edge_obstacles.csv"):
         if r["edge_kind"] == "portage":
             obstacles.setdefault(int(r["edge_id"]), []).append(r["type"])
+        elif r["edge_kind"] == "river":
+            # key matches parse_osm's directed link id, so a rapids/dam flag
+            # reaches the river leg and "avoid flagged obstacles" can act on it
+            river_obs.setdefault(int(r["edge_id"]), []).append(r["type"])
 
     # portage steepness: cumulative climb/descent along the trail (p0 -> p1)
     climbs = {}
@@ -181,7 +186,6 @@ def main():
         return c
 
     edges = []
-    portage_geo = {}
     for p in load_csv("portages.csv"):
         oid = int(p["osm_id"])
         a, b = p["from_id"], p["to_id"]
@@ -206,7 +210,6 @@ def main():
                       "o": o, "g": g_fwd, "el": el, "ed": ed, "pf": prof})
         edges.append({"s": b, "d": a, "k": "portage", "id": oid, "m": m, "n": p["name"] or None,
                       "o": o, "g": g_rev, "el": ed, "ed": el, "pf": prof[::-1] if prof else None})
-        portage_geo[oid] = line
     print(f"portage edges: {len(edges)}")
 
     # ---- reach lines (simplified) ----
@@ -278,8 +281,9 @@ def main():
                 g = [[r5(va["lon"]), r5(va["lat"])], [r5(vb["lon"]), r5(vb["lat"])]]
                 m = round(hav(va["lat"], va["lon"], vb["lat"], vb["lon"]))
         for s_node, d_node, g_oriented in ((a, b, g), (b, a, g[::-1])):
+            ro = sorted(set(river_obs.get(-(s_node * 2000000000 + d_node), [])))
             link_edges.append({"s": s_node, "d": d_node, "k": r["kind"], "m": m,
-                               "n": r["via"], "o": [], "g": g_oriented})
+                               "n": r["via"], "o": ro, "g": g_oriented})
     edges.extend(link_edges)
     print(f"link edges: {len(link_edges)}")
 
