@@ -121,34 +121,126 @@
     };
   }
 
-  // Reaches are stitched from many OSM ways (up to 266 lines for one river), so
-  // the path must be chained before slicing — otherwise narrow, segmented
-  // rivers return nothing and the drawn route has a gap.
-  const stitchCache = new WeakMap();
-  function stitchReach(lines) {
-    if (stitchCache.has(lines)) return stitchCache.get(lines);
-    const byStart = new Map();
+  // Reaches are stitched from many OSM ways (up to 266 lines for one river) and
+  // the lines are NOT in path order, so a greedy chain yields chords across the
+  // map. Build an endpoint graph per reach and BFS the true path between points.
+  const reachCache = new WeakMap();
+  const SNAP_DEG = 1.5 / 111320;           // endpoints within ~1.5 m are one node
+  function reachGraph(lines) {
+    if (reachCache.has(lines)) return reachCache.get(lines);
+    const nodes = [];
+    const nodeOf = pt => {
+      for (let i = 0; i < nodes.length; i++) {
+        if (Math.abs(nodes[i][0] - pt[0]) <= SNAP_DEG && Math.abs(nodes[i][1] - pt[1]) <= SNAP_DEG) return i;
+      }
+      nodes.push(pt);
+      return nodes.length - 1;
+    };
+    const adj = new Map();
+    const ends = [];
     for (const line of lines) {
       if (!line || line.length < 2) continue;
-      const k = line[0][0] + ',' + line[0][1];
-      if (!byStart.has(k)) byStart.set(k, line);
+      const a = nodeOf(line[0]);
+      const b = nodeOf(line[line.length - 1]);
+      ends.push([a, b]);
+      if (a === b) continue;
+      if (!adj.has(a)) adj.set(a, []);
+      if (!adj.has(b)) adj.set(b, []);
+      adj.get(a).push(ends.length - 1);
+      adj.get(b).push(ends.length - 1);
     }
-    const out = [];
-    const used = new Set();
-    let cur = lines.find(l => l && l.length >= 2) || null;
-    while (cur) {
-      out.push(...cur);
-      used.add(cur);
-      const nx = byStart.get(cur[cur.length - 1][0] + ',' + cur[cur.length - 1][1]);
-      cur = nx && !used.has(nx) ? nx : null;
-    }
-    if (out.length < 2) out.push(...lines[0]);
-    stitchCache.set(lines, out);
-    return out;
+    const g = { nodes: nodes, adj: adj, ends: ends, lines: lines };
+    reachCache.set(lines, g);
+    return g;
   }
   function dist2(a, b) {
     const dx = a[0] - b[0], dy = a[1] - b[1];
     return dx * dx + dy * dy;
+  }
+  // nearest point on the whole reach: {line, i, pt, d2}
+  function projectReach(g, pts) {
+    let best = null;
+    for (let li = 0; li < g.lines.length; li++) {
+      const line = g.lines[li];
+      if (!line || line.length < 2) continue;
+      for (let i = 0; i < line.length; i++) {
+        for (const p of pts) {
+          const d2 = dist2(line[i], p);
+          if (!best || d2 < best.d2) best = { line: li, i: i, pt: line[i], d2: d2 };
+        }
+      }
+    }
+    return best;
+  }
+  // BFS across the endpoint graph, returning the concatenated path or null.
+  function walkReach(g, aNode, bNode) {
+    if (aNode === bNode) return [g.nodes[aNode]];
+    const prev = new Map([[aNode, null]]);
+    const queue = [aNode];
+    for (let h = 0; h < queue.length; h++) {
+      const n = queue[h];
+      if (n === bNode) break;
+      for (const li of g.adj.get(n) || []) {
+        const [ea, eb] = g.ends[li];
+        const other = n === ea ? eb : ea;
+        if (!prev.has(other)) {
+          prev.set(other, { from: n, line: li, forward: n === ea });
+          queue.push(other);
+        }
+      }
+    }
+    if (!prev.has(bNode)) return null;
+    const chain = [];
+    let cur = bNode;
+    while (prev.get(cur)) {
+      const step = prev.get(cur);
+      const line = g.lines[step.line];
+      chain.push(step.forward ? line : line.slice().reverse());
+      cur = step.from;
+    }
+    chain.reverse();
+    const path = [];
+    for (const line of chain) {
+      for (const pt of line) {
+        const last = path[path.length - 1];
+        if (last && dist2(last, pt) < SNAP_DEG * SNAP_DEG) continue;   // drop joint dupes
+        path.push(pt);
+      }
+    }
+    return path.length >= 2 ? path : null;
+  }
+  // Slice of the reach between the two given edge geometries.
+  function reachSlice(lines, gA, gB) {
+    const g = reachGraph(lines);
+    const ptsA = Array.isArray(gA && gA[0]) ? gA : [gA];
+    const ptsB = Array.isArray(gB && gB[0]) ? gB : [gB];
+    const pa = projectReach(g, ptsA), pb = projectReach(g, ptsB);
+    if (!pa || !pb) return null;
+    // projection far from the touch point => the reach isn't mapped there
+    if (pa.d2 > 2.5e-6 || pb.d2 > 2.5e-6) return null;   // ~280 m
+    const ia = nearestEndNode(g, pa);
+    const ib = nearestEndNode(g, pb);
+    if (ia < 0 || ib < 0) return null;
+    let path = walkReach(g, ia, ib);
+    if (!path) {
+      // endpoints on different components: still draw the axis if close
+      path = [pa.pt, pb.pt];
+    }
+    // trim to the exact touch points
+    const i1 = nearestIdxOn(path, pa.pt), i2 = nearestIdxOn(path, pb.pt);
+    const lo = Math.min(i1, i2), hi = Math.max(i1, i2);
+    const slice = path.slice(lo, hi + 1);
+    if (slice.length >= 2) {
+      if (i1 > i2) slice.reverse();               // travel direction A -> B
+      return slice;
+    }
+    return [pa.pt, pb.pt];
+  }
+  // graph node on the projected line closest to the projection
+  function nearestEndNode(g, proj) {
+    const [ea, eb] = g.ends[proj.line];
+    if (ea === eb) return ea;
+    return dist2(g.nodes[ea], proj.pt) <= dist2(g.nodes[eb], proj.pt) ? ea : eb;
   }
   function nearestIdxOn(line, p) {
     let bi = 0, bd = Infinity;
@@ -158,27 +250,12 @@
     }
     return bi;
   }
-  // Given the two river edge geometries, project each onto the stitched reach
-  // and return the path between the projections (nil when they coincide).
-  function reachSlice(lines, gA, gB) {
-    const stitched = stitchReach(lines);
-    const ptsA = Array.isArray(gA && gA[0]) ? gA : [gA];
-    const ptsB = Array.isArray(gB && gB[0]) ? gB : [gB];
-    let ia = -1, da = Infinity, ib = -1, db = Infinity;
-    for (const p of ptsA) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < da) { da = d; ia = i; } }
-    for (const p of ptsB) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < db) { db = d; ib = i; } }
-    if (ia < 0 || ib < 0) return null;
-    const lo = Math.min(ia, ib), hi = Math.max(ia, ib);
-    const slice = stitched.slice(lo, hi + 1);
-    return slice.length >= 2 ? slice : null;
-  }
   // Point on the reach closest to an edge geometry (dashed creek fallback).
   function reachPointOn(lines, g) {
-    const stitched = stitchReach(lines);
+    const gr = reachGraph(lines);
     const pts = Array.isArray(g && g[0]) ? g : [g];
-    let best = null, bd = Infinity;
-    for (const p of pts) { const i = nearestIdxOn(stitched, p); const d = dist2(stitched[i], p); if (d < bd) { bd = d; best = stitched[i]; } }
-    return best;
+    const p = projectReach(gr, pts);
+    return p ? p.pt : null;
   }
 
   // Chain Dijkstra legs over multiple waypoints, one combined route per cost model.
