@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <title>Algonquin Planner — canoe route planner for Algonquin Provincial Park</title>
-<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least portage distance, or portages only."/>
+<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
 <link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
 <meta property="og:title" content="Algonquin Planner — Canoe Route Planner"/>
 <meta property="og:description" content="Point-to-point paddling directions across Algonquin Provincial Park — every named lake, portage and river."/>
@@ -380,10 +380,10 @@
   <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=1790539072"></script>
+<script src="router.js?v=1790539990"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=1790539072')
+fetch('router_data.json?v=1790539990')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);

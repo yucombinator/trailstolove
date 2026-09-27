@@ -29,7 +29,8 @@ ADJ_MAX = 15.0      # m — lake-lake shoreline adjacency
 REACH_ADJ = 30.0    # m — reach-lake touch
 OBST_EDGE = 100.0   # m — obstacle near portage endpoint
 OBST_REACH = 50.0   # m — obstacle on reach
-MIN_REACH = 300.0   # m — min waterway length to keep as reach node
+IN_PARK = 500.0     # m — slack when asking whether a point is in the park
+MIN_REACH = 300.0   # m — min waterway length to keep as a reach node
 GRID = 0.05         # deg — spatial grid cell for park boundary points
 
 
@@ -272,7 +273,7 @@ def main():
         name = max(name_count, key=name_count.get) if name_count else ""
         # sample points for proximity tests
         step = max(1, len(pts) // 400)
-        if not any(inside_park(la, lo, 500.0) for (la, lo) in pts[::step]):
+        if not any(inside_park(la, lo, IN_PARK) for (la, lo) in pts[::step]):
             continue
         rid = -len(reaches) - 1
         reach_ways[str(rid)] = {"name": name, "lines": wlines}
@@ -331,8 +332,8 @@ def main():
                      for i in range(len(g) - 1))
         a_id, a_d = resolve(g[0]["lat"], g[0]["lon"])
         b_id, b_d = resolve(g[-1]["lat"], g[-1]["lon"])
-        if not (inside_park(g[0]["lat"], g[0]["lon"], 500.0)
-                or inside_park(g[-1]["lat"], g[-1]["lon"], 500.0)):
+        if not (inside_park(g[0]["lat"], g[0]["lon"], IN_PARK)
+                or inside_park(g[-1]["lat"], g[-1]["lon"], IN_PARK)):
             continue
         tags = {k: v for k, v in el.get("tags", {}).items() if k != "name"}
         portages.append({
@@ -414,7 +415,7 @@ def main():
             if not g:
                 continue
             lat, lon = g[len(g) // 2]["lat"], g[len(g) // 2]["lon"]
-        if not inside_park(lat, lon, 500.0):
+        if not inside_park(lat, lon, IN_PARK):
             continue
         obstacles.append({"osm_id": el["id"], "type": typ,
                           "name": t.get("name") or "",
@@ -502,7 +503,7 @@ def main():
             lat, lon = g[0]["lat"], g[0]["lon"]
         if not inside_park(lat, lon, 300.0):
             continue
-        wid, _ = resolve(lat, lon, 250.0)
+        wid, _ = resolve(lat, lon, MAX_SNAP)
         if wid is None:
             continue
         camps.append({"osm_id": el["id"], "name": t.get("name") or "",
@@ -550,7 +551,7 @@ def main():
         g = el.get("geometry") or []
         if len(g) < 2:
             continue
-        if not any(inside_park(q["lat"], q["lon"], 500.0)
+        if not any(inside_park(q["lat"], q["lon"], IN_PARK)
                    for q in g[::max(1, len(g) // 20)]):
             continue
         r_ways[el["id"]] = el

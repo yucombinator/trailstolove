@@ -76,8 +76,8 @@ def group_due(name: str) -> bool:
     return True
 
 
-def run(name: str, query: str, tries: int = 6, backoff: int | None = None) -> dict:
-    backoff = BACKOFF if backoff is None else backoff
+def run(name: str, query: str, tries: int = 6) -> dict:
+    backoff = BACKOFF
     out = RAW / f"{name}.json"
     if out.exists():
         try:
@@ -137,16 +137,19 @@ def main() -> None:
     lon0, lon1 = min(p["lon"] for p in pts) - 0.03, max(p["lon"] for p in pts) + 0.03
     print(f"[park] bbox lat {lat0:.3f}..{lat1:.3f} lon {lon0:.3f}..{lon1:.3f}", flush=True)
 
-    def tiles(step_lat=0.4, step_lon=0.5):
+    # tile size in degrees; Overpass chokes on a single park-wide geometry query
+    TILE_LAT, TILE_LON = 0.4, 0.5
+
+    def tiles():
         lat = lat0
         while lat < lat1:
             lon = lon0
             while lon < lon1:
-                yield (lat, lon, min(lat + step_lat, lat1), min(lon + step_lon, lon1))
-                lon += step_lon
-            lat += step_lat
+                yield (lat, lon, min(lat + TILE_LAT, lat1), min(lon + TILE_LON, lon1))
+                lon += TILE_LON
+            lat += TILE_LAT
 
-    def fetch_tiled(name: str, body: str, tries: int = 4, pause: float = 8.0) -> dict:
+    def fetch_tiled(name: str, body: str) -> dict:
         if not group_due(name):
             try:
                 return json.loads((RAW / f"{name}.json").read_text())
@@ -158,7 +161,7 @@ def main() -> None:
             q = (f"[out:json][timeout:600];({body.replace('{{bbox}}', bbox)});out geom;")
             out = RAW / f"{name}_t{i:02d}.json"
             cached = out.exists()
-            els = run(f"{name}_t{i:02d}", q, tries).get("elements", [])
+            els = run(f"{name}_t{i:02d}", q, 4).get("elements", [])
             for el in els:
                 key = (el["type"], el["id"])
                 cur = merged.get(key)
@@ -166,7 +169,7 @@ def main() -> None:
                     merged[key] = el
             print(f"  tile {i:02d}: +{len(els)} -> {len(merged)} merged", flush=True)
             if not cached:
-                time.sleep(pause)   # only pace real network hits
+                time.sleep(8)   # only pace real network hits
         (RAW / f"{name}.json").write_text(json.dumps({"elements": list(merged.values())}))
         print(f"[ok] {name}: {len(merged)} elements (tiled)", flush=True)
         return merged
@@ -209,20 +212,32 @@ def main() -> None:
                 'nwr["tourism"="camp_site"]{{bbox}};')
 
     # 6) Waterways for paddle links (tiled: ways + their child nodes).
-    merged = {}
-    for i, (s, w, n, e) in enumerate(tiles()):
-        bbox = f"({s:.4f},{w:.4f},{n:.4f},{e:.4f})"
-        q = (f"[out:json][timeout:600];"
-             f'way["waterway"~"^(river|stream|canal)$"]{bbox};'
-             "out body;>;out skel qt;")
-        els = run(f"waterways_t{i:02d}", q, 4).get("elements", [])
-        for el in els:
-            key = (el["type"], el["id"])
-            merged.setdefault(key, el)
-        print(f"  tile {i:02d}: +{len(els)} -> {len(merged)} merged", flush=True)
-        time.sleep(8)
-    (RAW / "waterways.json").write_text(json.dumps({"elements": list(merged.values())}))
-    print(f"[ok] waterways: {len(merged)} elements (tiled)", flush=True)
+    # Same age gate as the other groups: without it the per-tile cache in run()
+    # pins waterways at whatever the first fetch returned, forever.
+    if not group_due("waterways"):
+        try:
+            waterways = json.loads((RAW / "waterways.json").read_text())
+        except Exception:  # noqa: BLE001
+            waterways = {"elements": []}
+        print(f"[ok] waterways: {len(waterways.get('elements', []))} elements (cached)", flush=True)
+    else:
+        merged = {}
+        for i, (s, w, n, e) in enumerate(tiles()):
+            bbox = f"({s:.4f},{w:.4f},{n:.4f},{e:.4f})"
+            q = (f"[out:json][timeout:600];"
+                 f'way["waterway"~"^(river|stream|canal)$"]{bbox};'
+                 "out body;>;out skel qt;")
+            tile = RAW / f"waterways_t{i:02d}.json"
+            cached = tile.exists()
+            els = run(f"waterways_t{i:02d}", q, 4).get("elements", [])
+            for el in els:
+                key = (el["type"], el["id"])
+                merged.setdefault(key, el)
+            print(f"  tile {i:02d}: +{len(els)} -> {len(merged)} merged", flush=True)
+            if not cached:
+                time.sleep(8)   # only pace real network hits
+        (RAW / "waterways.json").write_text(json.dumps({"elements": list(merged.values())}))
+        print(f"[ok] waterways: {len(merged)} elements (tiled)", flush=True)
 
     if SKIPPED:
         print(f"[skip] {len(SKIPPED)} group(s) within their age budget, not refetched: "

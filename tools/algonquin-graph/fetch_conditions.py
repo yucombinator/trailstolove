@@ -2,12 +2,14 @@
 """Refresh the volatile, non-OSM data: park conditions and advisories.
 
 The Overpass groups are near-static; this is what actually moves. Pulls the
-Algonquin Park advisories page and the Ontario Parks alert feed, extracts the
-bulleted conditions, and writes data/conditions.csv with a fetch timestamp so the
-UI can show how stale it is. Cached: a page is only re-fetched once its age
-budget expires, and the last good file is kept if a fetch fails.
+Algonquin Park advisories page, extracts the bulleted conditions under its
+Closures / Boil Water / Low Water headings, merges in a few standing rows
+(permit and signage, cited not scraped), and writes data/conditions.csv with a
+fetch timestamp so the UI can show how stale it is. Cached: the page is only
+re-fetched once its age budget expires, and the last good file is kept if a
+fetch fails.
 
-Cheap on purpose: a few HTML pages, no API rate limits, safe to run hourly.
+Cheap on purpose: one HTML page, no API rate limits, safe to run hourly.
 """
 import csv
 import html
@@ -22,8 +24,8 @@ OUT = DATA / "conditions.csv"
 RAW = DATA / "conditions_raw"
 UA = "algonquin-graph-builder/0.1"
 
-# hours before a page is considered stale
-MAX_AGE_H = {"advisories": 24, "alerts": 24, "permits": 168, "portages": 720}
+# hours before the advisories page is considered stale
+MAX_AGE_H = 24
 
 SOURCES = {
     "advisories": "https://www.algonquinpark.on.ca/news/algonquin_park_advisories.php",
@@ -48,6 +50,10 @@ SEED = [
 TAG_RE = re.compile(r"<[^>]+>")
 SCRIPT_RE = re.compile(r"<(script|style)\b.*?</\1>", re.I | re.S)
 WS_RE = re.compile(r"\s+")
+
+# Only the advisories page is ever parsed. The other URLs below are cited by the
+# standing rows, not scraped, so downloading them on every run was pure waste.
+PARSED = ("advisories",)
 
 # The advisories page is the one that actually carries trip-affecting text.
 # Its body lives in #content_center under section headings (Closures, Boil
@@ -125,11 +131,12 @@ def fetch(url: str, dest: pathlib.Path) -> bool:
 def main():
     RAW.mkdir(parents=True, exist_ok=True)
     pages = {}
-    for key, url in SOURCES.items():
+    for key in PARSED:
+        url = SOURCES[key]
         dest = RAW / f"{key}.html"
         age = page_age_hours(dest)
-        if age is not None and age < MAX_AGE_H.get(key, 24):
-            print(f"[fresh] {key}: {age:.0f}h old (budget {MAX_AGE_H.get(key, 24)}h) — skipping")
+        if age is not None and age < MAX_AGE_H:
+            print(f"[fresh] {key}: {age:.0f}h old (budget {MAX_AGE_H}h) — skipping")
         else:
             try:
                 fetch(url, dest)
@@ -143,25 +150,33 @@ def main():
     rows, seen = [], set()
     stamp = time.strftime("%Y-%m-%d")
 
+    def note_key(cat, note):
+        # same key shape for scraped lines and standing rows, so the standing
+        # ones actually drop out when the advisories page restates them
+        return (cat, note[:60])
+
     if "advisories" in pages:
         text = pages["advisories"].read_text(errors="ignore")
         for cat, line in advisory_sections(text):
-            if (cat, line) in seen:
+            k = note_key(cat, line)
+            if k in seen:
                 continue
-            seen.add((cat, line))
+            seen.add(k)
             rows.append((cat, "park-wide", line[:300], SOURCES["advisories"], stamp))
         if not any(r[0] == "closure" for r in rows):
-            rows.append(("info", "park-wide",
-                         "No closures listed on the park advisories page as of this fetch.",
-                         SOURCES["advisories"], stamp))
-            seen.add(("info", "No closures"))
+            note = "No closures listed on the park advisories page as of this fetch."
+            seen.add(note_key("info", note))
+            rows.append(("info", "park-wide", note, SOURCES["advisories"], stamp))
+
+    n_scraped = len(rows)
 
     # keep the standing advisories that the pages do not restate
     for cat, scope, note, src in SEED:
-        k = (cat, note[:60])
-        if k not in seen:
-            seen.add(k)
-            rows.append((cat, scope, note, src, stamp))
+        k = note_key(cat, note)
+        if k in seen:
+            continue
+        seen.add(k)
+        rows.append((cat, scope, note, src, stamp))
 
     if not rows:
         print("[warn] nothing extracted — keeping previous conditions.csv")
@@ -171,9 +186,8 @@ def main():
         wr = csv.writer(f)
         wr.writerow(["category", "scope", "note", "source", "as_of"])
         wr.writerows(rows)
-    n_live = sum(1 for r in rows if r[4] == stamp)
-    print(f"conditions: {len(rows)} rows ({n_live} from live pages, "
-          f"{len(rows) - n_live} standing) as of {stamp}")
+    print(f"conditions: {len(rows)} rows ({n_scraped} from the advisories page, "
+          f"{len(rows) - n_scraped} standing) as of {stamp}")
 
 
 if __name__ == "__main__":

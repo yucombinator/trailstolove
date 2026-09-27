@@ -42,19 +42,23 @@ truth.
 - Park boundary: OSM relation **910784** (`boundary=national_park`, name
   "Algonquin Provincial Park"), fetched once with `out geom` (member ways carry
   inline coordinates) and saved to `raw/park_boundary.json`.
-- Feature categories, each fetched over the park's bbox split into ~0.4° × 0.5°
+- Feature categories, each fetched over the park's bbox split into 0.4° × 0.5°
   tiles, merged and deduplicated by (type, id):
-  - `water_geom` — `way`/`relation` with `natural=water`, `out geom` (13,112 elements)
-  - `portages` — ways with `portage` or `canoe=portage` (1,070)
-  - `obstacles` — `waterway`/`man_made` in (rapids, waterfall, dam, weir) (561)
-  - `access` — `canoe`, `canoe_access`, `leisure=slipway`, `amenity=boat_rental` (5,123)
+  - `water_geom` — `way`/`relation` with `natural=water`, `out geom`
+  - `portages` — ways with `portage` or `canoe=portage`
+  - `obstacles` — `waterway`/`man_made` in (rapids, waterfall, dam, weir)
+  - `access` — `canoe`, `canoe_access`, `leisure=slipway`, `amenity=boat_rental`
   - `amenities` — `amenity=parking`, `shop`/`amenity=boat_rental` (pin anchors)
-  - `waterways` — `waterway` in (river, stream, canal), `out body` + child nodes (890,400)
+  - `roads` — `ref=60` / `name=Highway 60`, drawn as map context
+  - `campsites` — `tourism=camp_site`, drawn as green dots
+  - `waterways` — `waterway` in (river, stream, canal), `out body` + child nodes
+- Each group declares how old its snapshot may get in `GROUP_MAX_AGE_DAYS`;
+  anything fresher is skipped, and `OVERPASS_FORCE=water_geom,portages` overrides
+  that. A daily run therefore drops from ~100 tile fetches to ~24.
 - Overpass quirks this works around (they cost real debugging time):
   - The park's Overpass `area` index entry does not exist on current mirrors;
     area-filtered queries silently return empty sets. **No `area()` filter is used** —
     the park polygon is applied client-side instead.
-  - This Overpass build rejects arithmetic inside `area()` (literal integer ids only).
   - Unions require a trailing `;` before the closing paren.
   - Runtime timeouts return HTTP 200 with an empty element list — the fetcher
     checks the `remark` field and retries.
@@ -79,20 +83,23 @@ bbox-prefiltered point/segment distances):
 5. Build paddle links: reach↔lake touches (≤ 30 m) and lake↔lake shoreline
    adjacency (≤ 15 m, shared-vertex fast path).
 6. Attach obstacles to edges by proximity; official access-point pages parsed for
-   access-point numbers; conditions seeded from official sources.
+   access-point numbers. Conditions are *not* seeded here — `fetch_conditions.py`
+   owns that file, and `parse_osm` only writes starter rows if it is missing.
 
-Latest run (2026-09-25): 7,036 water polygons in park, 3,204 reaches, 896 portages
-(601 fully resolved + routed, 263 self-loops/endpoint-failures kept but excluded),
-7,019 paddle links, 314 obstacles (5,227 edge attachments), 2,280 access points.
+Latest run: 7,036 water polygons in park, 3,204 reaches, 896 portages (864 with
+both endpoints resolved, of which 263 are self-loops, leaving 601 routable),
+7,019 paddle links, 314 obstacles (5,227 edge attachments), 1,501 access points.
+The script prints this split itself on every run.
 
 ### 3. `build_db.sql` — `data/*.csv` → `algonquin.duckdb`
 
 Creates the tables, the `hav()` haversine macro, and the derived views
 (`nodes`, `graph_edges` — undirected source data duplicated in both directions —
-`edge_flags`, `route_edges`), then prints sanity checks (dangling refs, self-loops,
-attachment counts). The build shown in the sanity output: zero dangling water
-references, zero edges with missing endpoints. `parse_osm.py` also exports
-`data/reach_lines.json` — the authoritative reach polylines used by the map page.
+`route_edges`; `edge_flags` and `edge_obstacles` are materialised tables), then
+prints sanity checks (dangling refs, self-loops, attachment counts). The build
+shown in the sanity output: zero dangling water references, zero edges with
+missing endpoints. `parse_osm.py` also exports `data/reach_lines.json` — the
+authoritative reach polylines used by the map page.
 
 ### 3b. `build_page.py` + `router.js` — interactive directions page
 
@@ -109,16 +116,20 @@ rebuilt graph is picked up on reload.
   *balanced* (default: portage metres + a 300 m-carry equivalent per water body
   crossed, so lake-zigzag routes lose to cleaner ones), fewest carries (pure
   carry count), least total carrying, easiest carries (weights carry effort, so
-  steep portages are avoided) — plus an "avoid flagged obstacles" toggle.
+  steep portages are avoided) — plus an "avoid flagged obstacles" toggle, which
+  reads the `o` field on river links as well as portages, so rapids, waterfalls
+  and dams actually reroute you.
 - **Park boundary**: drawn as a faint dashed line beneath the water. The OSM
   relation hands back its ring as separate open ways, so `build_page.py` chains
   them end-to-end first; without that the ring has near-zero area.
 - **Endpoints**: type in the search boxes (any named water body, river reach or
   access point), or click a lake on the map and use the popup buttons.
 - **Official access-point pins** sit at the physical launch infrastructure, not the
-  mapped canoe put-in: the OSM slipway named for the access point (`... Access Point (#N)`)
-  when present, else the nearest boat ramp / boat rental / parking within 400 m
-  (`build_access_geo.py` — `access_official_geo.csv` carries the chosen pin coordinates).
+  mapped canoe put-in: the OSM slipway named for the access point
+  (`... Access Point (#N)`) when one exists anywhere in the park, else the nearest
+  boat ramp / boat rental / parking within 400 m. A handful of pins therefore sit
+  kilometres from the water, which is deliberate — it is where you park.
+  (`build_access_geo.py` — `access_official_geo.csv` carries the chosen pin coordinates.)
 - Route output: carries count, total carry metres, lakes crossed, step-by-step
   itinerary, and the route drawn with real portage trail geometry.
 - Rebuild with `python3 build_page.py`. It reads `data/*.csv` plus
@@ -127,28 +138,41 @@ rebuilt graph is picked up on reload.
 
 ### 4. Official data (no OSM)
 
-- **Access points**: all 29 pages under
-  `https://www.algonquinpark.on.ca/visit/camping/*-access-point.php`
-  (numbers #1–#29, names) — saved HTML in `raw/ap_pages/`, parsed into
-  `access_official`.
-- **Conditions**: Ontario Parks alerts (`ontarioparks.ca/park/algonquin/alerts`),
-  Friends of Algonquin advisories
-  (`algonquinpark.on.ca/news/algonquin_park_advisories.php`), the portage-signage
-  page, and the Ontario Parks reservation service. Rows carry `source` and `as_of`;
-  treat low-water rows as stale after a few weeks — re-check the source and update.
+- **Access points**: numbers #1–#29 and names taken from the 29 pages under
+  `https://www.algonquinpark.on.ca/visit/camping/*-access-point.php`, whose HTML
+  is kept in `raw/ap_pages/` and parsed into `access_official`.
+  `build_access_geo.py` then picks a pin coordinate for each and writes
+  `access_official_geo.csv`.
+- **Conditions**: `fetch_conditions.py` scrapes the park advisories page
+  (`algonquinpark.on.ca/news/algonquin_park_advisories.php`) for the bulleted
+  text under its Closures / Boil Water / Low Water headings, adds a few standing
+  rows (permit requirement, portage signage), and rewrites `conditions.csv`
+  wholesale. Rows carry `source` and `as_of`; treat low-water rows as stale
+  after a few weeks. Hand-edits do not survive a run.
+- **Elevations**: `fetch_elevations.py` samples each portage trail, fetches
+  SRTM 90 m elevations from OpenTopoData, caches them in `data/elevations.csv`
+  and writes `data/climbs.csv` (up, down and a 12-point profile per portage).
+- **Serving**: `serve.py` is a no-cache static server for the built page.
 
 ## How to use
 
 ```bash
 cd algonquin-graph
 
-# rebuild from scratch (skips cached fetches if raw/ exists)
+# refresh only what has aged past its budget, then rebuild
 python3 fetch_osm.py
+python3 fetch_conditions.py
+python3 fetch_elevations.py
+python3 build_access_geo.py
 python3 parse_osm.py
-duckdb algonquin.duckdb < build_db.sql
+python3 build_page.py
 
-# explore
+# optional: the DuckDB side, for SQL exploration
+duckdb algonquin.duckdb < build_db.sql
 duckdb algonquin.duckdb < queries.sql
+
+# serve the page (no-cache, so a rebuild shows up on reload)
+python3 serve.py
 ```
 
 `queries.sql` includes: summary counts, largest lakes, portages around a lake,
