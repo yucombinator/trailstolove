@@ -225,11 +225,29 @@ def main() -> None:
         child nodes, which is a different statement entirely and cannot be
         wrapped in the parentheses the geometry form uses.
         """
-        if not group_due(name):
-            try:
-                return json.loads((RAW / f"{name}.json").read_text())
-            except Exception:  # noqa: BLE001
-                return {"elements": []}
+        # A snapshot is only as good as the tiles under it. A run that ran out
+        # of time — or one from before the deadline existed — can leave a merged
+        # snapshot that is newer than its budget but missing tiles, and then
+        # the age check happily skips it forever. Run #6 did exactly that: it
+        # restored a short snapshot from run #5's partial fetch, found every
+        # group "fresh", rebuilt the same short graph, and the payload guard
+        # held the commit.
+        # Completeness is checked before the age, because a complete snapshot
+        # needs no network and a short one does — and because a group that is
+        # about to be re-merged must not also be reported as skipped.
+        due = group_due(name)
+        if not due:
+            missing = [i for i, _ in enumerate(tiles())
+                       if not (RAW / f"{name}_t{i:02d}.json").exists()]
+            if missing:
+                print(f"[incomplete] {name}: snapshot is within budget but "
+                      f"{len(missing)} of its tiles are missing — re-merging", flush=True)
+                SKIPPED.remove(name)
+            else:
+                try:
+                    return json.loads((RAW / f"{name}.json").read_text())
+                except Exception:  # noqa: BLE001
+                    return {"elements": []}
         if out_of_time():
             EXPIRED.append(name)
             return carry_over(name)
