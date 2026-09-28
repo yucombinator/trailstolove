@@ -82,8 +82,8 @@ timeout = "3600s"
     weight = 2
 
   [[menu.main]]
-    name = "Places"
-    url = "/places/"
+    name = "Map"
+    url = "/map/"
     weight = 3
 
   [[menu.main]]

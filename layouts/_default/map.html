@@ -4,37 +4,20 @@
 {{- $pins := partial "places/pins.html" . -}}
 {{- $places := len (uniq (apply $pins "index" "." "place")) -}}
 
+{{/* The map is the page. The trip archive it used to sit above lives at
+     /posts/, and every pin links to its own report, so nothing is lost by
+     dropping the list here. */}}
 <section class="places-map-band" aria-label="Map of places written about">
   <div id="places-map" role="application" aria-label="Map of trip locations"></div>
   <p class="places-map-note">
     {{ len $pins }} trip{{ if ne (len $pins) 1 }}s{{ end }} across
-    {{ $places }} place{{ if ne $places 1 }}s{{ end }}.
-    Zoom in to separate trips that share a park.
+    {{ $places }} place{{ if ne $places 1 }}s{{ end }}, from British Columbia
+    to New Zealand. Hover a pin to name the trip, click to read it, and zoom in
+    where trips share a park.
   </p>
-  <noscript><p class="places-map-note">The map needs JavaScript. The full archive is listed below.</p></noscript>
+  <noscript><p class="places-map-note">The map needs JavaScript. The <a href="/posts/">full trip archive</a> is on the blog.</p></noscript>
 </section>
-
-<main class="py-6">
-  {{/* no .Paginate: this is a leaf page and pagination is only supported on
-       list pages. 26 posts render fine without it. */}}
-  {{ range (where .Site.RegularPages "Type" "posts") }}
-  <div class="mb-12">
-    {{ partial "blog/post-row.html" (dict
-    "title" .Params.title
-    "date" .Params.date
-    "description" .Params.description
-    "thumbnail" .Params.thumbnail
-    "author" .Params.author
-    "stats" .Params.stats
-    "tags" .Params.tags
-    "categories" .Params.categories
-    "url" .Permalink
-    )}}
-  </div>
-  {{ end }}
-</main>
 {{ end }}
-
 {{ define "footer_js" }}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.9.1/dist/MarkerCluster.css">
@@ -82,6 +65,12 @@
     html += '<span>' + p.date + '</span>';
     html += '</div></div>';
     m.bindPopup(html);
+    // A lone dot at world zoom says nothing, which is how the Kepler Track in
+    // New Zealand went unnoticed in the bottom-right corner. Name the trip on
+    // hover, before anyone has to click through to find out what a pin is.
+    m.bindTooltip(p.place ? p.title + ' — ' + p.place : p.title, {
+      direction: 'top', offset: [0, -8], className: 'places-tip'
+    });
     group.addLayer(m);
   });
 

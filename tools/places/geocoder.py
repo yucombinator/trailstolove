@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the coordinates behind the /places/ map.
+"""Generate the coordinates behind the /map/ page.
 
 Two outputs, one source of truth:
     data/places.csv    the file you hand-edit and spot-check

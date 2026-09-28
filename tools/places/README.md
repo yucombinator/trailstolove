@@ -1,7 +1,8 @@
-# Places map
+# Map
 
-`/places/` pins every trip on the site to a map above the post archive. This
-directory owns the coordinates.
+`/map/` is a full-page map of every trip on the site — the map is the page,
+the trip archive lives at `/posts/`. `/places/` is the old URL, kept alive as
+a Hugo alias. This directory owns the coordinates.
 
 ## Files
 
@@ -69,7 +70,7 @@ test pass quietly.
 
 OpenTopoMap, not CARTO. CARTO serves an `API KEY REQUIRED` watermark across
 every tile without a key. If you ever want a different basemap, that
-attribution line in `layouts/_default/places.html` is the only thing to
+attribution line in `layouts/_default/map.html` is the only thing to
 change.
 
 ## Known rough edge
@@ -77,3 +78,8 @@ change.
 The default view is fitted to all pins, so the Kepler Track in New Zealand
 pulls the Pacific Northwest cluster into a mostly-ocean world map. It is
 truthful but not pretty, and is a visual call rather than a bug.
+
+It is worse than it was when the map was a 52vh band above the archive: now
+that the map is the whole page, the ocean is the page. Every pin carries a
+hover tooltip naming the trip, which is what makes the lone dot in the
+bottom-right corner findable — if you ever touch the pin markers, keep that.

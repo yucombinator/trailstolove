@@ -1,4 +1,4 @@
-"""Checks on the /places/ map data.
+"""Checks on the /map/ page's coordinate data.
 
 Run: python3 tools/places/test_places.py
 or:  python3 -m unittest discover -s tools/places -p "test_*.py"
