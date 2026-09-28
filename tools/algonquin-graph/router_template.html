@@ -923,6 +923,10 @@ function drawRoute(opt, pointIds) {
   highlightLakes(opt.res.nodeIds);
   highlightPortages(opt.res.legs.filter(e => e.k === 'portage').map(e => e.id));
   const res = opt.res;
+  // read early: the endpoint traverses below need the dot coordinates, and the
+  // two markers at the foot of this function are drawn from the same two
+  const s0 = idx.nodeById.get(res.nodeIds[0]);
+  const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
 
   // Every drawn path is remembered so a straight stub is never painted on top of
   // a real line that already covers the same water. The coverage rule itself
@@ -1040,6 +1044,54 @@ function drawRoute(opt, pointIds) {
     return out;
   };
 
+  // Paddling at the two ENDS. traverseOf() can only describe a water body that
+  // has both an arrival and a departure, so it returns nothing for the first
+  // and last one — the route appeared to begin at the first carry, with the
+  // green dot sitting out in the lake and nothing drawn to it. This is the
+  // same shape as the interior traverse with the dot as the one open end.
+  //
+  // Not cosmetic. Canoe Lake to Burnt Island Lake is four carries with no
+  // paddling leg anywhere in the graph, yet there is 3.1 km of paddling out of
+  // Canoe Lake to reach the first carry and 3.3 km into Burnt Island Lake at
+  // the far end: undrawn, unlisted and uncounted in the km paddling total.
+  const WATER = new Set(['lake', 'pond', 'reservoir', 'reach']);
+  const openTraverse = (j, from, to) => {
+    const node = idx.nodeById.get(res.nodeIds[j]);
+    // an access endpoint is not water: its leg is already drawn as a spur
+    if (!node || !WATER.has(node.kind) || !from || !to) return null;
+    if (from[0] === to[0] && from[1] === to[1]) return null;
+    let coords = null, guess = false;
+    if (node.kind === 'reach') {
+      const lines = (DATA.reaches[res.nodeIds[j]] || {}).lines;
+      if (lines && lines.length) {
+        const a = Router.reachPointOn(lines, [from]);
+        const b = Router.reachPointOn(lines, [to]);
+        if (a && b && (a[0] !== b[0] || a[1] !== b[1])) { coords = [a, b]; guess = true; }
+      }
+    } else {
+      const feat = lakeGeoms[res.nodeIds[j]];
+      const path = feat ? Router.lakePath(from, to, feat) : null;
+      if (path) coords = Router.refinePath(path, feat, 40);
+    }
+    // The dot is an OSM centre for the whole body, which can land just outside
+    // the drawn (simplified) polygon. lakePath snaps such a point onto the
+    // shore, up to a few hundred metres away, so re-attach the dot at both
+    // ends or the line still stops short of the marker it is meant to meet.
+    if (coords) {
+      if (coords[0][0] !== from[0] || coords[0][1] !== from[1]) coords = [from, ...coords];
+      const e = coords[coords.length - 1];
+      if (e[0] !== to[0] || e[1] !== to[1]) coords = [...coords, to];
+    } else {
+      coords = [from, to]; guess = true;
+    }
+    const out = { coords, guess, m: 0 };
+    for (let q = 1; q < coords.length; q++) out.m += hav2(coords[q - 1], coords[q]);
+    return out;
+  };
+  const lastIdx = res.nodeIds.length - 1;
+  const firstT = openTraverse(0, [s0.lon, s0.lat], anchorOut[0]);
+  const lastT = openTraverse(lastIdx, anchorIn[lastIdx], [s1.lon, s1.lat]);
+
   // Consecutive nodes of the same lake are one crossing to a paddler, so
   // buffer them and emit a single step per water body.
   let run = null;
@@ -1063,6 +1115,20 @@ function drawRoute(opt, pointIds) {
     if (run && run.name === name) { run.m += t.m; run.guess = run.guess && t.guess; }
     else { flushRun(); run = { name: name, m: t.m, guess: t.guess }; }
   };
+  // An endpoint paddle gets its own row rather than joining the buffered run:
+  // it is the first and last thing on the list, and no leg of its own to fold
+  // into. No leg-zoom either — there is no grouped index behind it to zoom to.
+  const paddleRow = (t, name) => {
+    if (!t || t.m < 100) return;
+    flushRun();
+    i++;
+    const km = (t.m / 1000).toFixed(t.m < 10000 ? 2 : 1);
+    html += `<div class="leg"><span class="n">${i}</span><div class="b">` +
+            `<span class="r">Paddle ${km} km</span> — ${name}` +
+            `${t.guess ? '<br><span style="color:#667">approximate</span>' : ''}</div></div>`;
+  };
+  paddleRow(firstT, nameOf(res.nodeIds[0]));
+
 
   while (gi < grouped.length) {
     flushRun();
@@ -1191,20 +1257,27 @@ function drawRoute(opt, pointIds) {
     gi += consumed;
   }
   flushRun();
+  paddleRow(lastT, nameOf(res.nodeIds[lastIdx]));
 
   // Draw the traverses computed above. Same path, same distance as the legs
   // list — the itinerary and the map can no longer disagree. Order still
   // matters: real lines are laid down here, straight connectors last, so the
-  // dedupe always sees the good line first.
-  for (let j = 1; j < res.nodeIds.length - 1; j++) {
-    const t = traverseOf(j);
-    if (!t) continue;
+  // dedupe always sees the good line first. The two endpoint traverses lead,
+  // for the same reason: they are real lines and the interior ones may be
+  // guesses, and a guess must never be the one that gets painted.
+  const drawTraverse = t => {
+    if (!t) return;
     if (t.guess) {
       if (t.coords.length === 2) straight(t.coords[0], t.coords[1]);
       else pendingStubs.push(t.coords);
     } else {
       addPaddle(t.coords);
     }
+  };
+  drawTraverse(firstT);
+  drawTraverse(lastT);
+  for (let j = 1; j < res.nodeIds.length - 1; j++) {
+    drawTraverse(traverseOf(j));
   }
   // straight connectors last: addPaddle drops any already covered by a real
   // line. A bare two-point one stands in for water with no mapped path, so it
@@ -1227,8 +1300,6 @@ function drawRoute(opt, pointIds) {
       if (g && g.e.g) map.fitBounds(L.latLngBounds(g.e.g.map(c => L.latLng(c[1], c[0]))), { padding: fitPad(80) });
     };
   });
-  const s0 = idx.nodeById.get(res.nodeIds[0]);
-  const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
   L.circleMarker([s0.lat, s0.lon], { renderer: routeRenderer, radius: 8, color: '#00441b', fillColor: '#238b45', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
   L.circleMarker([s1.lat, s1.lon], { renderer: routeRenderer, radius: 8, color: '#7f0000', fillColor: '#cb181d', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
   return paddleM;          // metres actually drawn, after the dedupe
