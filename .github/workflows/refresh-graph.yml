@@ -180,9 +180,29 @@ jobs:
           if git diff --cached --quiet; then
             echo "No data changes — skipping commit"
           else
-            # The advisories workflow may have pushed while this 2h chain was
-            # running; rebase so a stale push cannot fail the whole refresh.
-            git pull --rebase --autostash origin master
+            # Commit BEFORE reconciling with the branch. This used to pull
+            # first, with --autostash: the autostash pop restores changes
+            # UNSTAGED, so the commit on the next line had nothing staged and
+            # died with "no changes added to commit". Every refresh that had
+            # data to save hit it, which is why the repo had never once landed
+            # a "Refresh planner graph" commit. A commit leaves the tree clean,
+            # so nothing here needs an autostash any more.
             git commit -m "Refresh planner graph ($(date -u +%F))"
-            git push
+            # actions/checkout leaves a detached HEAD, so the push has to name
+            # the ref. The advisories job can land a commit during these two
+            # hours, so rebase onto whatever master is now.
+            git fetch origin master
+            if git rebase origin/master; then
+              git push origin HEAD:master
+            else
+              git rebase --abort || true
+              # A human edited a build product while this chain ran. Our bundle
+              # was built from the template as of the checkout at the start of
+              # the run, so master's copy is the newer one for anything under
+              # content/algonquin — take it, and take our refreshed graph data
+              # for everything that did not conflict.
+              echo "::warning::rebase conflicted; merging instead, keeping master on conflict"
+              git merge -X theirs -m "Refresh planner graph ($(date -u +%F))" origin/master
+              git push origin HEAD:master
+            fi
           fi
