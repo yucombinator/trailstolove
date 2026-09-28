@@ -102,13 +102,23 @@ jobs:
       # Guards against the silent-drift class of bug: a stale generator writing
       # a payload missing fields the UI reads (e.g. elevation profiles).
       - name: Verify payload integrity
+        # Absolute paths, for the same reason ALGONQUIN_BUNDLE below is: this
+        # step runs from the workspace root, but build_page.py writes the
+        # payload under tools/algonquin-graph and never to ./data. The
+        # relative 'data/router_data.json' raised FileNotFoundError on its
+        # first line, which threw away a 2h51m refresh at the second-to-last
+        # step — every run. It also meant the OSM tile cache was never saved,
+        # so every run re-downloaded every tile and went cold again.
+        env:
+          BUILT_PAYLOAD: ${{ github.workspace }}/tools/algonquin-graph/data/router_data.json
+          LIVE_PAYLOAD: ${{ github.workspace }}/content/algonquin/router_data.json
         run: |
           python3 - <<'PY'
           import datetime, json, sys, os
-          d = json.load(open('data/router_data.json'))
+          d = json.load(open(os.environ['BUILT_PAYLOAD']))
           # A partial fetch (rate-limited tiles) must not silently shrink the
           # graph. Compare against the payload that is live right now.
-          ref = 'content/algonquin/router_data.json'
+          ref = os.environ['LIVE_PAYLOAD']
           if os.path.exists(ref):
               prev = json.load(open(ref))
               for key, label in (('edges', 'edges'), ('nodes', 'nodes')):
