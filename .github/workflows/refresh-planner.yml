@@ -33,6 +33,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The test step runs node:test as well as unittest. Pinning it matters:
+      # the runner's preinstalled Node is whatever the image ships, and the
+      # test runner's argument handling changed at 21.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       # The OSM tile cache is ~290 MB and stays out of git, so it rides the Actions
       # cache instead. Without it every nightly run re-downloads every tile from
       # Overpass and dies on rate limits. Rolling key: last good cache is restored
@@ -155,10 +162,11 @@ jobs:
       # bundle we just deployed actually agrees with itself.
       - name: Verify the deployed bundle agrees with itself
         env:
-          ALGONQUIN_BUNDLE: content/algonquin
+          # absolute: the unittest runs from the repo root, and a relative
+          # path here silently pointed at a directory that does not exist
+          ALGONQUIN_BUNDLE: ${{ github.workspace }}/content/algonquin
         run: |
-          cd tools/algonquin-graph
-          python3 -m unittest discover -s tests -p "test_api*.py" -v
+          python3 -m unittest discover -s tools/algonquin-graph/tests -p "test_api*.py" -v
 
       - name: Commit if data changed
         run: |

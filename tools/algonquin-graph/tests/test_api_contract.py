@@ -34,7 +34,15 @@ def find_bundle():
     """
     override = os.environ.get("ALGONQUIN_BUNDLE")
     if override:
-        return pathlib.Path(override)
+        p = pathlib.Path(override)
+        if not p.is_absolute():
+            p = pathlib.Path.cwd() / p
+        if not (p / "router.js").exists():
+            raise AssertionError(
+                f"ALGONQUIN_BUNDLE={override} has no router.js (resolved to {p}). "
+                "It must be absolute: a relative path resolves against the "
+                "working directory, and this step changes it.")
+        return p
     local = HERE.parent
     if (local / "index.html").exists() and (local / "router.js").exists():
         return local

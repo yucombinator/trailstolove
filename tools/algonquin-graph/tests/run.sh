@@ -27,7 +27,10 @@ PY
 
 echo
 echo "== router + functionality (node) =="
-node --test "tests/*.test.js"
+# unquoted on purpose: the shell expands it to real paths, which every Node
+# version accepts. Quoted, only Node 21+ treats it as a glob — the runner's
+# preinstalled Node saw a literal "tests/*.test.js" and found no such module.
+node --test tests/*.test.js
 
 echo
 echo "== pipeline (python) =="
