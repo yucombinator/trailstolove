@@ -6,8 +6,14 @@
 # separate files also mean separate concurrency groups, so one job's push never
 # cancels the other's run.
 #
-# Own timeout: this chain is 2h51m of work (1h32m of it Overpass), so a shared
-# 3h ceiling left no room for a single retry.
+# Own timeout, and it has to be ABOVE this chain's own runtime: the work is
+# 2h51m (1h32m of it Overpass) and the ceiling used to be 150 minutes, so a run
+# that behaved as documented could never finish. Worse, the fetch is slowest
+# when the tile cache is cold, and the cache is only ever saved when the job
+# succeeds — so a cold fetch that overran the ceiling guaranteed the next run
+# was cold too. Run #3 hit 150 minutes in the fetch and was killed there.
+# 300 leaves an hour over the documented worst case and still sits under the
+# 6-hour hosted-runner limit.
 name: Refresh planner graph
 
 on:
@@ -36,7 +42,7 @@ jobs:
   graph:
     name: OSM graph
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
 
@@ -76,6 +82,21 @@ jobs:
           OVERPASS_TOLERANT: "1"     # a dead mirror must not kill the run
           OVERPASS_BACKOFF: "20"
         run: python3 tools/algonquin-graph/fetch_osm.py
+
+      # Bank the tiles the moment they are paid for. actions/cache's own
+      # post-job save only runs when the job succeeds, so a failure anywhere in
+      # the four steps after this one threw the whole Overpass fetch away and
+      # left the next run cold — which is what made the fetch the step that
+      # overran its ceiling. The expensive work should not depend on the
+      # fragile tail. Partial fetches are still worth keeping: the payload
+      # shrink guard downstream is what catches a re-download that came back
+      # short.
+      - name: Save the OSM tile cache now, not in post
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: tools/algonquin-graph/raw
+          key: osm-tiles-${{ github.run_id }}
 
       - name: Parse graph
         run: |
