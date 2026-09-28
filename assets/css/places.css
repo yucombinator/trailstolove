@@ -25,6 +25,22 @@ body {
   z-index: 0; /* keep Leaflet panes under the theme's fixed header */
 }
 
+/* Mute the basemap. OpenTopoMap is genuinely loud — saturated greens and
+   browns at every zoom — and on a page with no other content it became the
+   subject instead of the context. Desaturating the tile pane keeps the
+   contours, which are the whole reason for a topo basemap on a hiking site,
+   and leaves the orange pins and blue clusters as the only saturated things
+   on screen. Scoped to the tile pane so markers, popups and the zoom control
+   are untouched. */
+.leaflet-tile-pane {
+  /* Saturation only, plus a hair of brightness. An earlier pass also pulled
+     contrast down to 0.92 and it ate the contour linework — the whole reason
+     for a topo basemap here. Contours are thin and low-contrast by nature, so
+     they are the first thing a contrast reduction destroys. Desaturating
+     without touching contrast mutes the colour and keeps the terrain. */
+  filter: saturate(0.45) brightness(1.05);
+ }
+
 .places-map-note {
   font-size: 0.8rem;
   color: #666;
