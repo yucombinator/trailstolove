@@ -1,0 +1,83 @@
+# Park advisories for the Algonquin Planner.
+#
+# Split out from the graph refresh and run 90 minutes ahead of it. Two reasons:
+#
+#  1. The graph fetch is slow and network-bound; a flake there used to stop the
+#     advisories updating, which is the safety-relevant half of the product.
+#  2. Separate files means separate schedules. `on.schedule` applies to a whole
+#     workflow, not to individual jobs, so two jobs in one file cannot be
+#     offset — and without an offset they would race each other to git push.
+#
+# Own concurrency group, so pushing a commit never cancels this run.
+name: Refresh park advisories
+
+on:
+  schedule:
+    # 06:20 and 18:20 UTC — twice a day, ahead of the graph refresh at 07:50/19:50
+    - cron: "20 6,18 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/refresh-advisories.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: planner-advisories
+  cancel-in-progress: false
+
+jobs:
+  conditions:
+    name: Advisories
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh advisories
+        run: python3 tools/algonquin-graph/fetch_conditions.py
+
+      # fetch_conditions.py deliberately keeps the previous file when a scrape
+      # comes back empty, so a silently broken scraper otherwise looks like a
+      # successful run. Check the stamp, not just that rows exist.
+      - name: Check the advisories are current
+        run: |
+          python3 - <<'PY'
+          import csv, datetime, sys, pathlib
+          p = pathlib.Path("tools/algonquin-graph/data/conditions.csv")
+          if not p.exists():
+              sys.exit("conditions.csv missing")
+          rows = list(csv.DictReader(p.open(newline="")))
+          if not rows:
+              sys.exit("conditions.csv is empty")
+          stamps = []
+          for r in rows:
+              try:
+                  stamps.append(datetime.date.fromisoformat(r["as_of"]))
+              except (KeyError, ValueError):
+                  sys.exit(f"unparseable as_of {r.get('as_of')!r}")
+          newest, oldest = max(stamps), min(stamps)
+          age = (datetime.date.today() - newest).days
+          print(f"{len(rows)} rows, as_of {oldest} .. {newest} ({age}d old)")
+          if age > 2:
+              sys.exit(f"advisories are {age}d stale (as_of {newest}); the scrape is broken")
+          if age < 0:
+              sys.exit(f"as_of {newest} is in the future")
+          PY
+
+      - name: Commit if changed
+        run: |
+          git config user.name "planner-refresh-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/algonquin-graph/data/conditions.csv
+          if git diff --cached --quiet; then
+            echo "Advisories unchanged — nothing to commit"
+          else
+            git commit -m "Refresh park advisories ($(date -u +%F))"
+            git push
+          fi

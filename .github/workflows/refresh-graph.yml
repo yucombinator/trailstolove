@@ -1,31 +1,42 @@
-# Nightly data refresh for the Algonquin Planner:
-# re-fetch OSM + conditions inputs, rebuild the graph, commit if anything changed.
-name: Refresh planner data
+# OSM graph refresh for the Algonquin Planner.
+#
+# Runs 90 minutes after the advisories workflow (07:50 and 19:50 UTC) rather
+# than alongside it. `on.schedule` applies to a whole workflow, not to
+# individual jobs, so the only way to offset the two is separate files — and
+# separate files also mean separate concurrency groups, so one job's push never
+# cancels the other's run.
+#
+# Own timeout: this chain is 2h51m of work (1h32m of it Overpass), so a shared
+# 3h ceiling left no room for a single retry.
+name: Refresh planner graph
 
 on:
   schedule:
-    # 06:20 and 18:20 UTC: the volatile part (park conditions) gets checked
-    # twice a day; the OSM groups below are age-gated inside fetch_osm.py, so a
-    # run only spends requests on the snapshots that are actually stale.
-    - cron: "20 6,18 * * *"
+    # 07:50 and 19:50 UTC — offset from the advisories run at 06:20/18:20
+    - cron: "50 7,19 * * *"
   workflow_dispatch:
-  # Editing this file re-runs the refresh, so a pipeline fix proves itself
-  # immediately instead of waiting for the next cron slot.
   push:
     paths:
-      - .github/workflows/refresh-planner.yml
+      - .github/workflows/refresh-graph.yml
 
 permissions:
   contents: write
 
+# The fetch alone has taken 1h32m. Cancelling an in-flight run throws that
+# away, so a run that has started is allowed to finish and the next is
+# skipped. Stale by a cycle beats never.
 concurrency:
-  group: planner-refresh
-  cancel-in-progress: true
+  group: planner-graph
+  cancel-in-progress: false
 
 jobs:
-  refresh:
+  # Serial by nature: fetch feeds parse feeds the payload, so splitting these
+  # across parallel jobs would gain nothing. What this chain needs is room to
+  # breathe and failures that are visible on their own.
+  graph:
+    name: OSM graph
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 
@@ -40,10 +51,10 @@ jobs:
         with:
           node-version: "22"
 
-      # The OSM tile cache is ~290 MB and stays out of git, so it rides the Actions
-      # cache instead. Without it every nightly run re-downloads every tile from
-      # Overpass and dies on rate limits. Rolling key: last good cache is restored
-      # and refreshed after each successful fetch.
+      # The OSM tile cache is ~290 MB and stays out of git, so it rides the
+      # Actions cache instead. Without it every run re-downloads every tile
+      # from Overpass and dies on rate limits. Rolling key: the last good
+      # cache is restored and refreshed after each successful fetch.
       - name: Restore OSM tile cache
         uses: actions/cache@v4
         with:
@@ -59,9 +70,6 @@ jobs:
           if [ "$n" -lt 10 ]; then
             echo "::warning::tile cache cold — this run does a full re-download and may be slow"
           fi
-
-      - name: Refresh park conditions (daily-ish; this is what actually moves)
-        run: python3 tools/algonquin-graph/fetch_conditions.py
 
       - name: Fetch OSM groups that are past their age budget
         env:
@@ -81,12 +89,10 @@ jobs:
       # regressing, and the pipeline units. No test framework to install:
       # node:test and unittest are both stdlib.
       #
-      # Advisory, not a gate. This job exists to refresh the park advisories
-      # and the OSM snapshot, and a unit test must never be the reason they
-      # stop updating — that is how the advisories froze for hours while this
-      # step failed. The gate that actually matters, whether the page agrees
-      # with the router it ships beside, lives in pages.yml where it can
-      # block a deploy.
+      # Advisory, not a gate. This job exists to refresh the graph, and a unit
+      # test must never be the reason it stops updating. The gate that actually
+      # matters, whether the page agrees with the router it ships beside, lives
+      # in pages.yml where it can block a deploy.
       - name: Run tests (advisory)
         continue-on-error: true
         run: |
@@ -123,33 +129,13 @@ jobs:
           if len(p) and climb < len(p) * 0.9: bad.append("climb data missing")
           if camps == 0: bad.append("no campsites")
           if not roads: bad.append("no Hwy 60")
-
-          # Park advisories are the safety-relevant part of this payload, and
-          # fetch_conditions.py deliberately keeps the previous file when a run
-          # extracts nothing (so a transient outage does not blank the briefing).
-          # That means a silently broken scrape used to pass this job green and
-          # ship stale advisories. So check the stamp, not just the row count.
+          # The advisories themselves are owned by refresh-advisories.yml and
+          # checked there; only confirm the payload carries what was built.
           if not conds:
-              bad.append("no park conditions at all")
-          else:
-              today = datetime.date.today()
-              stamps = []
-              for c in conds:
-                  try:
-                      stamps.append(datetime.date.fromisoformat(c.get("as_of") or ""))
-                  except ValueError:
-                      bad.append(f"unparseable as_of {c.get('as_of')!r}")
-              if stamps:
-                  newest = max(stamps)
-                  age = (today - newest).days
-                  oldest = min(stamps)
-                  print(f"advisories: {len(conds)} rows, newest as_of {newest} "
-                        f"({age}d old), oldest {oldest}")
-                  if age > 2:
-                      bad.append(f"advisories are {age}d stale (as_of {newest}); "
-                                 "the advisories scrape is probably broken")
-                  if age < 0:
-                      bad.append(f"advisories as_of {newest} is in the future")
+              bad.append("no park conditions in the payload")
+          elif conds:
+              newest = max(datetime.date.fromisoformat(c["as_of"]) for c in conds)
+              print(f"advisories in payload: {len(conds)} rows, newest as_of {newest}")
 
           print(f"portages={len(p)} profiles={prof} climb={climb} "
                 f"campsites={camps} roads={roads} dm_nodes={dm} conds={len(conds)}")
@@ -163,11 +149,11 @@ jobs:
           cp tools/algonquin-graph/router_data.json content/algonquin/router_data.json
           cp tools/algonquin-graph/router.js content/algonquin/router.js
 
-      # The app ships as three files that are produced by different steps, so a
-      # partial deploy is possible: a fresh app.html beside a stale router.js
-      # loads, renders, and only then dies with "Router.x is not a function" —
-      # which is exactly how overlapTracker broke route drawing. Verify the
-      # bundle we just deployed actually agrees with itself.
+      # The app ships as three files produced by different steps, so a partial
+      # deploy is possible: a fresh app.html beside a stale router.js loads,
+      # renders, and only then dies with "Router.x is not a function" — which
+      # is exactly how overlapTracker broke route drawing. Verify the bundle we
+      # just deployed actually agrees with itself.
       - name: Verify the deployed bundle agrees with itself
         env:
           # absolute: the unittest runs from the repo root, and a relative
@@ -184,6 +170,9 @@ jobs:
           if git diff --cached --quiet; then
             echo "No data changes — skipping commit"
           else
-            git commit -m "Nightly planner data refresh ($(date -u +%F))"
+            # The advisories workflow may have pushed while this 2h chain was
+            # running; rebase so a stale push cannot fail the whole refresh.
+            git pull --rebase --autostash origin master
+            git commit -m "Refresh planner graph ($(date -u +%F))"
             git push
           fi
