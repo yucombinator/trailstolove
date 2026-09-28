@@ -81,6 +81,11 @@ jobs:
         env:
           OVERPASS_TOLERANT: "1"     # a dead mirror must not kill the run
           OVERPASS_BACKOFF: "20"
+          # Wall clock, not "however long Overpass takes". Runs #3 and #4 died
+          # at the job ceiling mid-fetch and #5 spent 3h50m on it. The fetch now
+          # stops when this is spent and carries over each group's last good
+          # snapshot, so a bad Overpass day costs freshness, not the run.
+          FETCH_DEADLINE_MINUTES: "45"
         run: python3 tools/algonquin-graph/fetch_osm.py
 
       # Bank the tiles the moment they are paid for. actions/cache's own
@@ -139,14 +144,24 @@ jobs:
           d = json.load(open(os.environ['BUILT_PAYLOAD']))
           # A partial fetch (rate-limited tiles) must not silently shrink the
           # graph. Compare against the payload that is live right now.
+          #
+          # This used to be sys.exit, and that made the refresh impossible to
+          # complete on any day Overpass was unhappy: the data on the site is
+          # still the best available, so refusing to replace it is correct, but
+          # failing the job over it just guarantees it never recovers. Record
+          # the verdict and let the commit step skip. The advisory half of this
+          # product — park conditions — is a separate workflow and is not
+          # affected.
           ref = os.environ['LIVE_PAYLOAD']
+          hold = os.path.join(os.environ.get('GITHUB_WORKSPACE', '.'), '.hold-commit')
           if os.path.exists(ref):
               prev = json.load(open(ref))
               for key, label in (('edges', 'edges'), ('nodes', 'nodes')):
                   before, after = len(prev.get(key, [])), len(d.get(key, []))
                   if after < before * 0.95:
-                      sys.exit(f"payload shrank: {label} {before} -> {after} "
-                               "(incomplete OSM fetch; re-run to fill the cache)")
+                      open(hold, 'w').close()
+                      print(f"HOLD: payload shrank: {label} {before} -> {after} "
+                            "(incomplete OSM fetch — keeping the live data)")
           p = [e for e in d['edges'] if e['k'] == 'portage']
           prof = sum(1 for e in p if e.get('pf'))
           climb = sum(1 for e in p if e.get('el') is not None)
@@ -171,7 +186,12 @@ jobs:
           print(f"portages={len(p)} profiles={prof} climb={climb} "
                 f"campsites={camps} roads={roads} dm_nodes={dm} conds={len(conds)}")
           if bad:
+              # Missing fields are a pipeline regression, not a network day:
+              # that one is worth failing the run over.
               sys.exit("payload incomplete: " + ", ".join(bad))
+          if os.path.exists(hold):
+              print("::warning::new payload is smaller than the live one — "
+                    "keeping the live data, the next run tops the cache up")
           PY
 
       - name: Deploy refreshed app into the page bundle
@@ -197,33 +217,42 @@ jobs:
         run: |
           git config user.name "planner-refresh-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add content/algonquin tools/algonquin-graph/data
-          if git diff --cached --quiet; then
+          if [ -f .hold-commit ]; then
+            # The integrity check found a payload smaller than the live one, so
+            # this run's fetch came back short. The data on the site is still
+            # the best available; keep it and let the next run top the tile
+            # cache up. Failing here instead would mean one bad Overpass day
+            # could stop the refresh permanently.
+            echo "::warning::payload did not improve — keeping the live data"
             echo "No data changes — skipping commit"
           else
-            # Commit BEFORE reconciling with the branch. This used to pull
-            # first, with --autostash: the autostash pop restores changes
-            # UNSTAGED, so the commit on the next line had nothing staged and
-            # died with "no changes added to commit". Every refresh that had
-            # data to save hit it, which is why the repo had never once landed
-            # a "Refresh planner graph" commit. A commit leaves the tree clean,
-            # so nothing here needs an autostash any more.
-            git commit -m "Refresh planner graph ($(date -u +%F))"
-            # actions/checkout leaves a detached HEAD, so the push has to name
-            # the ref. The advisories job can land a commit during these two
-            # hours, so rebase onto whatever master is now.
-            git fetch origin master
-            if git rebase origin/master; then
-              git push origin HEAD:master
+            git add content/algonquin tools/algonquin-graph/data
+            if git diff --cached --quiet; then
+              echo "No data changes — skipping commit"
             else
-              git rebase --abort || true
-              # A human edited a build product while this chain ran. Our bundle
-              # was built from the template as of the checkout at the start of
-              # the run, so master's copy is the newer one for anything under
-              # content/algonquin — take it, and take our refreshed graph data
-              # for everything that did not conflict.
-              echo "::warning::rebase conflicted; merging instead, keeping master on conflict"
-              git merge -X theirs -m "Refresh planner graph ($(date -u +%F))" origin/master
-              git push origin HEAD:master
+              # Commit BEFORE reconciling with the branch. This used to pull
+              # first, with --autostash: the autostash pop restores changes
+              # UNSTAGED, so the commit on the next line had nothing staged
+              # and died with "no changes added to commit". Every refresh that
+              # had data to save hit it, which is why the repo had never once
+              # landed a "Refresh planner graph" commit. A commit leaves the
+              # tree clean, so nothing here needs an autostash any more.
+              git commit -m "Refresh planner graph ($(date -u +%F))"
+              # actions/checkout leaves a detached HEAD, so the push has to
+              # name the ref. The advisories job can land a commit while this
+              # chain runs, so rebase onto whatever master is now.
+              git fetch origin master
+              if git rebase origin/master; then
+                git push origin HEAD:master
+              else
+                git rebase --abort || true
+                # A human edited a build product mid-run. Our bundle came from
+                # the template as of the checkout at the start of the run, so
+                # master's copy is the newer one under content/algonquin — take
+                # it, and keep our refreshed graph data everywhere else.
+                echo "::warning::rebase conflicted; merging instead, keeping master on conflict"
+                git merge -X theirs -m "Refresh planner graph ($(date -u +%F))" origin/master
+                git push origin HEAD:master
+              fi
             fi
           fi

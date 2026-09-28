@@ -55,6 +55,19 @@ truth.
 - Each group declares how old its snapshot may get in `GROUP_MAX_AGE_DAYS`;
   anything fresher is skipped, and `OVERPASS_FORCE=water_geom,portages` overrides
   that. A daily run therefore drops from ~100 tile fetches to ~24.
+- **The fetch has a wall clock.** `FETCH_DEADLINE_MINUTES` (default 45) bounds
+  the whole thing. Overpass is one shared API with no service level: a query that
+  normally answers in 20s can sit for the 600s the query itself allows, and a
+  park-wide sync is ~100 of those. Without a bound the job runs until something
+  kills it, and because a group is only written once all its tiles are done, the
+  next run starts that group from the same place. On expiry the group is left
+  alone and its *previous* snapshot is used — a partial merge is a smaller
+  dataset, which is worse than a stale one. Tiles already fetched stay cached,
+  so the next run only pays for the ones left. `[budget]` lines report it.
+- **Groups are fetched in value order**, not file order: campsites, obstacles,
+  access, portages, amenities, then the heavy multi-year-cadence groups
+  (`waterways`, `water_geom`, `roads`). Running out of time costs the least
+  valuable freshness first.
 - Overpass quirks this works around (they cost real debugging time):
   - The park's Overpass `area` index entry does not exist on current mirrors;
     area-filtered queries silently return empty sets. **No `area()` filter is used** —
