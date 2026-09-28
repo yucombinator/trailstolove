@@ -1,0 +1,93 @@
+{{ define "main" }}
+{{ partial "heading/heading.html" (dict "title" .Params.heading.title "description" .Params.heading.description "align" .Params.heading.align "date" .Params.heading.date)}}
+
+{{- $pins := partial "places/pins.html" . -}}
+{{- $places := len (uniq (apply $pins "index" "." "place")) -}}
+
+<section class="places-map-band" aria-label="Map of places written about">
+  <div id="places-map" role="application" aria-label="Map of trip locations"></div>
+  <p class="places-map-note">
+    {{ len $pins }} trip{{ if ne (len $pins) 1 }}s{{ end }} across
+    {{ $places }} place{{ if ne $places 1 }}s{{ end }}.
+    Zoom in to separate trips that share a park.
+  </p>
+  <noscript><p class="places-map-note">The map needs JavaScript. The full archive is listed below.</p></noscript>
+</section>
+
+<main class="py-6">
+  {{/* no .Paginate: this is a leaf page and pagination is only supported on
+       list pages. 26 posts render fine without it. */}}
+  {{ range (where .Site.RegularPages "Type" "posts") }}
+  <div class="mb-12">
+    {{ partial "blog/post-row.html" (dict
+    "title" .Params.title
+    "date" .Params.date
+    "description" .Params.description
+    "thumbnail" .Params.thumbnail
+    "author" .Params.author
+    "stats" .Params.stats
+    "tags" .Params.tags
+    "categories" .Params.categories
+    "url" .Permalink
+    )}}
+  </div>
+  {{ end }}
+</main>
+{{ end }}
+
+{{ define "footer_js" }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.9.1/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.9.1/dist/MarkerCluster.Default.css">
+<link rel="stylesheet" href="/css/places.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+
+(function () {
+  var pins = {{ partial "places/pins.html" . | jsonify | safeJS }};
+  if (!pins.length || typeof L === 'undefined') return;
+
+  var map = L.map('places-map', { scrollWheelZoom: false, maxBoundsViscosity: 0.8 });
+  // OpenTopoMap, not CARTO: CARTO now serves an "API KEY REQUIRED" watermark
+  // over every tile without one.
+  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 17,
+    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap (CC-BY-SA)'
+  }).addTo(map);
+
+  var group = L.markerClusterGroup({
+    maxClusterRadius: 45,
+    showCoverageOnHover: false,
+    spiderfyOnMaxZoom: true,
+    iconCreateFunction: function (c) {
+      return L.divIcon({
+        html: '<div>' + c.getChildCount() + '</div>',
+        className: 'places-cluster', iconSize: L.point(34, 34)
+      });
+    }
+  });
+
+  pins.forEach(function (p) {
+    var m = L.marker([p.lat, p.lng], {
+      icon: L.divIcon({ className: 'places-pin', iconSize: [16, 16] })
+    });
+    var html = '<div class="places-popup">';
+    if (p.thumb) html += '<img src="' + p.thumb + '" alt="" loading="lazy">';
+    html += '<div class="places-popup-body">';
+    html += '<span class="places-popup-place">' + p.place + '</span>';
+    html += '<a href="' + p.url + '">' + p.title + '</a>';
+    if (p.distance) html += '<span>' + p.distance + '</span>';
+    if (p.elevation) html += '<span>' + p.elevation + '</span>';
+    html += '<span>' + p.date + '</span>';
+    html += '</div></div>';
+    m.bindPopup(html);
+    group.addLayer(m);
+  });
+
+  map.addLayer(group);
+  // Continent plus: BC to New Zealand, so fit the bounds rather than guess a zoom
+  map.fitBounds(group.getBounds(), { padding: [40, 40] });
+})();
+</script>
+{{ end }}

@@ -1,0 +1,158 @@
+[
+ {
+  "slug": "2020-08-01-rae-lakes-loop",
+  "lat": 36.9153,
+  "lng": -118.6077,
+  "place": "Kings Canyon National Park"
+ },
+ {
+  "slug": "2021-05-09-south-olympic-coast",
+  "lat": 47.7865,
+  "lng": -123.5361,
+  "place": "Olympic National Park"
+ },
+ {
+  "slug": "2021-07-17-copper-ridge-loop-wa",
+  "lat": 48.8083,
+  "lng": -121.4062,
+  "place": "North Cascades National Park"
+ },
+ {
+  "slug": "2021-07-20-heybrook-lookout",
+  "lat": 48.1749,
+  "lng": -121.3861,
+  "place": "Mt. Baker-Snoqualmie National Forest"
+ },
+ {
+  "slug": "2022-03-17-grand-canyon-az",
+  "lat": 36.3079,
+  "lng": -112.2929,
+  "place": "Grand Canyon National Park"
+ },
+ {
+  "slug": "2022-05-14-goldmyer-hot-springs-wa",
+  "lat": 48.1749,
+  "lng": -121.3861,
+  "place": "Mt. Baker-Snoqualmie National Forest"
+ },
+ {
+  "slug": "2022-05-30-baker-lakeshore-wa",
+  "lat": 48.1749,
+  "lng": -121.3861,
+  "place": "Mt. Baker-Snoqualmie National Forest"
+ },
+ {
+  "slug": "2022-06-25-enchanted-valley-wa",
+  "lat": 47.7865,
+  "lng": -123.5361,
+  "place": "Olympic National Park"
+ },
+ {
+  "slug": "2022-08-22-goat-lake-loop-wa",
+  "lat": 46.5253,
+  "lng": -121.4375,
+  "place": "Goat Rocks Wilderness"
+ },
+ {
+  "slug": "2022-08-27-the-enchantments",
+  "lat": 47.5688,
+  "lng": -121.1669,
+  "place": "Alpine Lakes Wilderness"
+ },
+ {
+  "slug": "2022-09-18-the-rockwall",
+  "lat": 50.9419,
+  "lng": -115.9908,
+  "place": "Kootenay National Park"
+ },
+ {
+  "slug": "2023-05-12-chelan-lakeshore",
+  "lat": 48.3485,
+  "lng": -120.6904,
+  "place": "Lake Chelan National Recreation Area"
+ },
+ {
+  "slug": "2023-07-01-shi-shi-beach",
+  "lat": 47.7865,
+  "lng": -123.5361,
+  "place": "Olympic National Park"
+ },
+ {
+  "slug": "2023-07-16-teton-crest-trail",
+  "lat": 43.7553,
+  "lng": -110.8046,
+  "place": "Grand Tetons National Park"
+ },
+ {
+  "slug": "2023-08-26-jasper-skyline",
+  "lat": 52.8041,
+  "lng": -117.8048,
+  "place": "Jasper National Park"
+ },
+ {
+  "slug": "2023-12-17-rainier-high-hut",
+  "lat": 46.8523,
+  "lng": -121.7603,
+  "place": "Mount Tahoma Trail System"
+ },
+ {
+  "slug": "2024-06-29-hidden-cove-diablo-lake",
+  "lat": 48.8083,
+  "lng": -121.4062,
+  "place": "North Cascades National Park"
+ },
+ {
+  "slug": "2024-07-26-brooks-camp",
+  "lat": 58.505,
+  "lng": -155.0896,
+  "place": "Katmai National Park"
+ },
+ {
+  "slug": "2024-08-10-mt-whitney",
+  "lat": 37.7722,
+  "lng": -118.8102,
+  "place": "Inyo National Forest + Sequoia National Park"
+ },
+ {
+  "slug": "2024-08-26-high-divide",
+  "lat": 47.7865,
+  "lng": -123.5361,
+  "place": "Olympic National Park"
+ },
+ {
+  "slug": "2025-07-05-west-coast-trail",
+  "lat": 49.0487,
+  "lng": -125.7367,
+  "place": "Pacific Rim National Park Reserve"
+ },
+ {
+  "slug": "2025-08-01-lamarck-col-jmt-pct",
+  "lat": 37.0384,
+  "lng": -118.8363,
+  "place": "John Muir Wilderness and Kings Canyon National Park"
+ },
+ {
+  "slug": "2025-08-29-sahale-glacier",
+  "lat": 48.8083,
+  "lng": -121.4062,
+  "place": "North Cascades National Park"
+ },
+ {
+  "slug": "2025-11-29-kepler-track",
+  "lat": -45.2916,
+  "lng": 167.488,
+  "place": "Fiordland National Park"
+ },
+ {
+  "slug": "2026-07-29-lake-ohara",
+  "lat": 51.3748,
+  "lng": -116.5358,
+  "place": "Yoho National Park"
+ },
+ {
+  "slug": "2026-09-11-three-days-in-algonquin",
+  "lat": 45.6571,
+  "lng": -78.4995,
+  "place": "Algonquin Provincial Park"
+ }
+]

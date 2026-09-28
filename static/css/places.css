@@ -1,0 +1,110 @@
+/* Places map — a band above the post archive. Deliberately quiet: it is
+   context for the list underneath, not the main event. */
+
+.places-map-band {
+  padding: 0;
+  margin: 0 auto 1.5rem;
+  max-width: 72rem;
+}
+
+#places-map {
+  height: 52vh;
+  min-height: 340px;
+  width: 100%;
+  border: 1px solid var(--line, #e2e2e2);
+  border-radius: 4px;
+  background: #eef0ea;
+  z-index: 0; /* keep Leaflet panes under the theme's fixed header */
+}
+
+.places-map-note {
+  font-size: 0.8rem;
+  color: #666;
+  padding: 0.5rem 0.25rem 0;
+  margin: 0;
+}
+
+/* cluster bubble */
+.places-cluster {
+  background: #1a6db3;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 13px/1 Lato, sans-serif;
+  box-shadow: 0 0 0 4px rgba(26, 109, 179, 0.22);
+}
+.places-cluster div {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* single pin */
+.leaflet-marker-icon.places-pin {
+  background: #e07b00;
+  border: 2px solid #fffef8;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 6px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  width: 220px !important;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+.places-popup img {
+  width: 220px;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+
+.places-popup-body {
+  padding: 10px 12px 12px;
+  line-height: 1.4;
+}
+
+.places-popup-place {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8a6d4e;
+  margin-bottom: 2px;
+}
+
+.places-popup-body a {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.places-popup-body a:hover {
+  color: #1a6db3;
+}
+
+.places-popup-body span:not(.places-popup-place) {
+  display: block;
+  font-size: 12px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  #places-map { height: 46vh; min-height: 280px; }
+  .places-map-note { font-size: 0.72rem; }
+}
