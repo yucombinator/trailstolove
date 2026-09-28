@@ -324,6 +324,40 @@
   .notice.credits dt:first-of-type { margin-top: 2px; }
   .notice.credits dd { margin: 3px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
   .notice.credits dd a { color: var(--accent-strong); }
+  /* lake popup: a card, not a <br>-separated list of unstyled buttons */
+  .leaflet-popup-content { margin: 0; width: 250px !important; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; padding: 0; overflow: hidden; }
+  .lake-pop { padding: 13px 14px 12px; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .lake-pop h3 {
+    margin: 0; font: 600 15.5px/1.25 Georgia, "Times New Roman", serif;
+    color: var(--ink); padding-right: 14px;
+  }
+  .lake-pop .lp-kind {
+    margin-top: 1px; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--accent-strong); font-weight: 700;
+  }
+  .lake-pop .lp-facts {
+    margin: 10px 0 0; padding: 9px 0 2px; border-top: 1px solid var(--line);
+  }
+  .lake-pop .lp-facts > div { display: flex; justify-content: space-between; gap: 10px; padding: 2.5px 0; }
+  .lake-pop .lp-facts dt { color: var(--ink-muted); font-size: 11.5px; }
+  .lake-pop .lp-facts dd { margin: 0; color: var(--ink); font-size: 11.5px; font-weight: 600; text-align: right; }
+  .lake-pop .lp-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 11px; }
+  .lake-pop .lp-btn {
+    width: 100%; padding: 8px 10px; border-radius: 6px; cursor: pointer; text-align: center;
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+    font: 600 12px/1 -apple-system, "Segoe UI", sans-serif;
+  }
+  .lake-pop .lp-btn:hover { border-color: var(--ink-muted); }
+  .lake-pop .lp-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .lake-pop .lp-btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .lake-pop .lp-btn.ghost { border-color: transparent; color: var(--ink-muted); font-weight: 500; }
+  .lake-pop .lp-btn.ghost:hover { color: var(--accent-strong); }
+  .lake-pop .lp-state {
+    margin-top: 9px; padding: 5px 8px; border-radius: 5px; text-align: center;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  }
 </style>
 </head>
 <body>
@@ -484,6 +518,50 @@ if (DATA.park && DATA.park.features && DATA.park.features.length) {
     style: { color: '#3f5f3b', weight: 1.4, opacity: .65, fill: false, dashArray: '6 4' },
   }).addTo(map);
 }
+// What a paddler wants to know before choosing a lake, counted once over the
+// edge list rather than per popup open: how many carries it costs to get out,
+// how much walking that is, what else it connects to, and whether there is a
+// launch. Counts DISTINCT things — one portage is one trail however many
+// segments it has, and a river reach can meet the same water several times.
+// `dm` on a node is the bbox diagonal: the LONG way across, not the short
+// crossing. On a long thin lake that is several times the width you would
+// actually paddle, so it is labelled max extent.
+const waterFacts = new Map();
+{
+  const at = id => {
+    let f = waterFacts.get(id);
+    if (!f) waterFacts.set(id, f = { carries: new Set(), carryM: 0, waters: new Set(), access: 0 });
+    return f;
+  };
+  for (const e of DATA.edges) {
+    if (e.k === 'portage') {
+      at(e.s).carries.add(e.id); at(e.s).carryM += e.m || 0;
+      at(e.d).carries.add(e.id); at(e.d).carryM += e.m || 0;
+    } else if (e.k === 'channel' || e.k === 'river') {
+      at(e.s).waters.add(e.d); at(e.d).waters.add(e.s);
+    } else if (e.k === 'access') {
+      // an access edge hangs off a synthetic node and lands on real water
+      at(e.d).access++;
+    }
+  }
+}
+function factsFor(p) {
+  const out = { carries: 0, carryM: 0, waters: 0, access: 0, dm: 0 };
+  for (const id of (p.ids || [p.osm_id])) {
+    const f = waterFacts.get(id);
+    if (!f) continue;
+    out.carries += f.carries.size; out.carryM += f.carryM;
+    out.waters += f.waters.size; out.access += f.access;
+    const n = idx.nodeById.get(id);
+    if (n && n.dm > out.dm) out.dm = n.dm;
+  }
+  return out;
+}
+// OSM names are third-party text going into innerHTML.
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtM = m => m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
+
 const lakes = L.geoJSON(DATA.lakes, {
   renderer: vecRenderer,
   style: () => LBASE,
@@ -493,10 +571,25 @@ const lakes = L.geoJSON(DATA.lakes, {
     // unnamed polygons don't soak up hovers — the named lake underneath wins
     l.options.interactive = !!p.name;
     if (p.name) l.bindTooltip(`<b>${p.name}</b><span class="tt-k">${p.kind || ''}</span>`, { sticky: true });
-    l.bindPopup(`<b>${p.name || 'unnamed water'}</b><br>kind: ${p.kind}<br>area: ${p.area_ha} ha
-      <br><button data-act="0" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as start</button>
-      <br><button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>
-      <br><button data-act="add" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Add after destination</button>`);
+    const fx = factsFor(p);
+    const nm = p.name || 'unnamed water';
+    const kindWord = { lake: 'lake', pond: 'pond', reservoir: 'reservoir' }[p.kind] || p.kind || 'water';
+    const facts = [];
+    facts.push(`<div><dt>Size</dt><dd>${p.area_ha != null ? esc(p.area_ha) + ' ha' : '—'}${fx.dm ? ` · max extent ≈ ${esc(fmtM(fx.dm))}` : ''}</dd></div>`);
+    facts.push(`<div><dt>Carries out</dt><dd>${fx.carries ? `${fx.carries} trail${fx.carries > 1 ? 's' : ''} · ${esc(fmtM(fx.carryM))}` : 'none'}</dd></div>`);
+    facts.push(`<div><dt>Connects to</dt><dd>${fx.waters ? `${fx.waters} other water${fx.waters > 1 ? 's' : ''}` : 'nothing mapped'}</dd></div>`);
+    if (fx.access) facts.push(`<div><dt>Access</dt><dd>${fx.access} point${fx.access > 1 ? 's' : ''}</dd></div>`);
+    l.bindPopup(`<div class="lake-pop">
+      <h3>${esc(nm)}</h3>
+      <div class="lp-kind">${esc(kindWord)}</div>
+      <dl class="lp-facts">${facts.join('')}</dl>
+      <div class="lp-acts">
+        <button class="lp-btn primary" data-act="0" data-id="${p.osm_id}" data-name="${esc(nm)}">Set as start</button>
+        <button class="lp-btn" data-act="end" data-id="${p.osm_id}" data-name="${esc(nm)}">Set as destination</button>
+        <button class="lp-btn ghost" data-act="add" data-id="${p.osm_id}" data-name="${esc(nm)}">Add as a stop</button>
+      </div>
+      <div class="lp-state" hidden></div>
+    </div>`);
   }
 }).addTo(map);
 let highlightedLakes = [];
@@ -797,12 +890,28 @@ function relabelStops() {
   for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
 }
 map.on('popupopen', ev => {
-  ev.popup.getElement().querySelectorAll('button[data-act]').forEach(b => {
+  const el = ev.popup.getElement();
+  el.querySelectorAll('button[data-act]').forEach(b => {
     b.onclick = () => {
       if (b.dataset.act === 'add') addAfterDestination(Number(b.dataset.id));
       else setField(b.dataset.act, Number(b.dataset.id));
     };
   });
+  // Say what this lake already is in the current plan. Computed on open, not
+  // baked into the popup: the plan changes under a popup that is already open.
+  const btn = el.querySelector('button[data-act]');
+  const state = el.querySelector('.lp-state');
+  if (!btn || !state) return;
+  const id = Number(btn.dataset.id);
+  const last = rows.length - 1;
+  let label = '';
+  for (let k = 0; k < rows.length; k++) {
+    if (Number(rows[k].input.dataset.id) !== id) continue;
+    label = k === 0 ? 'your start' : k === last ? 'your destination' : 'stop ' + k;
+    break;
+  }
+  state.textContent = label;
+  state.hidden = !label;
 });
 
 // ---------- shareable URLs: restore a route from the hash ----------
