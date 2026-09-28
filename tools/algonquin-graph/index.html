@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Algonquin Planner — canoe route planner for Algonquin Provincial Park</title>
+<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
+<link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
+<meta property="og:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
+<meta property="og:description" content="Plan a canoe trip across Algonquin: point-to-point directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://hikewithyu.com/algonquin/"/>
+<meta property="og:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="The Algonquin Planner map showing a paddling route through Lake Opeongo with carries numbered and portage trails drawn in orange."/>
+<meta property="og:site_name" content="Hiking With Yu"/>
+<meta property="og:locale" content="en_CA"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
+<meta name="twitter:description" content="Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park."/>
+<meta name="twitter:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
+<meta name="twitter:image:alt" content="A canoe route through Lake Opeongo on the Algonquin Planner map."/>
+<!-- Structured data so this reads as the tool it is, not a thin app page.
+     The app is client-rendered, so the crawler never sees a route: this tells it
+     what the thing is and what it covers. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Algonquin Planner",
+  "url": "https://hikewithyu.com/algonquin/",
+  "image": "https://hikewithyu.com/images/og/algonquin-planner.jpg",
+  "description": "Canoe route planner for Algonquin Provincial Park: point-to-point paddling directions across every named lake, portage and river, with carry counts, carrying distances, climb profiles and park advisories.",
+  "applicationCategory": "TravelApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "inLanguage": "en-CA",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD" },
+  "about": {
+    "@type": "Place",
+    "name": "Algonquin Provincial Park",
+    "description": "Provincial park in Ontario, Canada, with an extensive interconnected network of lakes, rivers and portages suited to canoe tripping."
+  },
+  "keywords": "Algonquin canoe route planner, Algonquin portages, canoe trip planning Ontario, lake Opeongo, Algonquin Park canoeing"
+}
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2216%22%20fill%3D%22%23176b4a%22%2F%3E%3Cpath%20d%3D%22M7%2018.5c3%201.3%2015%201.3%2018%200l-2.1%204.1H9.1L7%2018.5Z%22%20fill%3D%22%23fffef8%22%2F%3E%3Cpath%20d%3D%22M12.5%2013.5h3.4l.9%204.4h-5.2l.9-4.4Z%22%20fill%3D%22%23fffef8%22%20opacity%3D%22.9%22%2F%3E%3Cpath%20d%3D%22M8.5%2025.2c2-.9%203.6-.9%205.6%200s3.6.9%205.6%200c1.9-.9%203.5-.9%205.3%200%22%20fill%3D%22none%22%20stroke%3D%22%23fffef8%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2216%22%20fill%3D%22%23176b4a%22%2F%3E%3Cpath%20d%3D%22M7%2018.5c3%201.3%2015%201.3%2018%200l-2.1%204.1H9.1L7%2018.5Z%22%20fill%3D%22%23fffef8%22%2F%3E%3Cpath%20d%3D%22M12.5%2013.5h3.4l.9%204.4h-5.2l.9-4.4Z%22%20fill%3D%22%23fffef8%22%20opacity%3D%22.9%22%2F%3E%3Cpath%20d%3D%22M8.5%2025.2c2-.9%203.6-.9%205.6%200s3.6.9%205.6%200c1.9-.9%203.5-.9%205.3%200%22%20fill%3D%22none%22%20stroke%3D%22%23fffef8%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E"/>
+<meta name="theme-color" content="#176b4a"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script>
+  // Google Analytics — same property as hikewithyu.com; skipped if the host page
+  // (Hugo build) already loaded gtag to avoid double counting.
+  if (!window.dataLayer) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    const ga = document.createElement('script');
+    ga.async = true;
+    ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-H3H5S61VMW';
+    document.head.appendChild(ga);
+    gtag('js', new Date());
+    gtag('config', 'G-H3H5S61VMW');
+  }
+  function track(event, params) {
+    if (window.gtag) window.gtag('event', event, params || {});
+  }
+</script>
+<style>
+  :root {
+    --canvas: #f5f4ed; --surface: #fffef8; --surface-raised: rgba(255,254,248,.93);
+    --ink: #18362d; --ink-muted: #60756d; --line: #d9ddd3;
+    --accent: #176b4a; --accent-strong: #0c5237; --accent-soft: #dceadd;
+    --paddle: #1f78b4; --carry: #d95f02; --danger: #b30000;
+    --shadow: 0 12px 36px rgba(25,55,45,.14);
+  }
+  html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, "Segoe UI", sans-serif; }
+  #map { position: absolute; inset: 0; background: #eef2ec; }
+  /* faded basemap: desaturate + lift the tiles so the lake polygons pop */
+  .leaflet-tile-pane { opacity: .72; filter: saturate(.55) contrast(.88) brightness(1.04); }
+  .side {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 356px; z-index: 1000;
+    background: var(--surface); border-right: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .side-header { display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px 16px; border-bottom: 1px solid var(--line); }
+  .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); }
+  .brand-mark { width: 40px; height: 40px; border-radius: 50%; background: var(--accent);
+    color: var(--surface); display: grid; place-items: center; }
+  .brand-mark svg { width: 26px; height: 26px; }
+  .brand-name { display: block; font: 700 18px/1.05 Georgia, "Times New Roman", serif; }
+  .brand-sub { display: block; margin-top: 3px; color: var(--ink-muted);
+    font: 700 10px/1.05 -apple-system, "Segoe UI", sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+  .side-intro { padding: 14px 22px 12px; border-bottom: 1px solid var(--line); }
+  .eyebrow { margin: 0 0 8px; color: var(--accent); font: 800 10px/1 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .18em; text-transform: uppercase; }
+  .side-intro h1 { margin: 0; font: 500 20px/1.12 Georgia, "Times New Roman", serif;
+    letter-spacing: -.02em; color: var(--ink); }
+  .intro-copy { margin: 7px 0 10px; max-width: 300px; color: var(--ink-muted);
+    font: 12.5px/1.45 Georgia, "Times New Roman", serif; }
+  .chip { display: inline-flex; align-items: baseline; gap: 7px; padding: 7px 11px;
+    background: var(--accent-soft); color: var(--accent-strong); border-radius: 4px;
+    font: 800 10px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+  .chip b { font: 700 15px/1 Georgia, serif; letter-spacing: 0; }
+  .side-section { padding: 10px 22px 12px; border-bottom: 1px solid var(--line); }
+  .side-section.grow { padding-bottom: 8px; }
+  #points { margin: 2px 0; }
+  .field { position: relative; margin: 6px 0; }
+  .field label { font: 700 10px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-muted); }
+  .field input {
+    width: 100%; box-sizing: border-box; margin-top: 3px; padding: 7px 30px 7px 10px; font-size: 13px;
+    color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    outline: none;
+  }
+  .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .field .rm {
+    position: absolute; right: 7px; bottom: 9px;
+    border: 0; background: var(--accent-soft); color: var(--accent-strong); border-radius: 50%;
+    width: 20px; height: 20px; cursor: pointer; font-size: 11px; line-height: 1;
+  }
+  .ac {
+    position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); z-index: 1200;
+    border: 1px solid var(--line); border-top: 0; max-height: 240px; overflow: auto;
+    box-shadow: var(--shadow); display: none; border-radius: 0 0 6px 6px;
+  }
+  .ac div { padding: 7px 10px; cursor: pointer; }
+  .ac div:hover { background: var(--accent-soft); }
+  .ac .k { color: var(--ink-muted); font-size: 10px; margin-left: 6px; }
+  .ac .ac-more { color: var(--accent-strong); font-size: 11px; font-weight: 600;
+    background: var(--accent-soft); border-top: 1px solid var(--line); position: sticky; bottom: 0; }
+  .ac .ac-more:hover { background: #cfe3d2; }
+  .tools { display: flex; gap: 8px; margin: 10px 0 2px; }
+  .tools button, .opts select {
+    font: 700 11px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .04em;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--surface); color: var(--accent-strong); cursor: pointer;
+  }
+  .tools button:hover, .opts select:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .opts { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .opts select { flex: 1; min-width: 0; }
+  .opts .avoid { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; color: var(--ink-muted); white-space: nowrap; }
+  .go {
+    display: block; width: 100%; margin-top: 10px;
+    padding: 10px; font: 800 13px/1 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .06em; text-transform: uppercase;
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(23,107,74,.35);
+  }
+  .go:hover { background: var(--accent-strong); }
+  #options { margin-top: 2px; }
+  .optcard {
+    border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; margin-bottom: 7px;
+    cursor: pointer; background: var(--surface);
+  }
+  .optcard:hover { background: #f6f9f3; }
+  .optcard.sel { border-color: var(--accent); background: #eef6ef; box-shadow: 0 0 0 1px var(--accent) inset; }
+  .optcard .t { font-weight: 700; color: var(--ink); }
+  .optcard .m { color: var(--ink-muted); font-size: 11px; }
+  #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
+  #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
+  .wp { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
+    border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
+  .leg { padding: 8px 4px; border-bottom: 1px solid #eef0ea; display: flex; gap: 8px; }
+  .leg .n { color: var(--ink-muted); min-width: 20px; text-align: right; font-weight: 700; }
+  .leg .b { flex: 1; color: var(--ink); }
+  .leg .p { color: var(--carry); font-weight: 600; }
+  .leg .r { color: var(--paddle); }
+  .leg .warn { color: var(--danger); font-size: 11px; }
+  .conds { margin: 0 0 4px; }
+  .conds .foot { color: var(--ink-muted); font-size: 9.5px; line-height: 1.4; }
+  .cond-flag {
+    display: inline-block; margin-left: 5px; padding: 1px 5px; border-radius: 3px;
+    font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    background: #fdf3d8; color: #8a6512; white-space: nowrap; cursor: help;
+  }
+  .cond-flag.closure { background: #fbe0d6; color: #a3530b; }
+  .cond-flag.boil-water { background: #f9d3d3; color: #a51d1d; }
+  .warnbox {
+    margin: 6px 0 0; padding: 8px 10px; background: #fdf2f2; color: var(--danger);
+    border: 1px solid #f3cccc; border-radius: 4px; font-size: 12px; display: none;
+  }
+  .legend {
+    position: absolute; bottom: 14px; right: 14px; z-index: 1000; background: var(--surface-raised);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 8px 11px; font: 800 10px/1.7 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+  /* open by default on desktop, where there is room; collapsed on small
+     screens so it stops eating the map */
+  .legend > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .legend > summary::-webkit-details-marker { display: none; }
+  .legend > summary::after { content: '▾'; font-size: 9px; opacity: .6; }
+  .legend[open] > summary::after { content: '▴'; }
+  .legend:not([open]) { padding: 7px 10px; }
+  .legend-body { margin-top: 4px; }
+  .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
+  .sw.portage { border-style: dashed; border-color: var(--carry); }
+  .sw.reach { border-color: #41b6c4; }
+  .sw.road { border-color: #8a6d4e; border-width: 6px; }
+  .sw.park { border-color: #3f5f3b; border-style: dashed; border-width: 1px; opacity: .8; }
+  .pa-leg { color: var(--carry); font-size: 12px; font-weight: 900; margin-right: 4px; }
+  .camp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4caf7d; border: 1px solid #2f7d4f; margin-right: 5px; vertical-align: middle; }
+  .sw.route { border-color: var(--carry); border-style: solid; border-width: 5px; height: 0; }
+  .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
+  .carry-badge span, .wp-badge span {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    color: #fff; font-size: 12px; font-weight: 700;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  .carry-badge span { background: var(--carry); }
+  .el { font-weight: 700; font-size: 11px; }
+  .prof { display: block; width: 108px; height: 22px; margin: 4px 0 2px; opacity: .9; }
+  .rate { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+  .rate.r-flat { background: #eef2ec; color: #4a6b58; }
+  .rate.r-moderate { background: #fdf3d8; color: #8a6512; }
+  .rate.r-steep { background: #fde8cf; color: #a3530b; }
+  .rate.r-vsteep { background: #fbdfd2; color: #b23a0e; }
+  .rate.r-brutal { background: #f9d3d3; color: #a51d1d; }
+  .rate.r-unknown { background: #eee; color: #888; }
+  .el.up { color: #9a3412; }
+  .el.down { color: #1a6b4a; }
+  .portage-arrow span {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--carry);
+    color: var(--carry); font-size: 12px; font-weight: 900; line-height: 1;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+  }
+  .wp-badge span { background: var(--paddle); }
+  .ap-badge span {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 24px; height: 20px; padding: 0 3px;
+    background: var(--surface); color: var(--accent-strong); font-size: 11px; font-weight: 700;
+    border: 2px solid var(--accent); border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  .leg-zoom { cursor: pointer; }
+  .leg-zoom:hover { background: #f2f7f1; }
+  .leaflet-tooltip {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 4px;
+    color: var(--ink); font: 700 11px/1.3 -apple-system, "Segoe UI", sans-serif;
+    box-shadow: var(--shadow); padding: 5px 8px;
+  }
+  .leaflet-tooltip .tt-k { color: var(--ink-muted); font-weight: 400; margin-left: 5px; font-size: 10px; }
+  .leaflet-tooltip-top:before { border-top-color: var(--line); }
+  .leaflet-tooltip-bottom:before { border-bottom-color: var(--line); }
+  #samples { margin-bottom: 6px; }
+  #samples .eyebrow { margin-bottom: 8px; }
+  .sample-btn {
+    display: block; width: 100%; text-align: left; margin-bottom: 7px;
+    border: 1px solid var(--line); background: var(--surface); border-radius: 6px;
+    padding: 9px 11px; cursor: pointer;
+  }
+  .sample-btn:hover { border-color: var(--accent); background: #f6f9f3; }
+  .sample-btn .t { font-weight: 700; color: var(--ink); font-size: 12.5px; }
+  .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
+  .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
+    color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
+  .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 46px; height: 5px; border-radius: 3px; background: var(--line); border: 0; cursor: pointer; z-index: 2; }
+  .side-peek { display: none; }
+  @media (max-width: 768px) {
+    .side { top: auto; height: 54%; width: 100%; border-right: 0; border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(0,0,0,.2); transition: height .22s ease; }
+    .side.collapsed { height: 78px; overflow: hidden; }
+    .side-handle { display: block; position: absolute; top: 0; left: 0; right: 0; width: 100%;
+      height: 22px; background: none; transform: none; }
+    .side-handle::after { content: ''; position: absolute; left: 50%; top: 7px; transform: translateX(-50%);
+      width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+    .side-header { padding: 24px 16px 6px; align-items: center; gap: 10px; }
+    .side-header .brand-sub { display: none; }
+    .side-peek { display: block; flex: 1; min-width: 0; color: var(--ink-muted); font-size: 11px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+    .side-intro { display: none; }
+    .side-section { padding: 8px 16px 10px; }
+    .field input { min-height: 40px; font-size: 16px; }   /* 16px: no iOS focus-zoom */
+    .tools button, .opts select, .go { min-height: 40px; font-size: 14px; }
+    .opts { flex-direction: column; align-items: stretch; gap: 6px; }
+    .opts .avoid { padding: 4px 0; }
+    .go { position: sticky; bottom: 0; }
+    .legend { bottom: calc(var(--sheet-h, 0px) + 10px); right: 8px; font-size: 9px; padding: 6px 8px; }
+    .legend-body > div { display: inline; margin-right: 8px; }
+    .legend-body { max-width: 62vw; }
+  }
+  .side-footer p { margin: 0 0 6px; }
+  .side-footer .meta { display: block; letter-spacing: .04em; }
+  /* planning-tool notice */
+  .notice-veil {
+    position: absolute; inset: 0; z-index: 3000; display: none;
+    background: rgba(13, 27, 23, .45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  .notice-veil.show { display: grid; place-items: center; }
+  .notice {
+    width: min(420px, calc(100vw - 40px)); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .notice h2 { margin: 0 0 8px; font: 500 20px/1.15 Georgia, "Times New Roman", serif; color: var(--ink); }
+  .notice p { margin: 0 0 9px; color: var(--ink-muted); font-size: 12.5px; line-height: 1.55; }
+  .notice .eyebrow { margin-bottom: 10px; }
+  .notice .row { display: flex; gap: 8px; margin-top: 14px; flex-direction: column; }
+  .notice button {
+    padding: 10px; border-radius: 6px; cursor: pointer;
+    font: 800 12px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .05em;
+  }
+  .notice .primary { background: var(--accent); color: #fff; border: 0; }
+  .notice .primary:hover { background: var(--accent-strong); }
+  .notice .ghost { background: 0 0; color: var(--ink-muted); border: 1px solid var(--line); }
+  .notice .ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+  .notice a { color: var(--accent-strong); }
+  .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 80vh; overflow: auto; }
+  .notice.credits dt { margin-top: 11px; color: var(--ink); font-weight: 700; font-size: 12.5px; }
+  .notice.credits dt:first-of-type { margin-top: 2px; }
+  .notice.credits dd { margin: 3px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
+  .notice.credits dd a { color: var(--accent-strong); }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="side">
+  <header class="side-header">
+    <button class="side-handle" id="sideHandle" aria-label="toggle panel"></button>
+    <span class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" role="img" fill="currentColor">
+          <path d="M4 19.5c4.2 1.8 19.8 1.8 24 0l-2.8 5.5H6.8L4 19.5Z"/>
+          <path d="M11 12.5h4.5l1.2 6H9.8l1.2-6Zm8 0h3.4l1.6 6H17.8l1.2-6Z" opacity=".85"/>
+          <path d="M6 28c2.6-1.1 4.6-1.1 7.2 0 2.5 1.1 4.6 1.1 7.2 0 2.5-1.1 4.5-1.1 7 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">Algonquin Planner</span>
+        <span class="brand-sub">Canoe Route Planner</span>
+      </span>
+      <span class="side-peek" id="peek"></span>
+    </span>
+  </header>
+  <div class="side-intro">
+    <p class="eyebrow">Plan your trip</p>
+    <h1>Plan a canoe route across Algonquin</h1>
+    <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park.</p>
+    <div class="chip" id="stats">loading&hellip;</div>
+  </div>
+  <section class="side-section">
+    <div id="points"></div>
+    <div class="tools">
+      <button id="addStop">+ add stop</button>
+      <button id="swap" title="reverse route">&#8645; reverse</button>
+    </div>
+    <div class="opts">
+      <select id="mode">
+        <option value="balanced">balanced — carries + lakes crossed</option>
+        <option value="easiest">easiest carries — avoid steep portages</option>
+        <option value="carries">fewest carries</option>
+        <option value="meters">least total carrying — shortest walks</option>
+      </select>
+      <label class="avoid"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
+    </div>
+    <button class="go" id="go">Directions</button>
+  </section>
+  <section class="side-section grow">
+    <div id="samples"></div>
+    <div id="options"></div>
+    <div id="summary"></div>
+    <div class="warnbox" id="warnbox"></div>
+    <div id="legs"></div>
+  </section>
+  <footer class="side-footer">
+    <div id="conds" class="conds"></div>
+    <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
+    <span class="meta"><a href="#" id="creditsLink">data sources &amp; credits</a> ·
+      <a href="mailto:me@yuchenhou.com?subject=Algonquin%20Planner%20feedback">feedback or a problem?</a><br>
+      Built <b id="bts">?</b></span>
+  </footer>
+</div>
+<div class="notice-veil" id="noticeVeil">
+  <div class="notice" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+    <p class="eyebrow">Before you paddle</p>
+    <h2 id="noticeTitle">This is a planning tool only.</h2>
+    <p>Routes, portages and access points are approximations from OpenStreetMap and
+       official data. <strong>Conditions change</strong> &mdash; low water, closures, dams and
+       portage reroutes happen every season.</p>
+    <p>Check conditions with the park before going on a trip:
+       <a href="https://www.algonquinpark.on.ca/news/algonquin_park_advisories.php" target="_blank" rel="noopener">Algonquin Park advisories</a>
+       and the official park map.</p>
+    <div class="row">
+      <button class="primary" id="noticeOk">Got it — plan a route</button>
+      <button class="ghost" id="noticeNever">Never show this again</button>
+    </div>
+  </div>
+</div>
+<div class="notice-veil" id="creditsVeil">
+  <div class="notice credits" role="dialog" aria-modal="true" aria-labelledby="creditsTitle">
+    <p class="eyebrow">Credits</p>
+    <h2 id="creditsTitle">Data sources</h2>
+    <dl>
+      <dt>OpenStreetMap</dt>
+      <dd>The route graph: lakes, rivers, portage trails, access points and Hwy 60.
+        &copy; OpenStreetMap contributors, ODbL &mdash;
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">copyright &amp; license</a></dd>
+      <dt>Algonquin Park official data</dt>
+      <dd>Access point names &amp; numbers, conditions and advisories from
+        <a href="https://www.algonquinpark.on.ca" target="_blank" rel="noopener">algonquinpark.on.ca</a>
+        and <a href="https://www.ontarioparks.ca/park/algonquin/alerts" target="_blank" rel="noopener">Ontario Parks</a>.</dd>
+      <dt>Elevation</dt>
+      <dd>Copernicus DEM (SRTM 90 m) via
+        <a href="https://www.opentopodata.org" target="_blank" rel="noopener">OpenTopoData</a>.
+        Net elevation change between portage endpoints only.</dd>
+      <dt>Basemaps</dt>
+      <dd>OpenTopoMap (CC-BY-SA) and CARTO Light (&copy; CARTO, &copy; OpenStreetMap contributors).</dd>
+      <dt>Map library</dt>
+      <dd>Leaflet, BSD-2-Clause.</dd>
+    </dl>
+    <div class="row"><button class="primary" id="creditsClose">Close</button></div>
+  </div>
+</div>
+<details class="legend" id="legend">
+  <summary>Legend</summary>
+  <div class="legend-body">
+    <div><span class="lglake"></span>water &nbsp; <span class="sw reach"></span>river reach &nbsp; <span class="sw road"></span>Hwy 60 &nbsp; <span class="sw park"></span>park boundary</div>
+    <div><span class="camp-dot"></span>campsites &nbsp; <span class="sw portage"></span>portage &nbsp; <span class="pa-leg">▲</span> uphill &nbsp; <span class="sw route"></span>your route</div>
+  </div>
+</details>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="router.js?v=a8fcd2ea6184"></script>
+<script>
+document.getElementById('stats').textContent = 'loading map data…';
+fetch('router_data.json?v=a8fcd2ea6184')
+  .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
+  .then(DATA => {
+const idx = Router.buildIndex(DATA);
+document.getElementById('bts').textContent = document.lastModified;
+{
+  const nLakes = DATA.nodes.filter(n => n[2] === 'lake').length;
+  const nPort = new Set(DATA.edges.filter(e => e.k === 'portage').map(e => e.id)).size;
+  const el = document.getElementById('stats');
+  if (el) el.innerHTML = `<b>${nLakes.toLocaleString('en-CA')}</b> lakes &middot; <b>${nPort.toLocaleString('en-CA')}</b> portages`;
+}
+if (!document.getElementById('go')) {   // self-heal: recreate the Directions button if absent
+  const btn = document.createElement('button');
+  btn.id = 'go'; btn.className = 'go'; btn.textContent = 'Directions';
+  const anchor = document.getElementById('options');
+  anchor.parentNode.insertBefore(btn, anchor);
+}
+
+const map = L.map('map', { preferCanvas: true });
+const topoTiles = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: 'Map data: &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
+});
+const cartoTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors &copy; <a href="https://carto.com">CARTO</a>'
+});
+topoTiles.addTo(map);
+L.control.layers({ 'OpenTopoMap (terrain)': topoTiles, 'Light (CARTO)': cartoTiles }, null, { position: 'bottomleft' }).addTo(map);
+
+map.createPane('routePane');
+map.getPane('routePane').style.zIndex = 450;
+map.getPane('routePane').style.pointerEvents = 'none';
+const routeRenderer = L.canvas({ pane: 'routePane', padding: 0.3 });
+
+const vecRenderer = L.canvas({ padding: 0.3 });   // ONE canvas: lakes+reaches+roads+portages share hit-testing
+const LBASE = { color: '#2f6ea8', weight: 1.2, fillColor: '#9ecae9', fillOpacity: .8 };
+const LROUTE = { color: '#1a6db3', weight: 3, fillColor: '#ffd54f', fillOpacity: .85 };
+const lakeLayers = {};   // every member way id -> its leaflet layer
+const lakeGeoms = {};    // every member way id -> its geometry
+// park outline — context, not content: thin and faint, drawn beneath the
+// water and the route so it frames the park without competing with either
+if (DATA.park && DATA.park.features && DATA.park.features.length) {
+  L.geoJSON(DATA.park, {
+    interactive: false,
+    style: { color: '#3f5f3b', weight: 1.4, opacity: .65, fill: false, dashArray: '6 4' },
+  }).addTo(map);
+}
+const lakes = L.geoJSON(DATA.lakes, {
+  renderer: vecRenderer,
+  style: () => LBASE,
+  onEachFeature: (f, l) => {
+    const p = f.properties;
+    for (const id of (p.ids || [p.osm_id])) { lakeLayers[id] = l; lakeGeoms[id] = f.geometry; }
+    // unnamed polygons don't soak up hovers — the named lake underneath wins
+    l.options.interactive = !!p.name;
+    if (p.name) l.bindTooltip(`<b>${p.name}</b><span class="tt-k">${p.kind || ''}</span>`, { sticky: true });
+    l.bindPopup(`<b>${p.name || 'unnamed water'}</b><br>kind: ${p.kind}<br>area: ${p.area_ha} ha
+      <br><button data-act="0" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as start</button>
+      <br><button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>
+      <br><button data-act="add" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Add after destination</button>`);
+  }
+}).addTo(map);
+let highlightedLakes = [];
+function highlightLakes(nodeIds) {
+  highlightedLakes.forEach(l => l.setStyle(LBASE));
+  highlightedLakes = [];
+  for (const id of nodeIds) {
+    const l = lakeLayers[id];
+    if (l && !highlightedLakes.includes(l)) { l.setStyle(LROUTE); highlightedLakes.push(l); }
+  }
+}
+
+const reaches = L.layerGroup().addTo(map);
+for (const rid in DATA.reaches) {
+  const rc = DATA.reaches[rid];
+  for (const line of rc.lines) {
+    L.polyline(line, { renderer: vecRenderer, color: '#41b6c4', weight: 2, opacity: .75 })
+      .bindTooltip((rc.n || 'unnamed waterway') + ' (reach)', { sticky: true })
+      .addTo(reaches);
+  }
+}
+
+const PORTAGE_BASE = { color: '#b35c00', weight: 3, dashArray: '6 5', opacity: .9 };
+
+// Hwy 60 corridor (context; drawn under the lake polygons)
+if (DATA.roads) {
+  L.geoJSON({ type: 'FeatureCollection', features: DATA.roads.lines.map(line => ({
+    type: 'Feature',
+    geometry: { type: 'LineString', coordinates: line },
+    properties: {}
+  })) }, {
+    renderer: L.canvas({ padding: 0.3 }),
+    style: () => ({ renderer: vecRenderer, color: '#7a5f3f', weight: 7, opacity: .85 }),
+    onEachFeature: (f, l) => l.bindTooltip(DATA.roads.name, { sticky: true })
+  }).addTo(map);
+}
+
+// backcountry campsites (green dots; hover = site + lake)
+const campLayer = L.geoJSON({ type: 'FeatureCollection', features: (DATA.campsites || []).map(c => ({
+  type: 'Feature',
+  geometry: { type: 'Point', coordinates: [c[4], c[3]] },
+  properties: { ref: c[2], name: c[1], water: (idx.nodeById.get(c[5]) || {}).name || 'lake' }
+})) }, {
+  renderer: vecRenderer,
+  pointToLayer: (f, ll) => L.circleMarker(ll, { renderer: vecRenderer, radius: 3,
+    color: '#2f7d4f', weight: 1, fillColor: '#4caf7d', fillOpacity: .9 }),
+  onEachFeature: (f, l) => {
+    const nm = [f.properties.ref ? '#' + f.properties.ref : null, f.properties.name].filter(Boolean).join(' ') || 'Campsite';
+    l.bindTooltip(`${nm} — ${f.properties.water}`, { direction: 'top' });
+  }
+}).addTo(map);
+
+const PORTAGE_ROUTE = { color: '#e07b00', weight: 5, opacity: 1 };
+const portageLayers = {};   // osm way id -> its leaflet layer
+const portages = L.geoJSON({ type: 'FeatureCollection', features:
+  DATA.edges.filter(e => e.k === 'portage').map(e => ({
+    type: 'Feature',
+    geometry: { type: 'LineString', coordinates: e.g },
+    properties: { m: e.m, n: e.n, o: e.o, oid: e.id }
+  }))
+}, {
+  renderer: vecRenderer,
+  style: () => PORTAGE_BASE,
+  onEachFeature: (f, l) => {
+    const p = f.properties;
+    portageLayers[p.oid] = l;
+    const warn = p.o && p.o.length ? ` ⚠ ${p.o.join(', ')}` : '';
+    l.bindTooltip(`P ${p.m} m${warn}`, { sticky: true });
+    l.bindPopup(`<b>Portage — ${p.m} m</b>${p.n ? '<br>' + p.n : ''}${warn ? '<br>⚠ obstacles nearby: ' + p.o.join(', ') : ''}`);
+  }
+}).addTo(map);
+let highlightedPortages = [];
+function highlightPortages(osmIds) {
+  highlightedPortages.forEach(l => l.setStyle(PORTAGE_BASE));
+  highlightedPortages = [];
+  for (const oid of osmIds) {
+    const l = portageLayers[oid];
+    if (l && !highlightedPortages.includes(l)) { l.setStyle(PORTAGE_ROUTE); highlightedPortages.push(l); }
+  }
+}
+
+const routeLayer = L.layerGroup().addTo(map);
+
+// official access points (numbered #1–#29)
+const aps = L.layerGroup().addTo(map);
+for (const ap of DATA.official) {
+  L.marker([ap.lat, ap.lon], {
+    icon: L.divIcon({ className: 'ap-badge', html: `<span>${ap.num}</span>`, iconSize: [26, 20] })
+  })
+    .bindTooltip(`Access Point #${ap.num}: ${ap.name.replace(/^Access Point #\d+: /, '')}`, { direction: 'top' })
+    .bindPopup(`<b>Access Point #${ap.num}</b><br>${ap.name.replace(/^Access Point #\d+: /, '')}${ap.approx ? '<br><span style="color:#889">launch position approximate — see official map</span>' : ''}
+      <br><button data-act="0" data-id="${ap.id}" data-name="${ap.name}">Set as start</button>
+      <button data-act="end" data-id="${ap.id}" data-name="${ap.name}">Set as destination</button>`)
+    .addTo(aps);
+}
+
+// ---------- point rows ----------
+const pointsBox = document.getElementById('points');
+const rows = [];   // { wrapper, input }
+function makeRow(label, removable) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'field';
+  wrapper.innerHTML = `<label>${label}</label>
+    <input autocomplete="off" placeholder="type a lake, river or access point…"/>
+    <div class="ac"></div>
+    ${removable ? '<button class="rm" title="remove stop">✕</button>' : ''}`;
+  const input = wrapper.querySelector('input');
+  attachAC(input, wrapper.querySelector('.ac'));
+  const row = { wrapper: wrapper, input: input };
+  if (removable) {
+    wrapper.querySelector('.rm').onclick = () => {
+      const k = rows.indexOf(row);
+      if (k >= 0) rows.splice(k, 1);
+      wrapper.remove();
+    };
+  }
+  return row;
+}
+function initRows() {
+  rows.length = 0;
+  pointsBox.innerHTML = '';
+  const from = makeRow('From');
+  const to = makeRow('Destination');
+  rows.push(from, to);
+  pointsBox.appendChild(from.wrapper);
+  pointsBox.appendChild(to.wrapper);
+}
+function addStop() {
+  if (rows.length >= 7) return;
+  const row = makeRow('Stop ' + (rows.length - 1), true);
+  rows.splice(rows.length - 1, 0, row);
+  pointsBox.insertBefore(row.wrapper, rows[rows.length - 1].wrapper);
+  // renumber stop labels
+  for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
+  row.input.focus();
+}
+// Unnamed pond/wetland slivers are the bulk of the graph but useless to search:
+// rank named waters first, then access points, and only surface unnamed slivers
+// when the query clearly is not matching anything better (or ask for them).
+const UNNAMED_KINDS = new Set(['pond', 'reservoir', 'oxbow', 'wastewater']);
+let showUnnamed = false;
+function matchScore(h, q) {
+  const nm = h.name.toLowerCase();
+  let score = 0;
+  if (nm === q) score = 100;
+  else if (nm.startsWith(q)) score = 60;
+  else if (new RegExp('\\b' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(nm)) score = 40;
+  else score = 10;
+  if (h.kind === 'access') score += 6;
+  if (h.kind === 'lake') score += 4;
+  if (h.kind === 'reach') score += 2;
+  if (!h.name || UNNAMED_KINDS.has(h.kind)) score -= 25;
+  if (/lake|creek|river/.test(nm)) score += 3;
+  return score;
+}
+function attachAC(input, ac) {
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { ac.style.display = 'none'; return; }
+    const all = idx.search.filter(s => s.name.toLowerCase().includes(q));
+    const named = all.filter(s => s.name && !UNNAMED_KINDS.has(s.kind));
+    const unnamed = all.filter(s => !s.name || UNNAMED_KINDS.has(s.kind));
+    // named matches only, unless nothing named matched or the user asked for all
+    const pool = (named.length && !showUnnamed) ? named : all;
+    // collapse identical display names (way-split lakes, duplicate launch rows)
+    const seenName = new Set();
+    const dedup = pool.filter(s2 => {
+      const k = (s2.name || '#' + s2.id).toLowerCase() + '|' + s2.kind;
+      if (seenName.has(k)) return false;
+      seenName.add(k);
+      return true;
+    });
+    const hits = dedup.slice().sort((a, b) => matchScore(b, q) - matchScore(a, q)).slice(0, 12);
+    if (!hits.length) { ac.style.display = 'none'; return; }
+    ac.innerHTML = '';
+    for (const h of hits) {
+      const d = document.createElement('div');
+      const unnamedHit = !h.name || UNNAMED_KINDS.has(h.kind);
+      d.innerHTML = `${h.name || '(unnamed ' + h.kind + ')'}<span class="k">${h.kind}${unnamedHit ? ' · minor' : ''}</span>`;
+      d.onclick = () => {
+        input.value = h.name || 'unnamed water #' + h.id;
+        input.dataset.id = h.id;
+        ac.style.display = 'none';
+      };
+      ac.appendChild(d);
+    }
+    // toggle for the leftovers
+    const hidden = dedup.length - hits.length;
+    if (hidden > 0) {
+      const t = document.createElement('div');
+      t.className = 'ac-more';
+      t.innerHTML = showUnnamed
+        ? '↑ show named only'
+        : `+ ${hidden} more (unnamed ponds etc.)`;
+      t.onclick = () => { showUnnamed = !showUnnamed; render(); };
+      ac.appendChild(t);
+    } else if (showUnnamed && named.length) {
+      const t = document.createElement('div');
+      t.className = 'ac-more';
+      t.innerHTML = '↑ show named only';
+      t.onclick = () => { showUnnamed = false; render(); };
+      ac.appendChild(t);
+    }
+    ac.style.display = 'block';
+  }
+  input.addEventListener('input', render);
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', () => setTimeout(() => { ac.style.display = 'none'; }, 150));
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') {
+      const first = ac.querySelector('div');
+      if (first) first.click();
+    }
+  });
+}
+initRows();
+
+function showRoute(txt) {
+  const el = document.getElementById('peek');
+  if (el) el.textContent = txt;
+  if (window.innerWidth <= 768) {
+    // results are behind the sheet: open it, then take the user to them.
+    // Opening alone was not enough — the Directions button sits above the fold
+    // on a phone, so the itinerary appeared to have done nothing.
+    sideEl.classList.remove('collapsed');
+    sideEl.style.height = '';
+    setTimeout(() => {
+      syncSheetVar();
+      const target = document.getElementById('summary');
+      if (target && target.scrollIntoView) {
+        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (e) { sideEl.scrollTop = target.offsetTop - 8; }
+      }
+    }, 280);
+  }
+}
+
+// The legend is a fixed overlay. On a phone it covers a chunk of map, so start
+// it collapsed there; desktop has room, so it starts open. Either way the user
+// can toggle it.
+const legendEl = document.getElementById('legend');
+const narrowMQ = window.matchMedia('(max-width: 768px)');
+function syncLegend() { if (legendEl) legendEl.open = !narrowMQ.matches; }
+syncLegend();
+if (narrowMQ.addEventListener) narrowMQ.addEventListener('change', syncLegend);
+const sideEl = document.querySelector('.side');
+function syncSheetVar() {
+  document.documentElement.style.setProperty('--sheet-h',
+    window.innerWidth <= 768 ? Math.round(sideEl.getBoundingClientRect().height) + 'px' : '0px');
+}
+window.addEventListener('resize', syncSheetVar);
+document.getElementById('sideHandle').onclick = () => {
+  const c = sideEl.classList.toggle('collapsed');
+  sideEl.style.height = c ? '78px' : '';   // inline: immune to specificity surprises
+  setTimeout(syncSheetVar, 260);
+};
+setTimeout(syncSheetVar, 300);
+document.getElementById('addStop').onclick = addStop;
+document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
+document.getElementById('avoid').addEventListener('change', e => track('avoid_toggle', { enabled: e.target.checked }));
+map.on('baselayerchange', e => track('basemap_change', { basemap: e.name }));
+document.getElementById('swap').onclick = () => {
+  const vals = rows.map(r => ({ v: r.input.value, id: r.input.dataset.id })).reverse();
+  rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; });
+};
+
+function setField(which, id) {   // which: row index or 'end'
+  const k = which === 'end' ? rows.length - 1 : Number(which);
+  const node = idx.nodeById.get(id);
+  if (!node || !rows[k]) return;
+  rows[k].input.value = node.name || 'unnamed water #' + id;
+  rows[k].input.dataset.id = id;
+}
+
+// The clicked lake becomes the new destination; the old destination is kept
+// in front of it as a waypoint (or as the new start if there was no start).
+function addAfterDestination(id) {
+  const k = rows.length - 1;
+  const destId = rows[k].input.dataset.id ? Number(rows[k].input.dataset.id) : null;
+  if (destId === null) { setField('end', id); return; }   // nothing chosen yet
+  if (destId === id) return;                             // already the destination
+  const cap = rows.length >= 7;                         // MAX_ROWS in addStop()
+  if (cap) {
+    // no room for another stop: the old destination becomes the new start
+    setField(0, destId);
+    setField('end', id);
+    relabelStops();
+    return;
+  }
+  addStop();                                            // grows rows by one, before dest
+  const moved = rows[rows.length - 2];                  // the former destination row
+  setField(rows.length - 2, destId);                    // old destination -> waypoint slot
+  setField('end', id);                                  // new destination
+  void moved;
+  relabelStops();
+}
+function relabelStops() {
+  for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
+}
+map.on('popupopen', ev => {
+  ev.popup.getElement().querySelectorAll('button[data-act]').forEach(b => {
+    b.onclick = () => {
+      if (b.dataset.act === 'add') addAfterDestination(Number(b.dataset.id));
+      else setField(b.dataset.act, Number(b.dataset.id));
+    };
+  });
+});
+
+// ---------- shareable URLs: restore a route from the hash ----------
+function applyHashRoute() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (!h.get('r')) return false;
+  const names = h.get('r').split('~').map(decodeURIComponent);
+  const ids = names.map(nm => (idx.search.find(s => s.name === nm) || {}).id);
+  if (!names.length || ids.some(x => !x)) return false;
+  if (h.get('m')) document.getElementById('mode').value = h.get('m');
+  if (h.get('a')) document.getElementById('avoid').checked = true;
+  while (rows.length > names.length) { const rm = rows[rows.length - 2]; const k = rows.indexOf(rm); if (k > 0 && rows[k].wrapper.querySelector('.rm')) { rows.splice(k, 1); rm.wrapper.remove(); } else break; }
+  while (rows.length < names.length) addStop();
+  rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2]; });
+  track('route_from_url', { points: names.length, mode: h.get('m') || 'balanced' });
+  document.getElementById('go').click();
+  return true;
+}
+
+// ---------- sample routes (onboarding; hidden after the first navigation) ----------
+const SAMPLES = [
+  { label: 'Canoe Lake access → Otterslide Lake',
+    desc: 'the classic Hwy 60 chain — 5 carries · 2.1 km',
+    from: 'Access Point #5: Canoe Lake', to: 'Otterslide Lake' },
+  { label: 'Lake Opeongo access → Happy Isle Lake',
+    desc: 'big-water paddling from the park\u2019s largest lake — no portages',
+    from: 'Access Point #11: Lake Opeongo', to: 'Happy Isle Lake' },
+  { label: 'Rock Lake access → Pen Lake',
+    desc: 'an easy first paddle off the Hwy 60 corridor — no portages',
+    from: 'Access Point #9: Rock Lake', to: 'Pen Lake' },
+];
+function runSample(s) {
+  const fid = idx.search.find(x => x.name === s.from);
+  const tid = idx.search.find(x => x.name === s.to);
+  if (!fid || !tid) return;
+  track('sample_route', { label: s.label });
+  initRows();
+  setField(0, fid.id);
+  setField('end', tid.id);
+  document.getElementById('go').click();
+}
+(function renderSamples() {
+  const el = document.getElementById('samples');
+  if (!el) return;
+  el.innerHTML = '<p class="eyebrow">Try a sample route</p>' + SAMPLES.map((s, i) =>
+    `<button class="sample-btn" data-s="${i}"><div class="t">${s.label}</div><div class="m">${s.desc}</div></button>`).join('');
+  el.querySelectorAll('.sample-btn').forEach(b => {
+    b.onclick = () => runSample(SAMPLES[Number(b.dataset.s)]);
+  });
+})();
+
+
+// ---------- park conditions (fetched) ----------
+// Advisories are noise unless they touch the route, so they are matched against
+// the waters on the selected route and shown inline on the leg they affect.
+// "checked <date>" always stays visible in the footer.
+const COND_FOOTER = () => {
+  const rows = DATA.conds || [];
+  const stamp = rows.reduce((a, r) => (r.as_of > a ? r.as_of : a), '');
+  return stamp ? `<div class="cond foot"><span>Park advisories checked ${stamp} — verify before you go</span></div>` : '';
+};
+// Water names a condition refers to, matched loosely ("Canoe routes" -> Canoe).
+function condsForRoute(nodeIds) {
+  const rows = (DATA.conds || []).filter(r => r.cat !== 'info' && r.cat !== 'permit');
+  if (!rows.length) return [];
+  const names = nodeIds.map(id => (idx.nodeById.get(id) || {}).name)
+    .filter(Boolean).map(n => n.toLowerCase());
+  const out = [];
+  for (const r of rows) {
+    const note = r.note.toLowerCase();
+    const words = note.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/)
+      .filter(w => w.length > 3);
+    const hit = words.some(w => names.some(n => n.includes(w) || w.includes(n)));
+    if (hit) out.push(r);
+  }
+  return out;
+}
+// tag the leg that runs through a water mentioned by a live advisory
+function legCond(nodeId) {
+  const rows = (DATA.conds || []).filter(r => r.cat !== 'info' && r.cat !== 'permit');
+  if (!rows.length) return '';
+  const node = idx.nodeById.get(nodeId);
+  if (!node || !node.name) return '';
+  const n = node.name.toLowerCase();
+  const hit = rows.find(r => r.note.toLowerCase().includes(n) || n.includes(
+    r.note.toLowerCase().split(/[^a-z0-9]+/).find(w => w.length > 4) || ''));
+  if (!hit) return '';
+  return `<span class="cond-flag ${hit.cat}" title="${hit.note.replace(/"/g, '&quot;')}">${hit.cat === 'low-water' ? 'low water' : hit.cat}</span>`;
+}
+// ---------- directions ----------
+// mini elevation-vs-distance profile for one portage (inline SVG, no deps)
+function profileSVG(pf, lenM) {
+  if (!pf || pf.length < 2) return '';
+  const W = 108, H = 22, pad = 1.5;
+  const lo = Math.min.apply(null, pf), hi = Math.max.apply(null, pf);
+  const span = (hi - lo) || 1;
+  const x = i => (i / (pf.length - 1)) * W;
+  const y = v => H - pad - ((v - lo) / span) * (H - 2 * pad);
+  const pts = pf.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  const area = 'M0,' + H + ' L' + pts.split(' ').map(q => q.replace(',', ',')).join(' L') + ' L' + W + ',' + H + ' Z';
+  const up = hi - pf[0], down = pf[pf.length - 1] - hi;
+  const title = `${hi - lo} m of relief` + (up > 3 ? ` · +${Math.round(up)} m up` : '') +
+                (down < -3 ? ` · ${Math.round(-down)} m down` : '') + ` over ${lenM} m`;
+  return `<svg class="prof" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="elevation profile">
+    <path d="${area}" fill="var(--carry)" opacity=".12"/>
+    <polyline points="${pts}" fill="none" stroke="var(--carry)" stroke-width="1.5"
+      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <title>${title}</title></svg>`;
+}
+const modeLabel = m => ({
+  balanced: 'balanced (carries + lakes)',
+  easiest: 'easiest carries (least climbing)',
+  carries: 'fewest carries', meters: 'least total carrying'
+}[m] || m);
+
+function drawRoute(opt, pointIds) {
+  routeLayer.clearLayers();
+  highlightLakes(opt.res.nodeIds);
+  highlightPortages(opt.res.legs.filter(e => e.k === 'portage').map(e => e.id));
+  const res = opt.res;
+
+  // Every drawn path is remembered so a straight stub is never painted on top of
+  // a real line that already covers the same water. The coverage rule itself
+  // lives in router.js so it can be tested; this is one instance per route.
+  // `pendingStubs` holds connectors until every real line is in, so a stub is
+  // only painted where nothing better exists.
+  const pendingStubs = [];
+  const overlap = Router.overlapTracker();
+  // Draw one line. Returns false when it was dropped as already-covered, so the
+  // caller can skip its distance.
+  function addLine(coords, style) {
+    if (overlap.covered(coords)) return false;
+    overlap.add(coords);
+    const latlngs = coords.map(c => [c[1], c[0]]);   // GeoJSON [lon,lat] -> Leaflet [lat,lng]
+    L.polyline(latlngs, { renderer: routeRenderer, ...style, color: '#ffffff', weight: style.weight + 4, opacity: .9 }).addTo(routeLayer);
+    L.polyline(latlngs, { renderer: routeRenderer, ...style }).addTo(routeLayer);
+    for (const c of coords) pts.push(L.latLng(c[1], c[0]));
+    return true;
+  }
+  // A straight connector is a guess, never the answer: queue it so the flush
+  // can drop it wherever a real line already covers the same water. A two-point
+  // one stands in for water we have no mapped path for, so it is drawn thin and
+  // dashed rather than as a route line.
+  const GUESS = { weight: 4, opacity: .8, dashArray: '4 4' };
+  const straight = (a, b) => { if (a && b) pendingStubs.push([a, b]); };
+  const nameOf = id => {
+    const n = idx.nodeById.get(id);
+    if (n.name) return n.name;
+    // river reaches carry their name on the reach record, not the graph node,
+    // so without this the itinerary said "unnamed water #-1164"
+    if (n.kind === 'reach') {
+      const rc = DATA.reaches[id];
+      if (rc && rc.n) return rc.n;
+    }
+    // a genuinely unnamed body reads better as its kind than as a node id
+    return n.kind && n.kind !== 'reach' ? `unnamed ${n.kind}` : `unnamed waterway #${id}`;
+  };
+  // Add a paddling line and bill its length only if it really got drawn —
+  // otherwise a segment covered by two passes would count twice.
+  function addPaddle(coords, style) {
+    if (!addLine(coords, { color: '#1f78b4', weight: 6, opacity: .95, ...style })) return false;
+    for (let q = 1; q < coords.length; q++) paddleM += hav2(coords[q - 1], coords[q]);
+    return true;
+  }
+  const grouped = [];
+  for (let i = 1; i < res.nodeIds.length; i++) {
+    grouped.push({ from: res.nodeIds[i - 1], to: res.nodeIds[i], e: res.legs[i - 1] });
+  }
+  const anchorIn = [], anchorOut = [];
+  grouped.forEach((g, i) => {
+    if (g.e.g) {
+      anchorOut[i] = g.e.g[0];
+      anchorIn[i + 1] = g.e.g[g.e.g.length - 1];
+    }
+  });
+  const pts = [];
+  let paddleM = 0;
+  const hav2 = (a, b) => { const k = Math.PI / 180;
+    const x = Math.sin((b[1] - a[1]) * k / 2) ** 2 + Math.cos(a[1] * k) * Math.cos(b[1] * k) * Math.sin((b[0] - a[0]) * k / 2) ** 2;
+    return 12742000 * Math.asin(Math.sqrt(x)); };
+  const stops = (pointIds || []).slice(1, -1);
+  // A stop reached on a folded way-split hop still deserves its divider, so this
+  // is callable from the branch that skips the main drawing path.
+  const waypointDivider = nodeId => {
+    const k = stops.indexOf(nodeId);
+    if (k < 0) return;
+    html += `<div class="wp">Reached stop: ${nameOf(nodeId)}</div>`;
+    L.marker([idx.nodeById.get(nodeId).lat, idx.nodeById.get(nodeId).lon], {
+      icon: L.divIcon({ className: 'wp-badge', html: `<span>${k + 1}</span>`, iconSize: [22, 22] })
+    }).addTo(routeLayer);
+  };
+  let carryNo = 0;
+  const obsWarn = e => (e.o && e.o.length) ? `<br><span class="warn">⚠ ${e.o.join(', ')}</span>` : '';
+  let html = '';
+  let i = 0;
+  let gi = 0;
+
+  // Paddling INSIDE a water body has no leg of its own: the graph jumps from the
+  // landing to the take-out, so the distance you actually paddle appeared
+  // nowhere in the itinerary — a route could read "5 carries, 2 short paddles"
+  // while the summary said 76 km of paddling. Compute each traverse once, so
+  // the legs list can show it between the carries and the map can draw the
+  // very same path without paying for it twice.
+  const traverseCache = new Map();
+  const traverseOf = j => {
+    if (traverseCache.has(j)) return traverseCache.get(j);
+    const a1 = anchorIn[j], a2 = anchorOut[j];
+    const node = idx.nodeById.get(res.nodeIds[j]);
+    let out = null;
+    if (a1 && a2 && node) {
+      if (node.kind === 'reach') {
+        const lines = (DATA.reaches[res.nodeIds[j]] || {}).lines;
+        if (lines && lines.length) {
+          const slice = Router.reachSlice(lines, [a1], [a2]);
+          if (slice && slice.length >= 2) {
+            out = { coords: slice, guess: false };
+          } else {
+            const pt = Router.reachPointOn(lines, [a1]);
+            const pt2 = Router.reachPointOn(lines, [a2]);
+            if (pt && pt2 && (pt[0] !== pt2[0] || pt[1] !== pt2[1])) out = { coords: [pt, pt2], guess: true };
+          }
+        }
+      } else {
+        const feat = lakeGeoms[res.nodeIds[j]];
+        let path = feat ? Router.lakePath(a1, a2, feat) : null;
+        if (path) { path = Router.refinePath(path, feat, 40); out = { coords: path, guess: false }; }
+        else if (!(a1[0] === a2[0] && a1[1] === a2[1])) out = { coords: [a1, a2], guess: true };
+      }
+    }
+    if (out) {
+      out.m = 0;
+      for (let q = 1; q < out.coords.length; q++) out.m += hav2(out.coords[q - 1], out.coords[q]);
+    }
+    traverseCache.set(j, out);
+    return out;
+  };
+
+  // Consecutive nodes of the same lake are one crossing to a paddler, so
+  // buffer them and emit a single step per water body.
+  let run = null;
+  const flushRun = () => {
+    if (!run) return;
+    i++;
+    const km = (run.m / 1000).toFixed(run.m < 10000 ? 2 : 1);
+    html += `<div class="leg leg-zoom" data-i="${gi}"><span class="n">${i}</span><div class="b">` +
+            `<span class="r">Paddle ${km} km</span> — ${run.name}` +
+            `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}</div></div>`;
+    run = null;
+  };
+  // a reach inside a consumed same-reach pair is folded into that pair's row
+  const shownTraverses = new Set();
+  const noteTraverse = j => {
+    if (shownTraverses.has(j)) return;
+    if (j < 1 || j >= res.nodeIds.length - 1) return;
+    const t = traverseOf(j);
+    if (!t || t.m < 100) return;
+    const name = nameOf(res.nodeIds[j]);
+    if (run && run.name === name) { run.m += t.m; run.guess = run.guess && t.guess; }
+    else { flushRun(); run = { name: name, m: t.m, guess: t.guess }; }
+  };
+
+  while (gi < grouped.length) {
+    flushRun();
+    const g = grouped[gi], e = g.e;
+    let consumed = 1;          // legs this step covers; a same-reach pair is 2
+    // way-split lakes: m=0 shared-shore hops inside one named water = no step
+    const foldStep = e.k === 'channel' && e.m === 0 && nameOf(g.from) === nameOf(g.to);
+    if (!foldStep) i++;
+    const stepTag = `<span class="n">${i}</span>`;
+    if (e.k === 'portage') {
+      carryNo++;
+      addLine(e.g, { color: '#d95f02', weight: 7, opacity: .95 });
+      // portage geometry is route-oriented: g[0] is the landing on the from-lake
+      const bp = e.g[0];
+      L.marker([bp[1], bp[0]], {
+        icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
+      }).addTo(routeLayer);
+      // uphill-direction arrow at the middle of the carried portage line —
+      // only when it's actually steep (5%+ grade); flat carries get no arrow
+      if (e.el !== null && e.el !== undefined && e.m > 0 && Math.abs(e.el) / e.m >= 0.05 && e.g.length >= 2) {
+        const gp = e.g;
+        const k = Math.floor((gp.length - 1) / 2);
+        const midPt = gp[k];
+        const nxt = gp[Math.min(k + 1, gp.length - 1)];
+        const prv = gp[Math.max(k - 1, 0)];
+        // bearing along the drawn (s→d) direction; el>0 means climbing s→d
+        const bearing = (Math.atan2(nxt[0] - prv[0], nxt[1] - prv[1]) * 180 / Math.PI + 360) % 360;
+        const deg = (bearing + (e.el < 0 ? 180 : 0)).toFixed(0);
+        L.marker([midPt[1], midPt[0]], {
+          icon: L.divIcon({ className: 'portage-arrow', iconSize: [22, 22],
+            html: `<span style="transform: rotate(${deg}deg)">▲</span>` })
+        }).addTo(routeLayer);
+      }
+      const elTxt = (e.el === null || e.el === undefined) ? ''
+        : (Math.abs(e.el) < 3 && Math.abs(e.ed || 0) < 3) ? '<span class="el">≈ flat</span>'
+        : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
+          ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
+      const rate = Router.carryRating(e);
+      const rateTxt = rate
+        ? `<span class="rate ${rate.cls}">${rate.label}${/steep|brutal/.test(rate.cls) && e.m ? ' · ' + Math.round(100 * Router.gradeOf(e)) + '%' : ''}</span>`
+        : '';
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${obsWarn(e)}</div></div>`;
+    } else if (e.k === 'access') {
+      if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
+      const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${dir}${nameOf(e.s >= 1000000000000 ? e.s : e.d)}</span></div></div>`;
+    } else {
+      // The straight stub is the FALLBACK, not the default: drawing it up front
+      // and then laying the reach slice or the curved lake path over it left
+      // both visible, which is what produced the superfluous straight chords
+      // across lakes that already had a proper line. Queued, not drawn: a stub
+      // is only worth showing where no real path was found.
+      const stub = () => { if (e.g && e.g.length >= 2) pendingStubs.push(e.g); };
+      if (foldStep) {
+        stub();
+      } else {
+        const reachId = e.d < 0 ? e.d : e.s;
+        const nxt = grouped[gi + 1];   // group index — `i` is the display step counter
+        const nextIsSameReach = nxt && nxt.e.k === 'river' && nxt.e.g && nxt.e.g.length >= 2 &&
+          ((nxt.e.s === reachId || nxt.e.d === reachId));
+        let handled = false;
+        if (e.k === 'river' && nextIsSameReach && DATA.reaches[reachId]) {
+          const reach = DATA.reaches[reachId];
+          // (no stub here: the slice below replaces it)
+          const fromLake = nameOf(g.from), toLake = nameOf(nxt.to);
+          const slice = Router.reachSlice(reach.lines, e.g, nxt.e.g);
+          const mt = traverseOf(gi + 1);
+          if (slice && slice.length >= 2) {
+            addPaddle(slice);
+            // The reach between the two legs is where the real distance lives;
+            if (mt && mt.m >= 100) {
+              shownTraverses.add(gi + 1);
+              html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle ${(mt.m / 1000).toFixed(2)} km</span> — ${fromLake} → ${toLake}${legCond(nxt.to)}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span>${obsWarn(e)}</div></div>`;
+            } else {
+              html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}${legCond(nxt.to)}<br><span style="color:#667">via ${e.n || 'unnamed waterway'}</span>${obsWarn(e)}</div></div>`;
+            }
+            consumed = 2;
+            handled = true;
+          } else {
+            // no mapped centreline between the two touch points (narrow/unmapped
+            // creek): draw the straight creek axis dashed so it is still visible
+            const pa = Router.reachPointOn(reach.lines, e.g);
+            const pb = Router.reachPointOn(reach.lines, nxt.e.g);
+            if (pa && pb && (pa[0] !== pb[0] || pa[1] !== pb[1])) {
+              addPaddle([pa, pb], GUESS);
+              html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">Paddle</span> — ${fromLake} → ${toLake}<br><span style="color:#667">via ${e.n || 'unnamed waterway'} <em>(approximate)</em></span>${obsWarn(e)}</div></div>`;
+              consumed = 2;
+              handled = true;
+            }
+          }
+        }
+        // A river link's job is to attach a lake to its waterway; the paddling
+        // itself is the reach traverse, already itemised. These legs are just
+        // touch-point spurs of a metre or two, so their rows were pure noise
+        // between the carries.
+        const bareRiverLink = e.k === 'river' && e.m < 50;
+        if (!handled && !bareRiverLink) {
+          const label = e.k === 'channel' ? 'Paddle across the narrows' : 'Paddle';
+          const gf = lakeGeoms[g.from], gt = lakeGeoms[g.to];
+          let cpath = null;
+          if (e.k === 'channel' && e.g && gf && gt) {
+            const union = { type: 'MultiPolygon',
+              coordinates: [...gf.coordinates, ...gt.coordinates] };
+            cpath = Router.lakePath(e.g[0], e.g[1], union);
+            if (cpath) cpath = Router.refinePath(cpath, union, 40);
+          }
+          if (cpath) {
+            addPaddle(cpath);
+            html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${legCond(g.to)}<br><span style="color:#667">${e.n || ''}</span></div></div>`;
+          } else {
+            stub();
+            html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="r">${label}</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${e.n ? '<br><span style="color:#667">via ' + e.n + '</span>' : ''}</div></div>`;
+          }
+        }
+      }
+    }
+    // The divider belongs to the end of the step, which is not always g.to — a
+    // same-reach pair ends two legs along. Emitted from one place on purpose:
+    // when the drawing branches did their own `continue`, a stop the route had
+    // genuinely reached lost its divider and its map badge.
+    waypointDivider(grouped[gi + consumed - 1].to);
+    // A same-reach pair skips a reach node on its way through, and that node is
+    // where the river's actual paddling distance lives — itemise it too.
+    if (consumed === 2) noteTraverse(gi + 1);
+    noteTraverse(gi + consumed);        // the paddling inside the body just reached
+    gi += consumed;
+  }
+  flushRun();
+
+  // Draw the traverses computed above. Same path, same distance as the legs
+  // list — the itinerary and the map can no longer disagree. Order still
+  // matters: real lines are laid down here, straight connectors last, so the
+  // dedupe always sees the good line first.
+  for (let j = 1; j < res.nodeIds.length - 1; j++) {
+    const t = traverseOf(j);
+    if (!t) continue;
+    if (t.guess) {
+      if (t.coords.length === 2) straight(t.coords[0], t.coords[1]);
+      else pendingStubs.push(t.coords);
+    } else {
+      addPaddle(t.coords);
+    }
+  }
+  // straight connectors last: addPaddle drops any already covered by a real
+  // line. A bare two-point one stands in for water with no mapped path, so it
+  // is drawn thin and dashed rather than as a solid route line.
+  for (const st of pendingStubs) {
+    addPaddle(st, st.length === 2 ? GUESS : null);
+  }
+  legsEl.innerHTML = html;
+  const condsEl = document.getElementById('conds');
+  if (condsEl) condsEl.innerHTML = COND_FOOTER();
+  const fitPad = p => {
+    const sh = window.innerWidth <= 768 ? sideEl.getBoundingClientRect().height : 0;
+    return [p, p, p + sh + 10, p];
+  };
+  if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: fitPad(40) });
+  legsEl.querySelectorAll('.leg-zoom').forEach(el => {
+    el.onclick = () => {
+      const i = Number(el.dataset.i);
+      const g = grouped[i];
+      if (g && g.e.g) map.fitBounds(L.latLngBounds(g.e.g.map(c => L.latLng(c[1], c[0]))), { padding: fitPad(80) });
+    };
+  });
+  const s0 = idx.nodeById.get(res.nodeIds[0]);
+  const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
+  L.circleMarker([s0.lat, s0.lon], { renderer: routeRenderer, radius: 8, color: '#00441b', fillColor: '#238b45', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
+  L.circleMarker([s1.lat, s1.lon], { renderer: routeRenderer, radius: 8, color: '#7f0000', fillColor: '#cb181d', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
+  return paddleM;          // metres actually drawn, after the dedupe
+}
+
+let currentOptions = [];
+let selectedOption = 0;
+const summaryEl = document.getElementById('summary');
+const warnbox = document.getElementById('warnbox');
+const legsEl = document.getElementById('legs');
+const optionsEl = document.getElementById('options');
+let currentPoints = [];
+
+function renderOptionsPanel() {
+  if (!currentOptions.length) { optionsEl.innerHTML = ''; return; }
+  let cards = '';
+  const nameOf = id => { const n = idx.nodeById.get(id); return n.name || null; };
+  currentOptions.forEach((o, i) => {
+    const via = o.res.nodeIds.map(nameOf).filter(nm => nm).slice(1, 4).join(' → ');
+    cards += `<div class="optcard ${i === selectedOption ? 'sel' : ''}" data-i="${i}">
+      <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m</div>
+      <div class="m">${modeLabel(o.mode)} · ${o.res.edges} steps · ${o.res.lakes} lakes · via ${via}${o.res.nodeIds.length > 5 ? '…' : ''}</div></div>`;
+  });
+  optionsEl.innerHTML = cards;
+  optionsEl.querySelectorAll('.optcard').forEach(c => {
+    c.onclick = () => {
+      selectedOption = Number(c.dataset.i);
+      renderOptionsPanel();
+      const o = currentOptions[selectedOption];
+      const paddleM = drawRoute(o, currentPoints);
+      const sumTxt = `${o.res.carries} carries · ${(paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
+      const climbTot = Math.round(o.res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
+    summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${climbTot} m climb · ${o.res.lakes} lakes · ≈ ${(paddleM / 1000).toFixed(1)} km paddling`;
+      showRoute(sumTxt);
+    };
+  });
+}
+
+document.getElementById('go').onclick = () => {
+  const goBtn = document.getElementById('go');
+  try {
+    goBtn.textContent = 'Routing…';
+    const pointIds = rows.map(r => (r.input.dataset.id ? Number(r.input.dataset.id) : null));
+    if (pointIds.some(x => !x)) {
+      summaryEl.textContent = 'Pick a start and destination — type a name or click a lake on the map.';
+      legsEl.innerHTML = ''; optionsEl.innerHTML = '';
+      routeLayer.clearLayers();
+      return;
+    }
+    const avoid = document.getElementById('avoid').checked;
+    const mode = document.getElementById('mode').value;
+    const options = Router.chainRoutes(DATA, idx, pointIds, mode, avoid, 3);
+    if (!options.length) {
+      summaryEl.textContent = 'No route found between those points.';
+      warnbox.style.display = 'block';
+      warnbox.innerHTML = `<b>Couldn't connect these waters.</b><br>
+        Usually this means a portage or creek between them isn't mapped in OpenStreetMap yet,
+        or "avoid flagged obstacles" removed the only link.<br>
+        Try: access points or bigger lakes instead of small ponds, turn obstacle avoidance off,
+        or add a stop along the way.`;
+      legsEl.innerHTML = ''; optionsEl.innerHTML = '';
+      routeLayer.clearLayers();
+      return;
+    }
+    warnbox.style.display = 'none';
+    currentOptions = options;
+    currentPoints = pointIds;
+    selectedOption = 0;
+    const samplesEl = document.getElementById('samples');
+    if (samplesEl) samplesEl.style.display = 'none';   // onboarding done
+    history.replaceState(null, '', '#r=' + pointIds.map(id => {
+      const n = idx.nodeById.get(id);
+      return encodeURIComponent((n && n.name) || String(id));
+    }).join('~') + '&m=' + mode + (avoid ? '&a=1' : ''));
+    track('plan_route', {
+      mode: mode,
+      carries: options[0].res.carries,
+      lakes: options[0].res.lakes,
+      portage_m: options[0].res.portageM,
+      steps: options[0].res.edges,
+      waypoints: pointIds.length
+    });
+    renderOptionsPanel();
+    const paddleM = drawRoute(options[0], pointIds);
+    const climb0 = Math.round(options[0].res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${climb0} m</b> climb · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(paddleM / 1000).toFixed(1)}</b> km paddling`;
+    showRoute(`${options[0].res.carries} carries · ${(paddleM / 1000).toFixed(1)} km paddling`);
+  } catch (err) {
+    warnbox.style.display = 'block';
+    warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
+    console.error(err);
+  } finally {
+    goBtn.textContent = 'Directions';
+  }
+};
+
+// initial view around Canoe Lake
+map.setView(DATA.center, 12);
+
+// restore a shared route from the URL hash (after all handlers are wired)
+if (!applyHashRoute()) {
+  const samplesEl = document.getElementById('samples');
+  if (samplesEl) samplesEl.style.display = '';
+}
+
+// debug handle (console access to the closure)
+window.__app = { map, lakes, lakeGeoms, idx, routeLayer, currentOptions: () => currentOptions };
+})
+  .catch(err => {
+    console.error(err);
+    const el = document.getElementById('stats');
+    if (el) el.textContent = 'failed to load map data — refresh';
+  });
+</script>
+<script>
+// planning-tool notice (independent of map data): show unless opted out permanently
+(function () {
+  const veil = document.getElementById('noticeVeil');
+  const KEY = 'algonquin_notice_hidden';
+  let hidden = false;
+  try { hidden = localStorage.getItem(KEY) === '1'; } catch (e) { /* private mode */ }
+  if (!hidden) {
+    veil.classList.add('show');
+    track('notice_shown');
+  }
+  document.getElementById('noticeOk').onclick = () => {
+    veil.classList.remove('show');
+    track('notice_dismissed', { permanent: false });
+  };
+  document.getElementById('noticeNever').onclick = () => {
+    veil.classList.remove('show');
+    try { localStorage.setItem(KEY, '1'); } catch (e) {}
+    track('notice_dismissed', { permanent: true });
+  };
+})();
+
+// credits popup
+(function () {
+  const veil = document.getElementById('creditsVeil');
+  document.getElementById('creditsLink').onclick = e => {
+    e.preventDefault();
+    veil.classList.add('show');
+    track('credits_open');
+  };
+  document.getElementById('creditsClose').onclick = () => veil.classList.remove('show');
+  veil.addEventListener('click', e => { if (e.target === veil) veil.classList.remove('show'); });
+})();
+</script>
+</body>
+</html>

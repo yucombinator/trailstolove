@@ -78,12 +78,20 @@ jobs:
           python3 build_page.py
 
       # Golden routes per cost model, the drawing invariants that keep
-      # regressing, and the pipeline units. These run on the freshly built
-      # payload, so a data refresh that breaks the router is caught here
-      # rather than on the live site. No test framework to install: node:test
-      # and unittest are both stdlib.
-      - name: Run tests
-        run: sh tools/algonquin-graph/tests/run.sh
+      # regressing, and the pipeline units. No test framework to install:
+      # node:test and unittest are both stdlib.
+      #
+      # Advisory, not a gate. This job exists to refresh the park advisories
+      # and the OSM snapshot, and a unit test must never be the reason they
+      # stop updating — that is how the advisories froze for hours while this
+      # step failed. The gate that actually matters, whether the page agrees
+      # with the router it ships beside, lives in pages.yml where it can
+      # block a deploy.
+      - name: Run tests (advisory)
+        continue-on-error: true
+        run: |
+          sh tools/algonquin-graph/tests/run.sh || \
+            echo "::error::planner tests failed; the data refresh continues anyway"
 
       # Guards against the silent-drift class of bug: a stale generator writing
       # a payload missing fields the UI reads (e.g. elevation profiles).

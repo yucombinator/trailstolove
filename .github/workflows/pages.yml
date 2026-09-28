@@ -49,6 +49,14 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v2
+      # The page and the router beside it are produced by different steps, so a
+      # partial update ships a page that renders and then dies on the first
+      # route with "Router.x is not a function" — exactly how overlapTracker
+      # broke drawing in production. Needs no raw/, so it can gate a deploy.
+      - name: Verify the app bundle agrees with itself
+        env:
+          ALGONQUIN_BUNDLE: ${{ github.workspace }}/content/algonquin
+        run: python3 -m unittest discover -s tools/algonquin-graph/tests -p "test_api*.py" -v
       - name: Build with Hugo
         env:
           # For maximum backward compatibility with Hugo modules
