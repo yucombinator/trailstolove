@@ -21,9 +21,16 @@ on:
     # 07:50 and 19:50 UTC — offset from the advisories run at 06:20/18:20
     - cron: "50 7,19 * * *"
   workflow_dispatch:
+  # A change to the pipeline is a change to what this job runs, so it has to
+  # trigger a run. Watching only the workflow file meant the fetch_osm.py
+  # changes that make the refresh survivable sat untested until the next
+  # schedule — which on this repo has been arriving hours late.
   push:
     paths:
       - .github/workflows/refresh-graph.yml
+      - tools/algonquin-graph/fetch_osm.py
+      - tools/algonquin-graph/parse_osm.py
+      - tools/algonquin-graph/build_page.py
 
 permissions:
   contents: write
