@@ -22,7 +22,12 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.9.1/dist/MarkerCluster.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.9.1/dist/MarkerCluster.Default.css">
-<link rel="stylesheet" href="/css/places.css">
+{{/* Fingerprinted, like the theme's style.css in the base template. As a
+     static file this URL never changed, so a returning visitor kept the old
+     map size for as long as max-age allowed — four hours — after a deploy
+     that had already shipped the new one. */}}
+{{- $placesCSS := resources.Get "css/places.css" | minify | fingerprint -}}
+<link rel="stylesheet" href="{{ $placesCSS.RelPermalink }}" integrity="{{ $placesCSS.Data.Integrity }}">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
