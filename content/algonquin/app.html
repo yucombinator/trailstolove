@@ -152,6 +152,7 @@
   .tools button:hover, .opts select:hover { background: var(--accent-soft); border-color: var(--accent); }
   .opts { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
   .opts select { flex: 1; min-width: 0; }
+  .opts .avoid { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; color: var(--ink-muted); white-space: nowrap; }
   .go {
     display: block; width: 100%; margin-top: 10px;
     padding: 10px; font: 800 13px/1 -apple-system, "Segoe UI", sans-serif;
@@ -175,6 +176,11 @@
     background: #eaf5ee; border: 1px solid #cbe3d3; color: #14532d; font-size: 11.5px;
   }
   .optcard .m { color: var(--ink-muted); font-size: 11px; }
+  .lake-pop .lp-note {
+    margin: 9px 0 0; padding: 5px 8px; border-radius: 5px;
+    background: #f4f1e8; color: var(--ink-muted); font-size: 11px; line-height: 1.45;
+  }
+  .lake-pop .lp-note.warn { background: #fdf3d8; color: #8a6512; }
   #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
   #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
   /* An empty #legs still painted its border-top and 12px of margin, so
@@ -313,6 +319,7 @@
     .field input { min-height: 40px; font-size: 16px; }   /* 16px: no iOS focus-zoom */
     .tools button, .opts select, .go { min-height: 40px; font-size: 14px; }
     .opts { flex-direction: column; align-items: stretch; gap: 6px; }
+    .opts .avoid { padding: 4px 0; }
     .go { position: sticky; bottom: 0; }
     .legend { bottom: calc(var(--sheet-h, 0px) + 10px); right: 8px; font-size: 9px; padding: 6px 8px; }
     .legend-body > div { display: inline; margin-right: 8px; }
@@ -437,6 +444,7 @@
         <option value="carries">fewest portages</option>
         <option value="meters">least total portaging — shortest walks</option>
       </select>
+      <label class="avoid"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
     </div>
     <button class="go" id="go">Directions</button>
   </section>
@@ -733,7 +741,11 @@ const portages = L.geoJSON({ type: 'FeatureCollection', features:
     portageLayers[p.oid] = l;
     const warn = p.o && p.o.length ? ` ⚠ ${p.o.join(', ')}` : '';
     l.bindTooltip(`P ${p.m} m${warn}`, { sticky: true });
-    l.bindPopup(`<b>Portage — ${p.m} m</b>${p.n ? '<br>' + p.n : ''}${warn ? '<br>⚠ obstacles nearby: ' + p.o.join(', ') : ''}`);
+    l.bindPopup(`<div class="lake-pop">
+      <h3>Portage &mdash; ${p.m} m</h3>
+      ${p.n ? `<div class="lp-kind">${esc(p.n)}</div>` : ''}
+      ${warn ? `<div class="lp-note warn">\u26a0 ${p.o.join(', ')} nearby</div>` : ''}
+    </div>`);
   }
 }).addTo(map);
 let highlightedPortages = [];
@@ -755,9 +767,16 @@ for (const ap of DATA.official) {
     icon: L.divIcon({ className: 'ap-badge', html: `<span>${ap.num}</span>`, iconSize: [26, 20] })
   })
     .bindTooltip(`Access Point #${ap.num}: ${ap.name.replace(/^Access Point #\d+: /, '')}`, { direction: 'top' })
-    .bindPopup(`<b>Access Point #${ap.num}</b><br>${ap.name.replace(/^Access Point #\d+: /, '')}${ap.approx ? '<br><span style="color:#889">launch position approximate — see official map</span>' : ''}
-      <br><button data-act="0" data-id="${ap.id}" data-name="${ap.name}">Set as start</button>
-      <button data-act="end" data-id="${ap.id}" data-name="${ap.name}">Set as destination</button>`)
+    .bindPopup(`<div class="lake-pop">
+      <h3>${esc(ap.name.replace(/^Access Point #\d+: /, ''))}</h3>
+      <div class="lp-kind">Access Point #${ap.num}</div>
+      ${ap.approx ? '<div class="lp-note">Launch position approximate — check the official map</div>' : ''}
+      <div class="lp-acts">
+        <button class="lp-btn primary" data-act="0" data-id="${ap.id}" data-name="${esc(ap.name)}">Set as start</button>
+        <button class="lp-btn" data-act="end" data-id="${ap.id}" data-name="${esc(ap.name)}">Set as destination</button>
+      </div>
+      <div class="lp-state" hidden></div>
+    </div>`)
     .addTo(aps);
 }
 
@@ -963,12 +982,16 @@ setTimeout(syncSheetVar, 300);
 document.getElementById('addStop').onclick = addStop;
 document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
 map.on('baselayerchange', e => track('basemap_change', { basemap: e.name }));
-// Avoiding flagged water is on and not a choice. It changes the answer for
-// 83% of routes, and the alternative is a default route that can run a dam, a
-// rapid or a waterfall — a hazard the map shows only as a ⚠ on a leg most
-// people skim past. It is a real cost: a clean line is often twice the
-// portages, so the callout under the summary says when a route is clean.
-const AVOID_OBSTACLES = true;
+// Off by default. It changes the answer for 83% of routes, and it is rarely
+// free: a clean line is often twice the portages. So it is offered, not
+// imposed — but it re-plans on change, because a tick that leaves the route
+// on screen computed with the old setting reads as a dead control.
+document.getElementById('avoid').addEventListener('change', e => {
+  track('avoid_toggle', { enabled: e.target.checked });
+  if (rows.length >= 2 && rows.every(r => r.input.dataset.id)) {
+    document.getElementById('go').click();
+  }
+});
 document.getElementById('swap').onclick = () => {
   const vals = rows.map(r => ({ v: r.input.value, id: r.input.dataset.id })).reverse();
   rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; if (r.syncClear) r.syncClear(); });
@@ -1043,6 +1066,8 @@ function applyHashRoute() {
   const names = h.get('r').split('~').map(decodeURIComponent);
   const ids = names.map(nm => (idx.search.find(s => s.name === nm) || {}).id);
   if (!names.length || ids.some(x => !x)) return false;
+  if (h.get('m')) document.getElementById('mode').value = h.get('m');
+  if (h.get('a')) document.getElementById('avoid').checked = true;
   while (rows.length > names.length) { const rm = rows[rows.length - 2]; const k = rows.indexOf(rm); if (k > 0 && rows[k].wrapper.querySelector('.rm')) { rows.splice(k, 1); rm.wrapper.remove(); } else break; }
   while (rows.length < names.length) addStop();
   rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2];
@@ -1237,7 +1262,8 @@ function drawRoute(opt, pointIds) {
   // "no ⚠ on any leg" means the water is fine or the data is thin — and with
   // avoidance on it is the only signal that the toggle did anything.
   if (!res.legs.some(e => e.o && e.o.length)) {
-    html += '<div class="route-clear">No dams, rapids or waterfalls flagged on this route.</div>';
+    html += `<div class="route-clear">No dams, rapids or waterfalls flagged on this route${
+      document.getElementById('avoid').checked ? ' — avoidance is on' : ''}.</div>`;
   }
   let i = 0;
   let gi = 0;
@@ -1587,7 +1613,7 @@ document.getElementById('go').onclick = () => {
       routeLayer.clearLayers();
       return;
     }
-    const avoid = AVOID_OBSTACLES;
+    const avoid = document.getElementById('avoid').checked;
     const mode = document.getElementById('mode').value;
     const options = Router.chainRoutes(DATA, idx, pointIds, mode, avoid, 3);
     if (!options.length) {
@@ -1595,8 +1621,9 @@ document.getElementById('go').onclick = () => {
       warnbox.style.display = 'block';
       warnbox.innerHTML = `<b>Couldn't connect these waters.</b><br>
         Usually this means a portage or creek between them isn't mapped in OpenStreetMap yet,
-        or avoiding flagged water removed the only link.<br>
-        Try: access points or bigger lakes instead of small ponds, or add a stop along the way.`;
+        or "avoid flagged obstacles" removed the only link.<br>
+        Try: access points or bigger lakes instead of small ponds, turn obstacle avoidance off,
+        or add a stop along the way.`;
       legsEl.innerHTML = ''; optionsEl.innerHTML = '';
       routeLayer.clearLayers();
       return;
@@ -1610,7 +1637,7 @@ document.getElementById('go').onclick = () => {
     history.replaceState(null, '', '#r=' + pointIds.map(id => {
       const n = idx.nodeById.get(id);
       return encodeURIComponent((n && n.name) || String(id));
-    }).join('~') + '&m=' + mode);
+    }).join('~') + '&m=' + mode + (avoid ? '&a=1' : ''));
     track('plan_route', {
       mode: mode,
       carries: options[0].res.carries,
