@@ -331,7 +331,13 @@
   .notice .ghost { background: 0 0; color: var(--ink-muted); border: 1px solid var(--line); }
   .notice .ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
   .notice a { color: var(--accent-strong); }
-  .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 80vh; overflow: auto; }
+  /* The dialog grew with the About copy, so a scrolling Close button at the
+     bottom is a dead end on a short window. Body scrolls, footer does not. */
+  .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 84vh;
+                    display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .notice.credits .credits-body { overflow-y: auto; min-height: 0; padding: 22px 24px 4px; }
+  .notice.credits .row { flex: 0 0 auto; margin: 0; padding: 12px 24px 14px;
+                         border-top: 1px solid var(--line); background: var(--surface); }
   .notice.credits dt { margin-top: 11px; color: var(--ink); font-weight: 700; font-size: 12.5px; }
   .notice.credits dt:first-of-type { margin-top: 2px; }
   /* The "Data sources" heading needs to read as introducing the list, not as
@@ -465,6 +471,7 @@
 </div>
 <div class="notice-veil" id="creditsVeil">
   <div class="notice credits" role="dialog" aria-modal="true" aria-labelledby="creditsTitle">
+    <div class="credits-body">
     <p class="eyebrow">About this planner</p>
     <h2 id="creditsTitle">About &amp; credits</h2>
     <!-- The prose a search engine actually reads. It lives in this dialog
@@ -507,6 +514,7 @@
       <dt>Map library</dt>
       <dd>Leaflet, BSD-2-Clause.</dd>
     </dl>
+    </div>
     <div class="row"><button class="primary" id="creditsClose">Close</button></div>
   </div>
 </div>
