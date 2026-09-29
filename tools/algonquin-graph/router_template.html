@@ -163,6 +163,10 @@
   .optcard .m { color: var(--ink-muted); font-size: 11px; }
   #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
   #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
+  /* An empty #legs still painted its border-top and 12px of margin, so
+     before a route was drawn it left a stray rule and two empty lines under
+     the sample routes. Collapse the containers until they have content. */
+  #options:empty, #summary:empty, #legs:empty { display: none; }
   .wp { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
     border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
   .leg { padding: 8px 4px; border-bottom: 1px solid #eef0ea; display: flex; gap: 8px; }
@@ -335,6 +339,8 @@
      which left the first <dt> pressed against it. */
   .notice.credits .about-eyebrow { margin: 18px 0 7px; padding-top: 14px; border-top: 1px solid var(--line); }
   .notice.credits .about-eyebrow + dl dt:first-of-type { margin-top: 0; }
+  .notice.credits .about-by { margin: 0 0 10px; color: var(--ink); font-weight: 600; }
+  .notice.credits .about-by a { color: var(--accent-strong); font-weight: 500; }
   .notice.credits dd { margin: 3px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
   .notice.credits dd a { color: var(--accent-strong); }
   /* lake popup: a card, not a <br>-separated list of unstyled buttons */
@@ -478,6 +484,8 @@
     <p>Built from OpenStreetMap &mdash; over 7,000 water bodies, more than 600
        portages and 3,200 river reaches, plus all 29 official access points
        &mdash; and refreshed as the map changes.</p>
+    <p class="about-by">Created by Yu Chen Hou. Open source at
+      <a href="https://github.com/yucombinator/trailstolove" target="_blank" rel="noopener">github.com/yucombinator/trailstolove</a>.</p>
     <p class="about-caveat">Not a substitute for the official park map. Check
        current conditions with Algonquin Provincial Park before you go.</p>
     <p class="eyebrow about-eyebrow">Data sources</p>
