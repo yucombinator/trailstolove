@@ -265,14 +265,14 @@
   .sample-btn:hover { border-color: var(--accent); background: #f6f9f3; }
   .sample-btn .t { font-weight: 700; color: var(--ink); font-size: 12.5px; }
   .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
-  /* the crawlable prose block */
-  .side-section.about h2 { margin: 0 0 6px; font: 500 14px/1.25 Georgia, "Times New Roman", serif; color: var(--ink); }
-  .side-section.about p { margin: 0 0 8px; color: var(--ink-muted); font-size: 12px; line-height: 1.55; }
-  .about-modes { margin: 0 0 8px; padding-left: 16px; color: var(--ink-muted); font-size: 12px; line-height: 1.55; }
-  .about-modes li { margin-bottom: 2px; }
-  .about-modes b { color: var(--ink); }
-  .side-section.about .about-caveat { margin: 0; padding-top: 8px; border-top: 1px solid var(--line); font-size: 11.5px; }
-  a.sample-btn { text-decoration: none; color: inherit; display: block; }
+  /* the About copy, which lives in the credits dialog */
+  .notice.credits .about-modes { margin: 0 0 10px; padding-left: 17px; color: var(--ink-muted); font-size: 12.5px; line-height: 1.55; }
+  .notice.credits .about-modes li { margin-bottom: 2px; }
+  .notice.credits .about-modes b { color: var(--ink); }
+  .notice.credits .about-caveat { margin: 0; padding-top: 9px; border-top: 1px solid var(--line); font-size: 12px; }
+  /* Anchors are content-box; buttons were border-box. With width:100% and
+     9px 11px of padding, that pushed every sample box 24px past the panel. */
+  a.sample-btn { text-decoration: none; color: inherit; display: block; box-sizing: border-box; }
   .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
   .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
@@ -428,32 +428,10 @@
     <div class="warnbox" id="warnbox"></div>
     <div id="legs"></div>
   </section>
-  <!-- The prose a search engine actually reads. Everything else on this page
-       is a control or a 12.5 MB JSON payload fetched at runtime. -->
-  <section class="side-section about">
-    <p class="eyebrow">About this planner</p>
-    <h2>Point-to-point canoe routes across Algonquin</h2>
-    <p>Pick any named lake, portage landing or official access point in Algonquin
-       Provincial Park and get a paddling route with every portage listed in order:
-       how long it is, how far it climbs, and an elevation profile for the trail.</p>
-    <p>Built from OpenStreetMap &mdash; over 7,000 water bodies, more than 600
-       portages and 3,200 river reaches, plus all 29 official access points &mdash;
-       and refreshed as the map changes.</p>
-    <p>Four ways to weight the answer:</p>
-    <ul class="about-modes">
-      <li><b>Balanced</b> &mdash; portages and the lakes you have to cross</li>
-      <li><b>Easiest portages</b> &mdash; steers around the steep ones</li>
-      <li><b>Fewest portages</b> &mdash; the shortest portage chain, whatever it costs</li>
-      <li><b>Least total portaging</b> &mdash; the shortest walks on the portages</li>
-    </ul>
-    <p class="about-caveat">Not a substitute for the official park map. Check
-       current conditions with Algonquin Provincial Park before you go.</p>
-  </section>
   <footer class="side-footer">
     <div id="conds" class="conds"></div>
     <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
-    <span class="meta"><a href="#" id="creditsLink">data sources &amp; credits</a> ·
-      <a href="mailto:me@yuchenhou.com?subject=Algonquin%20Planner%20feedback">feedback or a problem?</a><br>
+    <span class="meta"><a href="#" id="creditsLink">about &amp; credits</a> ·
       Built <b id="bts">?</b></span>
   </footer>
 </div>
@@ -475,8 +453,28 @@
 </div>
 <div class="notice-veil" id="creditsVeil">
   <div class="notice credits" role="dialog" aria-modal="true" aria-labelledby="creditsTitle">
-    <p class="eyebrow">Credits</p>
-    <h2 id="creditsTitle">Data sources</h2>
+    <p class="eyebrow">About this planner</p>
+    <h2 id="creditsTitle">About &amp; credits</h2>
+    <!-- The prose a search engine actually reads. It lives in this dialog
+         rather than in the side panel on purpose: the panel is a workspace
+         and this is reference material nobody needs mid-route. Static markup
+         is indexed whether or not it is visible, so the click costs nothing. -->
+    <p>Pick any named lake, portage landing or official access point in
+       Algonquin Provincial Park and get a paddling route with every portage
+       listed in order: how long it is, how far it climbs, and an elevation
+       profile for the trail. Four ways to weight the answer:</p>
+    <ul class="about-modes">
+      <li><b>Balanced</b> &mdash; portages and the lakes you have to cross</li>
+      <li><b>Easiest portages</b> &mdash; steers around the steep ones</li>
+      <li><b>Fewest portages</b> &mdash; the shortest portage chain, whatever it costs</li>
+      <li><b>Least total portaging</b> &mdash; the shortest walks on the portages</li>
+    </ul>
+    <p>Built from OpenStreetMap &mdash; over 7,000 water bodies, more than 600
+       portages and 3,200 river reaches, plus all 29 official access points
+       &mdash; and refreshed as the map changes.</p>
+    <p class="about-caveat">Not a substitute for the official park map. Check
+       current conditions with Algonquin Provincial Park before you go.</p>
+    <p class="eyebrow about-eyebrow">Data sources</p>
     <dl>
       <dt>OpenStreetMap</dt>
       <dd>The route graph: lakes, rivers, portage trails, access points and Hwy 60.
@@ -934,6 +932,9 @@ map.on('popupopen', ev => {
     b.onclick = () => {
       if (b.dataset.act === 'add') addAfterDestination(Number(b.dataset.id));
       else setField(b.dataset.act, Number(b.dataset.id));
+      // Close it. The fields are set off-screen behind the panel, so leaving
+      // the popup open reads as a click that did nothing.
+      map.closePopup();
     };
   });
   // Say what this lake already is in the current plan. Computed on open, not
