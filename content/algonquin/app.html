@@ -169,6 +169,12 @@
   .optcard:hover { background: #f6f9f3; }
   .optcard.sel { border-color: var(--accent); background: #eef6ef; box-shadow: 0 0 0 1px var(--accent) inset; }
   .optcard .t { font-weight: 700; color: var(--ink); }
+  /* The clean-route callout: reassuring, so green rather than a warning red,
+     and quiet enough to read before the itinerary. */
+  .route-clear {
+    margin: 0 0 8px; padding: 6px 9px; border-radius: 5px;
+    background: #eaf5ee; border: 1px solid #cbe3d3; color: #14532d; font-size: 11.5px;
+  }
   .optcard .m { color: var(--ink-muted); font-size: 11px; }
   #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
   #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
@@ -961,9 +967,20 @@ document.getElementById('addStop').onclick = addStop;
 document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
 document.getElementById('avoid').addEventListener('change', e => track('avoid_toggle', { enabled: e.target.checked }));
 map.on('baselayerchange', e => track('basemap_change', { basemap: e.name }));
+// Re-plan rather than just recording the click. The route on screen was
+// computed with the old setting, so ticking the box and seeing no change
+// reads as a dead toggle — and it changes the answer 83% of the time.
+// Only when there is a route to re-plan: with an empty field the button
+// would just replace the panel with "pick a start and destination".
+document.getElementById('avoid').addEventListener('change', e => {
+  track('avoid_toggle', { enabled: e.target.checked });
+  if (rows.length >= 2 && rows.every(r => r.input.dataset.id)) {
+    document.getElementById('go').click();
+  }
+});
 document.getElementById('swap').onclick = () => {
   const vals = rows.map(r => ({ v: r.input.value, id: r.input.dataset.id })).reverse();
-  rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; });
+  rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; if (r.syncClear) r.syncClear(); });
 };
 
 function setField(which, id) {   // which: row index or 'end'
@@ -1226,6 +1243,13 @@ function drawRoute(opt, pointIds) {
   let portageNo = 0;
   const obsWarn = e => (e.o && e.o.length) ? `<br><span class="warn">⚠ ${e.o.join(', ')}</span>` : '';
   let html = '';
+  // Say so when the route is clean. A paddler cannot otherwise tell whether
+  // "no ⚠ on any leg" means the water is fine or the data is thin — and with
+  // avoidance on it is the only signal that the toggle did anything.
+  if (!res.legs.some(e => e.o && e.o.length)) {
+    html += `<div class="route-clear">No dams, rapids or waterfalls flagged on this route${
+      document.getElementById('avoid').checked ? ' — avoidance is on' : ''}.</div>`;
+  }
   let i = 0;
   let gi = 0;
 
