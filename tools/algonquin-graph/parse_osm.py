@@ -615,10 +615,22 @@ def main():
             "slug": p.stem,
             "url": f"https://www.algonquinpark.on.ca/visit/camping/{p.stem}-access-point.php",
         })
-    with open(DATA / "access_official.csv", "w", newline="") as f:
-        wr = csv.DictWriter(f, ["num", "name", "slug", "url"])
-        wr.writeheader()
-        wr.writerows(off_rows)
+    # Nothing in the pipeline ever fetches raw/ap_pages/ — it is not in git and
+    # no step scrapes those 29 pages — so on a clean runner off_rows is empty
+    # and this used to overwrite a perfectly good table with a bare header.
+    # The first refresh that succeeded silently deleted every official access
+    # point: no numbered pins on the map, and no way to start or end a route
+    # at one. Same rule as conditions.csv below — a file this script cannot
+    # populate is not one it is allowed to empty.
+    csv_path = DATA / "access_official.csv"
+    if off_rows or not csv_path.exists():
+        with open(csv_path, "w", newline="") as f:
+            wr = csv.DictWriter(f, ["num", "name", "slug", "url"])
+            wr.writeheader()
+            wr.writerows(off_rows)
+    else:
+        print(f"[keep] access_official.csv: no raw/ap_pages/ this run, keeping "
+              f"{sum(1 for _ in csv_path.open()) - 1} existing rows", flush=True)
 
     # ---------- 9) conditions ----------
     # fetch_conditions.py owns this file now (it scrapes the live advisories).
