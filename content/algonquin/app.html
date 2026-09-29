@@ -123,6 +123,15 @@
     border: 0; background: var(--accent-soft); color: var(--accent-strong); border-radius: 50%;
     width: 20px; height: 20px; cursor: pointer; font-size: 11px; line-height: 1;
   }
+  /* Clear-a-field, deliberately unlike the stop row's remove-row ✕: no filled
+     disc, just a quiet glyph in the padding the input already reserves. */
+  .field .clr {
+    position: absolute; right: 5px; bottom: 7px; width: 20px; height: 20px;
+    border: 0; background: none; color: var(--ink-muted); border-radius: 50%;
+    cursor: pointer; font-size: 12px; line-height: 1;
+  }
+  .field .clr:hover { color: var(--ink); background: var(--accent-soft); }
+  .field .clr:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .ac {
     position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); z-index: 1200;
     border: 1px solid var(--line); border-top: 0; max-height: 240px; overflow: auto;
@@ -789,6 +798,42 @@ function addStop() {
   for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
   row.input.focus();
 }
+function makeRow(label, removable) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'field';
+  // A stop row already has an ✕ and it removes the whole row, so it does not
+  // also get a clear button. From and Destination do.
+  wrapper.innerHTML = `<label>${label}</label>
+    <input autocomplete="off" placeholder="type a lake, river or access point…"/>
+    <div class="ac"></div>
+    ${removable ? '<button class="rm" title="remove stop">✕</button>'
+                : '<button class="clr" title="clear" aria-label="clear this field" hidden>✕</button>'}`;
+  const input = wrapper.querySelector('input');
+  attachAC(input, wrapper.querySelector('.ac'));
+  const row = { wrapper: wrapper, input: input };
+  if (removable) {
+    wrapper.querySelector('.rm').onclick = () => {
+      const k = rows.indexOf(row);
+      if (k >= 0) rows.splice(k, 1);
+      wrapper.remove();
+    };
+  } else {
+    const clr = wrapper.querySelector('.clr');
+    // Only when there is something to clear. The id lives in a data attribute
+    // and is what the router actually reads, so it has to go with the text —
+    // an empty box still holding an id would route to a lake you cannot see.
+    const sync = () => { clr.hidden = !input.value.trim(); };
+    input.addEventListener('input', sync);
+    clr.onclick = () => {
+      input.value = '';
+      delete input.dataset.id;
+      sync();
+      input.focus();
+    };
+    row.syncClear = sync;
+  }
+  return row;
+}
 // Unnamed pond/wetland slivers are the bulk of the graph but useless to search:
 // rank named waters first, then access points, and only surface unnamed slivers
 // when the query clearly is not matching anything better (or ask for them).
@@ -836,6 +881,8 @@ function attachAC(input, ac) {
         input.value = h.name || 'unnamed water #' + h.id;
         input.dataset.id = h.id;
         ac.style.display = 'none';
+        const row = rows.find(r => r.input === input);
+        if (row && row.syncClear) row.syncClear();
       };
       ac.appendChild(d);
     }
@@ -925,6 +972,7 @@ function setField(which, id) {   // which: row index or 'end'
   if (!node || !rows[k]) return;
   rows[k].input.value = node.name || 'unnamed water #' + id;
   rows[k].input.dataset.id = id;
+  if (rows[k].syncClear) rows[k].syncClear();
 }
 
 // The clicked lake becomes the new destination; the old destination is kept
@@ -990,7 +1038,8 @@ function applyHashRoute() {
   if (h.get('a')) document.getElementById('avoid').checked = true;
   while (rows.length > names.length) { const rm = rows[rows.length - 2]; const k = rows.indexOf(rm); if (k > 0 && rows[k].wrapper.querySelector('.rm')) { rows.splice(k, 1); rm.wrapper.remove(); } else break; }
   while (rows.length < names.length) addStop();
-  rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2]; });
+  rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2];
+                    if (r.syncClear) r.syncClear(); });
   track('route_from_url', { points: names.length, mode: h.get('m') || 'balanced' });
   document.getElementById('go').click();
   return true;
