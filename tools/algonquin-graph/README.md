@@ -27,6 +27,91 @@ for current OSM id ranges) and are written by `parse_osm.py` and consumed by
 all; it re-derives the same composite in `build_page.py` to attach river
 obstacles, and keys portage obstacles by OSM way id.
 
+## The shipped app, and what you must not edit
+
+The live planner is served from `content/algonquin/` as **three files that must
+agree**:
+
+```
+content/algonquin/
+  app.html          the page — a build product of router_template.html
+  router.js         the router — source, hand-edited
+  router_data.json  12.5 MB payload — a build product, never hand-edited
+```
+
+`app.html` is emitted verbatim by `layouts/_default/app.html` in the Hugo
+site. If you change `router_template.html`, copy the result:
+
+```sh
+cp tools/algonquin-graph/index.html content/algonquin/app.html
+```
+
+The next scheduled graph refresh will do it for you, but until that job runs,
+the change is only live if you copy it. `build_page.py` substitutes `__BUILD__`
+(a hash of `router.js` + `router_data.json`) and nothing else, so the two files
+should be byte-identical apart from that token.
+
+**A bundle where `app.html` is newer than the `router.js` beside it fails in
+the browser for every visitor** — `Router.x is not a function` is how that
+looked the one time it shipped. `tests/test_api_contract.py` asserts every
+`Router.*` the page calls is actually exported by the router it loads.
+
+## Vocabulary
+
+The UI says **portage**, never *carry*. Algonquin signage, maps and the park's
+own material call it a portage; "carry" is only the generic English verb for
+the act. So: *4 portages*, *Portage 2: 381 m*, *least total portaging*.
+
+Internal identifiers still say carry in places — `res.carries`,
+`Router.carryRating`, `Router.carryEffort` — because renaming the router's
+API would churn the golden-route tests for no user-visible gain. The CSS
+vocabulary was renamed (`--portage`, `.portage-badge`) since that was free. Match the UI's vocabulary in anything user-facing: markup,
+meta tags, structured data, and comments that describe what the reader sees.
+
+## The refresh jobs
+
+`.github/workflows/` runs two jobs against this data. Both are in the repo root,
+but they exist for this tool and their behaviour is deliberate.
+
+**`refresh-advisories.yml`** (06:20 / 18:20 UTC) scrapes the current park
+advisory page, checks the rows are actually fresh — the scraper deliberately
+keeps the previous file when a scrape comes back empty, so a silently broken
+scraper would otherwise look like success — and commits
+`data/conditions.csv`. **This is the safety-relevant half of the product and it
+is deliberately the small, fast, reliable one.** If the graph job is having a
+bad day, the conditions a paddler needs must still update.
+
+**`refresh-graph.yml`** (07:50 / 19:50 UTC, 90 minutes behind the advisories
+job so the two never race each other to `git push`) fetches OSM, rebuilds the
+payload, checks it, deploys it into `content/algonquin/`, and commits. A run in
+flight is never cancelled — cancelling throws away the fetch.
+
+Four things it learned the hard way, all load-bearing:
+
+- **The fetch is bounded by wall clock** (`FETCH_DEADLINE_MINUTES`, 45). See
+  the `fetch_osm.py` section above for why. The job timeout is 300 minutes,
+  which is an hour over the chain's documented worst case — it used to be 150,
+  which was *below* the documented runtime, so a run that behaved as described
+  could never finish.
+- **The OSM tile cache is saved immediately after the fetch**, not in the job's
+  post step. `actions/cache` only saves when the whole job succeeds, so a
+  failure anywhere after the fetch threw the whole thing away and left the next
+  run cold — which is what made the fetch the step that overran its ceiling.
+  `raw/` is ~290 MB and is not in git.
+- **A snapshot is only as good as its tiles.** `group_due()` asks how old a
+  merged snapshot is, and a snapshot that is newer than its budget but missing
+  tiles is indistinguishable from a good one by age alone — it gets skipped
+  forever, and no amount of re-running fixes it. The fetch checks tile
+  completeness first and re-merges from cache when tiles are missing.
+- **A payload smaller than the live one is held, not published.** The data on
+  the site is still the best available, so the commit is skipped and the run
+  still goes green. Failing there would mean one bad Overpass day could stop
+  the refresh permanently. Missing payload *fields* still fail — that is a
+  pipeline regression, not a network day.
+
+The cron schedules have been observed running **hours late** (the 06:20 job
+fired at 14:07). Treat them as "twice a day", not as clock times.
+
 ## How it was generated
 
 Everything comes from four sources: **OpenStreetMap** (the spatial backbone,
@@ -127,9 +212,9 @@ rebuilt graph is picked up on reload.
   spur, access links connect launches to their lake.
 - **Routing**: Dijkstra client-side (`router.js`), four cost models —
   *balanced* (default: portage metres + a 300 m-carry equivalent per water body
-  crossed, so lake-zigzag routes lose to cleaner ones), fewest carries (pure
-  carry count), least total carrying, easiest carries (weights carry effort, so
-  steep portages are avoided) — plus an "avoid flagged obstacles" toggle, which
+  crossed, so lake-zigzag routes lose to cleaner ones), *fewest portages* (pure
+  count), *least total portaging*, *easiest portages* (weights portage effort, so
+  steep ones are avoided) — plus an "avoid flagged obstacles" toggle, which
   reads the `o` field on river links as well as portages, so rapids, waterfalls
   and dams actually reroute you.
 - **Park boundary**: drawn as a faint dashed line beneath the water. The OSM
@@ -143,8 +228,8 @@ rebuilt graph is picked up on reload.
   boat ramp / boat rental / parking within 400 m. A handful of pins therefore sit
   kilometres from the water, which is deliberate — it is where you park.
   (`build_access_geo.py` — `access_official_geo.csv` carries the chosen pin coordinates.)
-- Route output: carries count, total carry metres, lakes crossed, step-by-step
-  itinerary, and the route drawn with real portage trail geometry.
+- Route output: portage count, total portaging metres, lakes crossed,
+  step-by-step itinerary, and the route drawn with real portage trail geometry.
 - Rebuild with `python3 build_page.py`. It reads `data/*.csv` plus
   `data/{reach_lines,roads}.json` and `raw/{water_geom,portages,park_boundary}.json`,
   and writes both `router_data.json` and `index.html`.
@@ -210,8 +295,8 @@ edge labels and lengths come from joining `graph_edges` on consecutive path node
   within 250 m). All 896 stay in `portages` for inspection. Some unmapped portages
   mean the graph may lack connections that exist on the ground.
 - **No difficulty ratings**: portage effort/condition is not in OSM; use official
-  maps and signage. Carrying distances are geometric path lengths, close to but not
-  certified against official posted lengths (signed lengths appear in portage
+  maps and signage. Portaging distances are geometric path lengths, close to but
+  not certified against official posted lengths (signed lengths appear in portage
   names where OSM has them).
 - **River reaches are assumed paddleable end to end**: a reach link means the water
   ways physically touch the lake, not that you can legally or practically paddle the

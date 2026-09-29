@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-CA">
 <head>
 <meta charset="utf-8"/>
-<title>Algonquin Planner — canoe route planner for Algonquin Provincial Park</title>
-<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
+<title>Canoe Route Planner for Algonquin Provincial Park</title>
+<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest portages, least portaging, or easiest portages that avoid the steep ones."/>
 <link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
-<meta property="og:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
-<meta property="og:description" content="Plan a canoe trip across Algonquin: point-to-point directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
+<meta property="og:title" content="Canoe Route Planner for Algonquin Provincial Park"/>
+<meta property="og:description" content="Plan a canoe trip across Algonquin: point-to-point directions over every named lake, portage and river — fewest portages, least portaging, or easiest portages that avoid the steep ones."/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://hikewithyu.com/algonquin/"/>
 <meta property="og:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
-<meta property="og:image:alt" content="The Algonquin Planner map showing a paddling route through Lake Opeongo with carries numbered and portage trails drawn in orange."/>
+<meta property="og:image:alt" content="The Algonquin Planner map showing a paddling route through Lake Opeongo with portages numbered and the trails drawn in orange."/>
 <meta property="og:site_name" content="Hiking With Yu"/>
 <meta property="og:locale" content="en_CA"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
+<meta name="twitter:title" content="Canoe Route Planner for Algonquin Provincial Park"/>
 <meta name="twitter:description" content="Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park."/>
 <meta name="twitter:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
 <meta name="twitter:image:alt" content="A canoe route through Lake Opeongo on the Algonquin Planner map."/>
@@ -27,10 +27,10 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Algonquin Planner",
+  "name": "Canoe Route Planner for Algonquin Provincial Park",
   "url": "https://hikewithyu.com/algonquin/",
   "image": "https://hikewithyu.com/images/og/algonquin-planner.jpg",
-  "description": "Canoe route planner for Algonquin Provincial Park: point-to-point paddling directions across every named lake, portage and river, with carry counts, carrying distances, climb profiles and park advisories.",
+  "description": "Canoe route planner for Algonquin Provincial Park: point-to-point paddling directions across every named lake, portage and river, with portage counts, portaging distances, climb profiles and park advisories.",
   "applicationCategory": "TravelApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -72,7 +72,7 @@
     --canvas: #f5f4ed; --surface: #fffef8; --surface-raised: rgba(255,254,248,.93);
     --ink: #18362d; --ink-muted: #60756d; --line: #d9ddd3;
     --accent: #176b4a; --accent-strong: #0c5237; --accent-soft: #dceadd;
-    --paddle: #1f78b4; --carry: #d95f02; --danger: #b30000;
+    --paddle: #1f78b4; --portage: #d95f02; --danger: #b30000;
     --shadow: 0 12px 36px rgba(25,55,45,.14);
   }
   html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, "Segoe UI", sans-serif; }
@@ -168,7 +168,7 @@
   .leg { padding: 8px 4px; border-bottom: 1px solid #eef0ea; display: flex; gap: 8px; }
   .leg .n { color: var(--ink-muted); min-width: 20px; text-align: right; font-weight: 700; }
   .leg .b { flex: 1; color: var(--ink); }
-  .leg .p { color: var(--carry); font-weight: 600; }
+  .leg .p { color: var(--portage); font-weight: 600; }
   .leg .r { color: var(--paddle); }
   .leg .warn { color: var(--danger); font-size: 11px; }
   .conds { margin: 0 0 4px; }
@@ -204,21 +204,21 @@
   .legend:not([open]) { padding: 7px 10px; }
   .legend-body { margin-top: 4px; }
   .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
-  .sw.portage { border-style: dashed; border-color: var(--carry); }
+  .sw.portage { border-style: dashed; border-color: var(--portage); }
   .sw.reach { border-color: #41b6c4; }
   .sw.road { border-color: #8a6d4e; border-width: 6px; }
   .sw.park { border-color: #3f5f3b; border-style: dashed; border-width: 1px; opacity: .8; }
-  .pa-leg { color: var(--carry); font-size: 12px; font-weight: 900; margin-right: 4px; }
+  .pa-leg { color: var(--portage); font-size: 12px; font-weight: 900; margin-right: 4px; }
   .camp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4caf7d; border: 1px solid #2f7d4f; margin-right: 5px; vertical-align: middle; }
-  .sw.route { border-color: var(--carry); border-style: solid; border-width: 5px; height: 0; }
+  .sw.route { border-color: var(--portage); border-style: solid; border-width: 5px; height: 0; }
   .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
-  .carry-badge span, .wp-badge span {
+  .portage-badge span, .wp-badge span {
     display: flex; align-items: center; justify-content: center;
     width: 22px; height: 22px; border-radius: 50%;
     color: #fff; font-size: 12px; font-weight: 700;
     border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
-  .carry-badge span { background: var(--carry); }
+  .portage-badge span { background: var(--portage); }
   .el { font-weight: 700; font-size: 11px; }
   .prof { display: block; width: 108px; height: 22px; margin: 4px 0 2px; opacity: .9; }
   .rate { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
@@ -233,8 +233,8 @@
   .portage-arrow span {
     display: flex; align-items: center; justify-content: center;
     width: 20px; height: 20px; border-radius: 50%;
-    background: #fff; border: 2px solid var(--carry);
-    color: var(--carry); font-size: 12px; font-weight: 900; line-height: 1;
+    background: #fff; border: 2px solid var(--portage);
+    color: var(--portage); font-size: 12px; font-weight: 900; line-height: 1;
     box-shadow: 0 1px 4px rgba(0,0,0,.35);
   }
   .wp-badge span { background: var(--paddle); }
@@ -265,6 +265,14 @@
   .sample-btn:hover { border-color: var(--accent); background: #f6f9f3; }
   .sample-btn .t { font-weight: 700; color: var(--ink); font-size: 12.5px; }
   .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
+  /* the crawlable prose block */
+  .side-section.about h2 { margin: 0 0 6px; font: 500 14px/1.25 Georgia, "Times New Roman", serif; color: var(--ink); }
+  .side-section.about p { margin: 0 0 8px; color: var(--ink-muted); font-size: 12px; line-height: 1.55; }
+  .about-modes { margin: 0 0 8px; padding-left: 16px; color: var(--ink-muted); font-size: 12px; line-height: 1.55; }
+  .about-modes li { margin-bottom: 2px; }
+  .about-modes b { color: var(--ink); }
+  .side-section.about .about-caveat { margin: 0; padding-top: 8px; border-top: 1px solid var(--line); font-size: 11.5px; }
+  a.sample-btn { text-decoration: none; color: inherit; display: block; }
   .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
   .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
@@ -394,21 +402,52 @@
     </div>
     <div class="opts">
       <select id="mode">
-        <option value="balanced">balanced — carries + lakes crossed</option>
-        <option value="easiest">easiest carries — avoid steep portages</option>
-        <option value="carries">fewest carries</option>
-        <option value="meters">least total carrying — shortest walks</option>
+        <option value="balanced">balanced — portages + lakes crossed</option>
+        <option value="easiest">easiest portages — avoid the steep ones</option>
+        <option value="carries">fewest portages</option>
+        <option value="meters">least total portaging — shortest walks</option>
       </select>
       <label class="avoid"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
     </div>
     <button class="go" id="go">Directions</button>
   </section>
   <section class="side-section grow">
-    <div id="samples"></div>
+    <!-- Static, not rendered by JS: the route names below and the copy in
+         "About" are the only prose a crawler sees on this page, and they are
+         the words people actually search for. The anchors carry the same
+         shareable hash the app writes itself, so a link to a sample route is
+         a real link rather than a click handler. -->
+    <div id="samples">
+      <p class="eyebrow">Try a sample route</p>
+      <a class="sample-btn" data-s="0" href="#r=Access%20Point%20%235%3A%20Canoe%20Lake~Otterslide%20Lake&amp;m=balanced"><div class="t">Canoe Lake access &rarr; Otterslide Lake</div><div class="m">the classic Hwy 60 chain &mdash; 5 portages &middot; 2.1 km</div></a>
+      <a class="sample-btn" data-s="1" href="#r=Access%20Point%20%2311%3A%20Lake%20Opeongo~Happy%20Isle%20Lake&amp;m=balanced"><div class="t">Lake Opeongo access &rarr; Happy Isle Lake</div><div class="m">big-water paddling from the park&rsquo;s largest lake &mdash; no portages</div></a>
+      <a class="sample-btn" data-s="2" href="#r=Access%20Point%20%239%3A%20Rock%20Lake~Pen%20Lake&amp;m=balanced"><div class="t">Rock Lake access &rarr; Pen Lake</div><div class="m">an easy first paddle off the Hwy 60 corridor &mdash; no portages</div></a>
+    </div>
     <div id="options"></div>
     <div id="summary"></div>
     <div class="warnbox" id="warnbox"></div>
     <div id="legs"></div>
+  </section>
+  <!-- The prose a search engine actually reads. Everything else on this page
+       is a control or a 12.5 MB JSON payload fetched at runtime. -->
+  <section class="side-section about">
+    <p class="eyebrow">About this planner</p>
+    <h2>Point-to-point canoe routes across Algonquin</h2>
+    <p>Pick any named lake, portage landing or official access point in Algonquin
+       Provincial Park and get a paddling route with every portage listed in order:
+       how long it is, how far it climbs, and an elevation profile for the trail.</p>
+    <p>Built from OpenStreetMap &mdash; over 7,000 water bodies, more than 600
+       portages and 3,200 river reaches, plus all 29 official access points &mdash;
+       and refreshed as the map changes.</p>
+    <p>Four ways to weight the answer:</p>
+    <ul class="about-modes">
+      <li><b>Balanced</b> &mdash; portages and the lakes you have to cross</li>
+      <li><b>Easiest portages</b> &mdash; steers around the steep ones</li>
+      <li><b>Fewest portages</b> &mdash; the shortest portage chain, whatever it costs</li>
+      <li><b>Least total portaging</b> &mdash; the shortest walks on the portages</li>
+    </ul>
+    <p class="about-caveat">Not a substitute for the official park map. Check
+       current conditions with Algonquin Provincial Park before you go.</p>
   </section>
   <footer class="side-footer">
     <div id="conds" class="conds"></div>
@@ -519,7 +558,7 @@ if (DATA.park && DATA.park.features && DATA.park.features.length) {
   }).addTo(map);
 }
 // What a paddler wants to know before choosing a lake, counted once over the
-// edge list rather than per popup open: how many carries it costs to get out,
+// edge list rather than per popup open: how many portages it costs to get out,
 // how much walking that is, what else it connects to, and whether there is a
 // launch. Counts DISTINCT things — one portage is one trail however many
 // segments it has, and a river reach can meet the same water several times.
@@ -576,7 +615,7 @@ const lakes = L.geoJSON(DATA.lakes, {
     const kindWord = { lake: 'lake', pond: 'pond', reservoir: 'reservoir' }[p.kind] || p.kind || 'water';
     const facts = [];
     facts.push(`<div><dt>Size</dt><dd>${p.area_ha != null ? esc(p.area_ha) + ' ha' : '—'}${fx.dm ? ` · max extent ≈ ${esc(fmtM(fx.dm))}` : ''}</dd></div>`);
-    facts.push(`<div><dt>Carries out</dt><dd>${fx.carries ? `${fx.carries} trail${fx.carries > 1 ? 's' : ''} · ${esc(fmtM(fx.carryM))}` : 'none'}</dd></div>`);
+    facts.push(`<div><dt>Portages out</dt><dd>${fx.carries ? `${fx.carries} · ${esc(fmtM(fx.carryM))} of walking` : 'none'}</dd></div>`);
     facts.push(`<div><dt>Connects to</dt><dd>${fx.waters ? `${fx.waters} other water${fx.waters > 1 ? 's' : ''}` : 'nothing mapped'}</dd></div>`);
     if (fx.access) facts.push(`<div><dt>Access</dt><dd>${fx.access} point${fx.access > 1 ? 's' : ''}</dd></div>`);
     l.bindPopup(`<div class="lake-pop">
@@ -921,7 +960,6 @@ function applyHashRoute() {
   const names = h.get('r').split('~').map(decodeURIComponent);
   const ids = names.map(nm => (idx.search.find(s => s.name === nm) || {}).id);
   if (!names.length || ids.some(x => !x)) return false;
-  if (h.get('m')) document.getElementById('mode').value = h.get('m');
   if (h.get('a')) document.getElementById('avoid').checked = true;
   while (rows.length > names.length) { const rm = rows[rows.length - 2]; const k = rows.indexOf(rm); if (k > 0 && rows[k].wrapper.querySelector('.rm')) { rows.splice(k, 1); rm.wrapper.remove(); } else break; }
   while (rows.length < names.length) addStop();
@@ -934,10 +972,10 @@ function applyHashRoute() {
 // ---------- sample routes (onboarding; hidden after the first navigation) ----------
 const SAMPLES = [
   { label: 'Canoe Lake access → Otterslide Lake',
-    desc: 'the classic Hwy 60 chain — 5 carries · 2.1 km',
+    desc: 'the classic Hwy 60 chain — 5 portages · 2.1 km',
     from: 'Access Point #5: Canoe Lake', to: 'Otterslide Lake' },
   { label: 'Lake Opeongo access → Happy Isle Lake',
-    desc: 'big-water paddling from the park\u2019s largest lake — no portages',
+    desc: 'big-water paddling from the park’s largest lake — no portages',
     from: 'Access Point #11: Lake Opeongo', to: 'Happy Isle Lake' },
   { label: 'Rock Lake access → Pen Lake',
     desc: 'an easy first paddle off the Hwy 60 corridor — no portages',
@@ -953,13 +991,15 @@ function runSample(s) {
   setField('end', tid.id);
   document.getElementById('go').click();
 }
-(function renderSamples() {
+// The sample routes live in the markup, not here. Rendering them from JS is
+// why a crawler saw none of these names: they are the only route-shaped text
+// on the page, and they are exactly what people search for. This only wires
+// the behaviour on. Each href is the same shareable hash the app writes.
+(function wireSamples() {
   const el = document.getElementById('samples');
   if (!el) return;
-  el.innerHTML = '<p class="eyebrow">Try a sample route</p>' + SAMPLES.map((s, i) =>
-    `<button class="sample-btn" data-s="${i}"><div class="t">${s.label}</div><div class="m">${s.desc}</div></button>`).join('');
   el.querySelectorAll('.sample-btn').forEach(b => {
-    b.onclick = () => runSample(SAMPLES[Number(b.dataset.s)]);
+    b.onclick = e => { e.preventDefault(); runSample(SAMPLES[Number(b.dataset.s)]); };
   });
 })();
 
@@ -1016,15 +1056,15 @@ function profileSVG(pf, lenM) {
   const title = `${hi - lo} m of relief` + (up > 3 ? ` · +${Math.round(up)} m up` : '') +
                 (down < -3 ? ` · ${Math.round(-down)} m down` : '') + ` over ${lenM} m`;
   return `<svg class="prof" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="elevation profile">
-    <path d="${area}" fill="var(--carry)" opacity=".12"/>
-    <polyline points="${pts}" fill="none" stroke="var(--carry)" stroke-width="1.5"
+    <path d="${area}" fill="var(--portage)" opacity=".12"/>
+    <polyline points="${pts}" fill="none" stroke="var(--portage)" stroke-width="1.5"
       stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
     <title>${title}</title></svg>`;
 }
 const modeLabel = m => ({
-  balanced: 'balanced (carries + lakes)',
-  easiest: 'easiest carries (least climbing)',
-  carries: 'fewest carries', meters: 'least total carrying'
+  balanced: 'balanced (portages + lakes)',
+  easiest: 'easiest portages (least climbing)',
+  carries: 'fewest portages', meters: 'least total portaging'
 }[m] || m);
 
 function drawRoute(opt, pointIds) {
@@ -1107,7 +1147,7 @@ function drawRoute(opt, pointIds) {
       icon: L.divIcon({ className: 'wp-badge', html: `<span>${k + 1}</span>`, iconSize: [22, 22] })
     }).addTo(routeLayer);
   };
-  let carryNo = 0;
+  let portageNo = 0;
   const obsWarn = e => (e.o && e.o.length) ? `<br><span class="warn">⚠ ${e.o.join(', ')}</span>` : '';
   let html = '';
   let i = 0;
@@ -1115,9 +1155,9 @@ function drawRoute(opt, pointIds) {
 
   // Paddling INSIDE a water body has no leg of its own: the graph jumps from the
   // landing to the take-out, so the distance you actually paddle appeared
-  // nowhere in the itinerary — a route could read "5 carries, 2 short paddles"
+  // nowhere in the itinerary — a route could read "5 portages, 2 short paddles"
   // while the summary said 76 km of paddling. Compute each traverse once, so
-  // the legs list can show it between the carries and the map can draw the
+  // the legs list can show it between the portages and the map can draw the
   // very same path without paying for it twice.
   const traverseCache = new Map();
   const traverseOf = j => {
@@ -1155,13 +1195,13 @@ function drawRoute(opt, pointIds) {
 
   // Paddling at the two ENDS. traverseOf() can only describe a water body that
   // has both an arrival and a departure, so it returns nothing for the first
-  // and last one — the route appeared to begin at the first carry, with the
+  // and last one — the route appeared to begin at the first portage, with the
   // green dot sitting out in the lake and nothing drawn to it. This is the
   // same shape as the interior traverse with the dot as the one open end.
   //
-  // Not cosmetic. Canoe Lake to Burnt Island Lake is four carries with no
+  // Not cosmetic. Canoe Lake to Burnt Island Lake is four portages with no
   // paddling leg anywhere in the graph, yet there is 3.1 km of paddling out of
-  // Canoe Lake to reach the first carry and 3.3 km into Burnt Island Lake at
+  // Canoe Lake to reach the first portage and 3.3 km into Burnt Island Lake at
   // the far end: undrawn, unlisted and uncounted in the km paddling total.
   const WATER = new Set(['lake', 'pond', 'reservoir', 'reach']);
   const openTraverse = (j, from, to) => {
@@ -1248,15 +1288,15 @@ function drawRoute(opt, pointIds) {
     if (!foldStep) i++;
     const stepTag = `<span class="n">${i}</span>`;
     if (e.k === 'portage') {
-      carryNo++;
+      portageNo++;
       addLine(e.g, { color: '#d95f02', weight: 7, opacity: .95 });
       // portage geometry is route-oriented: g[0] is the landing on the from-lake
       const bp = e.g[0];
       L.marker([bp[1], bp[0]], {
-        icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
+        icon: L.divIcon({ className: 'portage-badge', html: `<span>${portageNo}</span>`, iconSize: [22, 22] })
       }).addTo(routeLayer);
       // uphill-direction arrow at the middle of the carried portage line —
-      // only when it's actually steep (5%+ grade); flat carries get no arrow
+      // only when it's actually steep (5%+ grade); flat portages get no arrow
       if (e.el !== null && e.el !== undefined && e.m > 0 && Math.abs(e.el) / e.m >= 0.05 && e.g.length >= 2) {
         const gp = e.g;
         const k = Math.floor((gp.length - 1) / 2);
@@ -1279,7 +1319,7 @@ function drawRoute(opt, pointIds) {
       const rateTxt = rate
         ? `<span class="rate ${rate.cls}">${rate.label}${/steep|brutal/.test(rate.cls) && e.m ? ' · ' + Math.round(100 * Router.gradeOf(e)) + '%' : ''}</span>`
         : '';
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${obsWarn(e)}</div></div>`;
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Portage ${portageNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${obsWarn(e)}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
@@ -1332,7 +1372,7 @@ function drawRoute(opt, pointIds) {
         // A river link's job is to attach a lake to its waterway; the paddling
         // itself is the reach traverse, already itemised. These legs are just
         // touch-point spurs of a metre or two, so their rows were pure noise
-        // between the carries.
+        // between the portages.
         const bareRiverLink = e.k === 'river' && e.m < 50;
         if (!handled && !bareRiverLink) {
           const label = e.k === 'channel' ? 'Paddle across the narrows' : 'Paddle';
@@ -1429,7 +1469,7 @@ function renderOptionsPanel() {
   currentOptions.forEach((o, i) => {
     const via = o.res.nodeIds.map(nameOf).filter(nm => nm).slice(1, 4).join(' → ');
     cards += `<div class="optcard ${i === selectedOption ? 'sel' : ''}" data-i="${i}">
-      <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m</div>
+      <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} portages · ${o.res.portageM.toLocaleString()} m</div>
       <div class="m">${modeLabel(o.mode)} · ${o.res.edges} steps · ${o.res.lakes} lakes · via ${via}${o.res.nodeIds.length > 5 ? '…' : ''}</div></div>`;
   });
   optionsEl.innerHTML = cards;
@@ -1439,9 +1479,9 @@ function renderOptionsPanel() {
       renderOptionsPanel();
       const o = currentOptions[selectedOption];
       const paddleM = drawRoute(o, currentPoints);
-      const sumTxt = `${o.res.carries} carries · ${(paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
+      const sumTxt = `${o.res.carries} portages · ${(paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
       const climbTot = Math.round(o.res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
-    summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${climbTot} m climb · ${o.res.lakes} lakes · ≈ ${(paddleM / 1000).toFixed(1)} km paddling`;
+    summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} portages · ${o.res.portageM.toLocaleString()} m portaging · ${climbTot} m climb · ${o.res.lakes} lakes · ≈ ${(paddleM / 1000).toFixed(1)} km paddling`;
       showRoute(sumTxt);
     };
   });
@@ -1494,8 +1534,8 @@ document.getElementById('go').onclick = () => {
     renderOptionsPanel();
     const paddleM = drawRoute(options[0], pointIds);
     const climb0 = Math.round(options[0].res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
-    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${climb0} m</b> climb · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(paddleM / 1000).toFixed(1)}</b> km paddling`;
-    showRoute(`${options[0].res.carries} carries · ${(paddleM / 1000).toFixed(1)} km paddling`);
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> portages · <b>${options[0].res.portageM.toLocaleString()}</b> m portaging · <b>${climb0} m</b> climb · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(paddleM / 1000).toFixed(1)}</b> km paddling`;
+    showRoute(`${options[0].res.carries} portages · ${(paddleM / 1000).toFixed(1)} km paddling`);
   } catch (err) {
     warnbox.style.display = 'block';
     warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
