@@ -330,6 +330,11 @@
   .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 80vh; overflow: auto; }
   .notice.credits dt { margin-top: 11px; color: var(--ink); font-weight: 700; font-size: 12.5px; }
   .notice.credits dt:first-of-type { margin-top: 2px; }
+  /* The "Data sources" heading needs to read as introducing the list, not as
+     a caption on OpenStreetMap. It carried its own top border and 2px below,
+     which left the first <dt> pressed against it. */
+  .notice.credits .about-eyebrow { margin: 18px 0 7px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .notice.credits .about-eyebrow + dl dt:first-of-type { margin-top: 0; }
   .notice.credits dd { margin: 3px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
   .notice.credits dd a { color: var(--accent-strong); }
   /* lake popup: a card, not a <br>-separated list of unstyled buttons */
@@ -432,7 +437,8 @@
     <div id="conds" class="conds"></div>
     <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
     <span class="meta"><a href="#" id="creditsLink">about &amp; credits</a> ·
-      Built <b id="bts">?</b></span>
+      <a href="mailto:me@yuchenhou.com?subject=Algonquin%20Planner%20feedback">feedback or a problem?</a><br>
+      Last updated on <b id="bts">?</b></span>
   </footer>
 </div>
 <div class="notice-veil" id="noticeVeil">
@@ -511,7 +517,11 @@ fetch('router_data.json?v=__BUILD__')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
-document.getElementById('bts').textContent = document.lastModified;
+// Date only. document.lastModified carries a time nobody planning a trip
+// cares about, and "Built" was wrong anyway: the page is rebuilt, not authored.
+document.getElementById('bts').textContent =
+  new Date(document.lastModified).toLocaleDateString('en-CA',
+    { year: 'numeric', month: 'short', day: 'numeric' });
 {
   const nLakes = DATA.nodes.filter(n => n[2] === 'lake').length;
   const nPort = new Set(DATA.edges.filter(e => e.k === 'portage').map(e => e.id)).size;
