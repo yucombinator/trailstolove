@@ -546,10 +546,10 @@
   </div>
 </details>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=133f2514e4f2"></script>
+<script src="router.js?v=87bf5f769261"></script>
 <script>
 document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=133f2514e4f2')
+fetch('router_data.json?v=87bf5f769261')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
