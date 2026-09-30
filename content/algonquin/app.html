@@ -195,6 +195,7 @@
   .leg .p { color: var(--portage); font-weight: 600; }
   .leg .r { color: var(--paddle); }
   .leg .warn { color: var(--danger); font-size: 11px; }
+  .leg .wind { color: #8a6512; font-size: 11px; font-weight: 600; }
   .conds { margin: 0 0 4px; }
   .conds .foot { color: var(--ink-muted); font-size: 9.5px; line-height: 1.4; }
   .cond-flag {
@@ -628,6 +629,29 @@ const waterFacts = new Map();
     }
   }
 }
+// Lake area in hectares, keyed by node id. `dm` is the bbox diagonal, which
+// overstates exposure on a long thin lake; area is what tells you how much
+// open water you are committing to.
+const lakeAreaHa = (() => {
+  const m = new Map();
+  for (const f of DATA.lakes.features) {
+    const a = f.properties.area_ha;
+    if (a == null) continue;
+    for (const id of (f.properties.ids || [f.properties.osm_id])) {
+      if (!m.has(id) || a > m.get(id)) m.set(id, a);
+    }
+  }
+  return m;
+})();
+// A long crossing on a big lake is where wind actually stops you. Calibrated
+// against the park: the median water body is 1.2 ha and the 90th percentile
+// 12.6 ha, so 100 ha is the top few percent — Lake Opeongo is 3,990. The
+// 2.5 km is continuous paddling in one body, not the whole route.
+const WIND_AREA_HA = 100, WIND_CROSSING_M = 2500;
+const windExposed = (nodeId, m) =>
+  m >= WIND_CROSSING_M && (lakeAreaHa.get(nodeId) || 0) >= WIND_AREA_HA;
+const WIND_NOTE = '<br><span class="wind">\u26a0 long open crossing — can be rough in wind</span>';
+
 function factsFor(p) {
   const out = { carries: 0, carryM: 0, waters: 0, access: 0, dm: 0 };
   for (const id of (p.ids || [p.osm_id])) {
@@ -1365,7 +1389,8 @@ function drawRoute(opt, pointIds) {
     const km = (run.m / 1000).toFixed(run.m < 10000 ? 2 : 1);
     html += `<div class="leg leg-zoom" data-i="${gi}"><span class="n">${i}</span><div class="b">` +
             `<span class="r">Paddle ${km} km</span> — ${run.name}` +
-            `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}</div></div>`;
+            `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}` +
+            `${windExposed(run.id, run.m) ? WIND_NOTE : ''}</div></div>`;
     run = null;
   };
   // a reach inside a consumed same-reach pair is folded into that pair's row
@@ -1377,21 +1402,22 @@ function drawRoute(opt, pointIds) {
     if (!t || t.m < 100) return;
     const name = nameOf(res.nodeIds[j]);
     if (run && run.name === name) { run.m += t.m; run.guess = run.guess && t.guess; }
-    else { flushRun(); run = { name: name, m: t.m, guess: t.guess }; }
+    else { flushRun(); run = { id: res.nodeIds[j], name: name, m: t.m, guess: t.guess }; }
   };
   // An endpoint paddle gets its own row rather than joining the buffered run:
   // it is the first and last thing on the list, and no leg of its own to fold
   // into. No leg-zoom either — there is no grouped index behind it to zoom to.
-  const paddleRow = (t, name) => {
+  const paddleRow = (t, name, nodeId) => {
     if (!t || t.m < 100) return;
     flushRun();
     i++;
     const km = (t.m / 1000).toFixed(t.m < 10000 ? 2 : 1);
     html += `<div class="leg"><span class="n">${i}</span><div class="b">` +
             `<span class="r">Paddle ${km} km</span> — ${name}` +
-            `${t.guess ? '<br><span style="color:#667">approximate</span>' : ''}</div></div>`;
+            `${t.guess ? '<br><span style="color:#667">approximate</span>' : ''}` +
+            `${windExposed(nodeId, t.m) ? WIND_NOTE : ''}</div></div>`;
   };
-  paddleRow(firstT, nameOf(res.nodeIds[0]));
+  paddleRow(firstT, nameOf(res.nodeIds[0]), res.nodeIds[0]);
 
 
   while (gi < grouped.length) {
@@ -1521,7 +1547,7 @@ function drawRoute(opt, pointIds) {
     gi += consumed;
   }
   flushRun();
-  paddleRow(lastT, nameOf(res.nodeIds[lastIdx]));
+  paddleRow(lastT, nameOf(res.nodeIds[lastIdx]), res.nodeIds[lastIdx]);
 
   // Draw the traverses computed above. Same path, same distance as the legs
   // list — the itinerary and the map can no longer disagree. Order still
