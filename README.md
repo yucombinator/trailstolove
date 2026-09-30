@@ -97,6 +97,17 @@ content/algonquin/
 before touching any of it.** It covers the data model, the pipeline, how to run
 it locally, and the vocabulary this project uses.
 
+Two scripts there are load-bearing and easy to trip over:
+
+- **`sync_build.py`** — never copy the template into the bundle by hand. One
+  command copies the sources, runs the build where `raw/` actually lives, and
+  publishes `content/algonquin/`. It refuses to publish a payload smaller than
+  the one already live, because a build from a stale `raw/` can quietly drop
+  data — the park outline disappeared the first time it ran.
+- **`fetch_access_pages.py`** — re-fetches the park's 29 official access point
+  pages. Those pages are the only source for the access point numbers and names,
+  they are gitignored, and nothing fetched them until this existed.
+
 ---
 
 ## The data-refresh workflows

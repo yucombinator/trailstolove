@@ -40,16 +40,34 @@ content/algonquin/
 ```
 
 `app.html` is emitted verbatim by `layouts/_default/app.html` in the Hugo
-site. If you change `router_template.html`, copy the result:
+site. `build_page.py` substitutes `__BUILD__` (a hash of `router.js` +
+`router_data.json`) and nothing else, so the two files should be byte-identical
+apart from that token.
+
+Do not copy it by hand. `sync_build.py` does the whole chain, and is the only
+supported way to get a template edit into the bundle:
 
 ```sh
-cp tools/algonquin-graph/index.html content/algonquin/app.html
+python3 tools/algonquin-graph/sync_build.py /tmp/algonquin-graph
 ```
 
-The next scheduled graph refresh will do it for you, but until that job runs,
-the change is only live if you copy it. `build_page.py` substitutes `__BUILD__`
-(a hash of `router.js` + `router_data.json`) and nothing else, so the two files
-should be byte-identical apart from that token.
+It copies `router_template.html` and `router.js` into the build directory, runs
+`build_page.py` there, and writes `app.html`, `router_data.json` and
+`router.js` into `content/algonquin/`.
+
+**It takes a build directory because `raw/` is gitignored.** The OSM snapshots
+only exist where someone has fetched them, so the build has to run there; the
+sources come from git either way, which is what stops the two trees drifting.
+Copying the template across by hand was a recurring source of "my change isn't
+showing" — ten times, in the end.
+
+**It refuses to publish less than is already live.** A build from a stale local
+`raw/` can quietly ship less than the site is serving; the first run of this
+script did exactly that, dropping the park outline because the local copy had no
+`raw/park_boundary.json`. The hand-copy it replaces could not do that by
+accident, so the replacement must not either. If the new payload loses the park
+boundary, lakes, reaches, access points, edges or nodes, it stops and says
+which, and publishes nothing.
 
 **A bundle where `app.html` is newer than the `router.js` beside it fails in
 the browser for every visitor** — `Router.x is not a function` is how that
@@ -241,6 +259,16 @@ rebuilt graph is picked up on reload.
   is kept in `raw/ap_pages/` and parsed into `access_official`.
   `build_access_geo.py` then picks a pin coordinate for each and writes
   `access_official_geo.csv`.
+  `fetch_access_pages.py` re-fetches those pages (cached 30 days, paced, one dead
+  page is a warning). The slugs come from `access_official.csv` itself, which is
+  the durable list of *which* pages exist; adding an access point is still a
+  manual row, which is a change someone should mean.
+  Nothing fetched these pages until that script existed, and `raw/` is
+  gitignored — so a clean runner had none, and `parse_osm.py` was free to write
+  an empty table over a good one. It did, once, and deleted all 29 access points:
+  no numbered pins, and no way to start or end a route at one. `parse_osm.py`
+  now follows the same rule as `conditions.csv` — a file it cannot populate is
+  not one it may empty — so the scraper is an improvement rather than a rescue.
 - **Conditions**: `fetch_conditions.py` scrapes the park advisories page
   (`algonquinpark.on.ca/news/algonquin_park_advisories.php`) for the bulleted
   text under its Closures / Boil Water / Low Water headings, adds a few standing
@@ -259,6 +287,7 @@ cd algonquin-graph
 
 # refresh only what has aged past its budget, then rebuild
 python3 fetch_osm.py
+python3 fetch_access_pages.py
 python3 fetch_conditions.py
 python3 fetch_elevations.py
 python3 build_access_geo.py

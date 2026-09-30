@@ -110,6 +110,18 @@ jobs:
           path: tools/algonquin-graph/raw
           key: osm-tiles-${{ github.run_id }}
 
+      # The official access point list comes from the park's own pages, and
+      # nothing used to fetch them: raw/ap_pages/ is gitignored, so a clean
+      # runner had none and parse_osm was free to write an empty table over a
+      # good one. That deleted all 29 access points once already. parse_osm no
+      # longer empties the table it cannot populate, so this step is an
+      # improvement rather than a rescue — it is what keeps the numbers and
+      # names tracking the park. Cached for 30 days, paced, and one dead page
+      # is a warning, not a failure.
+      - name: Refresh the official access point pages
+        continue-on-error: true
+        run: python3 tools/algonquin-graph/fetch_access_pages.py
+
       - name: Parse graph
         run: |
           cd tools/algonquin-graph
