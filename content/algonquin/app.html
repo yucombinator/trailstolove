@@ -644,13 +644,23 @@ const lakeAreaHa = (() => {
   return m;
 })();
 // A long crossing on a big lake is where wind actually stops you. Calibrated
-// against the park: the median water body is 1.2 ha and the 90th percentile
-// 12.6 ha, so 100 ha is the top few percent — Lake Opeongo is 3,990. The
-// 2.5 km is continuous paddling in one body, not the whole route.
-const WIND_AREA_HA = 100, WIND_CROSSING_M = 2500;
+// against a paddler's printed map sheet for the Burnt Island / Big Trout
+// area, where the wind-exposed sections are the long open-water legs: the one
+// confirmed by its distance label is 3.1 km across Burnt Island Lake, and
+// every sheltered lake paddle on the sheet is in the 300-500 m range. So
+// 3 km of continuous paddling in one body, not the whole trip.
+//
+// 500 ha of water is the smallest lake marked on that sheet (Burnt Island is
+// 638 ha, Big Trout 1,632), and it is the top 0.4% of the park's 7,036 water
+// bodies. For scale: the median is 1.2 ha, the 90th percentile 12.6 ha, and
+// Opeongo — the crossing everybody knows about — is 3,990.
+const WIND_AREA_HA = 500, WIND_CROSSING_M = 3000;
 const windExposed = (nodeId, m) =>
   m >= WIND_CROSSING_M && (lakeAreaHa.get(nodeId) || 0) >= WIND_AREA_HA;
-const WIND_NOTE = '<br><span class="wind">\u26a0 long open crossing — can be rough in wind</span>';
+// State the number that triggered it. "can be rough in wind" tells a paddler
+// they have already worked out; 4.3 km of open water tells them whether this
+// is the day to go.
+const windNote = m => `<br><span class="wind">\u26a0 ${(m / 1000).toFixed(1)} km of open water — can be rough in a headwind</span>`;
 
 function factsFor(p) {
   const out = { carries: 0, carryM: 0, waters: 0, access: 0, dm: 0 };
@@ -1390,7 +1400,7 @@ function drawRoute(opt, pointIds) {
     html += `<div class="leg leg-zoom" data-i="${gi}"><span class="n">${i}</span><div class="b">` +
             `<span class="r">Paddle ${km} km</span> — ${run.name}` +
             `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}` +
-            `${windExposed(run.id, run.m) ? WIND_NOTE : ''}</div></div>`;
+            `${windExposed(run.id, run.m) ? windNote(run.m) : ''}</div></div>`;
     run = null;
   };
   // a reach inside a consumed same-reach pair is folded into that pair's row
@@ -1415,7 +1425,7 @@ function drawRoute(opt, pointIds) {
     html += `<div class="leg"><span class="n">${i}</span><div class="b">` +
             `<span class="r">Paddle ${km} km</span> — ${name}` +
             `${t.guess ? '<br><span style="color:#667">approximate</span>' : ''}` +
-            `${windExposed(nodeId, t.m) ? WIND_NOTE : ''}</div></div>`;
+            `${windExposed(nodeId, t.m) ? windNote(t.m) : ''}</div></div>`;
   };
   paddleRow(firstT, nameOf(res.nodeIds[0]), res.nodeIds[0]);
 
