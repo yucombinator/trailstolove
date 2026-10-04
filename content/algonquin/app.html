@@ -430,7 +430,7 @@
     <p class="eyebrow">Plan your trip</p>
     <h1>Plan a canoe route across Algonquin</h1>
     <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park.</p>
-    <div class="chip" id="stats">loading&hellip;</div>
+    <div class="chip" id="stats" hidden></div>
   </div>
   <section class="side-section">
     <div id="points"></div>
@@ -547,10 +547,14 @@
   </div>
 </details>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=833b74a4a3cf"></script>
+<script src="router.js?v=035cc1a8c29d"></script>
 <script>
-document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=833b74a4a3cf')
+// The lake/portage counts used to sit here. They went because "7,019 lakes"
+// counts every OSM water polygon in the park, including unnameable slivers and
+// the fragments that way-split lakes leave behind — it read as a boast and
+// invited the reading that it was wrong. The element stays, hidden, purely so
+// a failed data load still says something.
+fetch('router_data.json?v=035cc1a8c29d')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -559,12 +563,6 @@ const idx = Router.buildIndex(DATA);
 document.getElementById('bts').textContent =
   new Date(document.lastModified).toLocaleDateString('en-CA',
     { year: 'numeric', month: 'short', day: 'numeric' });
-{
-  const nLakes = DATA.nodes.filter(n => n[2] === 'lake').length;
-  const nPort = new Set(DATA.edges.filter(e => e.k === 'portage').map(e => e.id)).size;
-  const el = document.getElementById('stats');
-  if (el) el.innerHTML = `<b>${nLakes.toLocaleString('en-CA')}</b> lakes &middot; <b>${nPort.toLocaleString('en-CA')}</b> portages`;
-}
 if (!document.getElementById('go')) {   // self-heal: recreate the Directions button if absent
   const btn = document.createElement('button');
   btn.id = 'go'; btn.className = 'go'; btn.textContent = 'Directions';
@@ -1467,10 +1465,20 @@ function drawRoute(opt, pointIds) {
         : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
           ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
       const rate = Router.carryRating(e);
-      const rateTxt = rate
+      // "≈ flat" from the elevation change and "flat" from the grade say the
+      // same thing. Only the steep grades carry a percentage, so anything else
+      // that the elevation line already covered is dropped here.
+      const rateSaysFlat = rate && rate.cls === 'r-flat';
+      const rateTxt = rate && !(rateSaysFlat && elTxt.includes('flat'))
         ? `<span class="rate ${rate.cls}">${rate.label}${/steep|brutal/.test(rate.cls) && e.m ? ' · ' + Math.round(100 * Router.gradeOf(e)) + '%' : ''}</span>`
         : '';
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Portage ${portageNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${obsWarn(e)}</div></div>`;
+      // An OSM name often carries its own distance — "Canoe Lake to Joe Lake
+      // Portage (295m)" against the 271 m we computed. Printing both reads as
+      // two lengths for one carry, which is what a commenter flagged on r/algonquinpark.
+      const carryName = e.n
+        ? e.n.replace(/\s*\(\s*(\d+(?:\.\d+)?)\s*m(?:et(?:re|er)s?)?\s*\)\s*$/i, '')
+        : '';
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Portage ${portageNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${carryName ? '<br><span style="color:#667">' + carryName + '</span>' : ''}${obsWarn(e)}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
@@ -1711,7 +1719,7 @@ window.__app = { map, lakes, lakeGeoms, idx, routeLayer, currentOptions: () => c
   .catch(err => {
     console.error(err);
     const el = document.getElementById('stats');
-    if (el) el.textContent = 'failed to load map data — refresh';
+    if (el) { el.hidden = false; el.textContent = 'failed to load map data — refresh'; }
   });
 </script>
 <script>
