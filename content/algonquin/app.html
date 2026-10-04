@@ -547,14 +547,14 @@
   </div>
 </details>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=035cc1a8c29d"></script>
+<script src="router.js?v=781544e7cc9f"></script>
 <script>
 // The lake/portage counts used to sit here. They went because "7,019 lakes"
 // counts every OSM water polygon in the park, including unnameable slivers and
 // the fragments that way-split lakes leave behind — it read as a boast and
 // invited the reading that it was wrong. The element stays, hidden, purely so
 // a failed data load still says something.
-fetch('router_data.json?v=035cc1a8c29d')
+fetch('router_data.json?v=781544e7cc9f')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
