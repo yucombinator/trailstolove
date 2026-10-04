@@ -254,9 +254,18 @@ jobs:
               # UNSTAGED, so the commit on the next line had nothing staged
               # and died with "no changes added to commit". Every refresh that
               # had data to save hit it, which is why the repo had never once
-              # landed a "Refresh planner graph" commit. A commit leaves the
-              # tree clean, so nothing here needs an autostash any more.
+              # landed a "Refresh planner graph" commit.
               git commit -m "Refresh planner graph ($(date -u +%F))"
+              # A commit does NOT leave the tree clean. `git add` above covers
+              # content/algonquin and tools/algonquin-graph/data, but build_page.py
+              # also writes tools/algonquin-graph/index.html and
+              # tools/algonquin-graph/router_data.json. Those are intermediates
+              # that content/algonquin supersedes, so they are discarded rather
+              # than committed — and the tree has to be clean before the rebase
+              # below, which refuses outright with "You have unstaged changes".
+              # A human push landing mid-run is exactly what triggers that path,
+              # so this was the failure mode, not a rare edge.
+              git checkout -- .
               # actions/checkout leaves a detached HEAD, so the push has to
               # name the ref. The advisories job can land a commit while this
               # chain runs, so rebase onto whatever master is now.
