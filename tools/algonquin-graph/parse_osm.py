@@ -301,14 +301,16 @@ def main():
             d = 0.0 if inside else min(d_ring(lat, lon, r, max_m) for r in lk["rings"])
             if not inside and d >= max_m:
                 continue
-            # Sort key: a NAMED lake beats an unnamed sliver at the same range,
-            # and a bigger water body beats a 3,000 m2 pond. Little Mink Lake was
-            # shadowed by an unnamed 3,809 m2 polygon 148 m away: the "Little
-            # Mink to Mink" portage snapped to the sliver while the search index
-            # gave the name to the real lake, so the two nodes were never the
-            # same and Kiosk -> Mink routed the long way round the park.
-            # Nearest-first resolved it the wrong way; this resolves it right.
-            cands.append((d, 0 if lk["name"] else 1, -lk["area"], oid, d))
+            # Sort key: NAMED first, then distance, then size. Named-ness must be
+            # the PRIMARY key, not a tiebreak. Little Mink Lake had an unnamed
+            # 3,809 m2 polygon sitting inside the portage's own 250 m snap
+            # radius, so a distance-first key kept snapping "Little Mink to
+            # Mink" to that sliver (0 m) over the real lake (148 m). The named
+            # lake and the portage then landed on different node ids, the
+            # 2-edge Kiosk -> Mink route stopped existing, and the router sent
+            # paddlers 6.7 km around the park instead. Distance still decides
+            # between two named lakes, and size still breaks a tie.
+            cands.append((0 if lk["name"] else 1, d, -lk["area"], oid, d))
         if cands:
             cands.sort()
             return cands[0][3], cands[0][4]
