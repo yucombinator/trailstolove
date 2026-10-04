@@ -292,19 +292,26 @@ def main():
 
     def resolve(lat, lon, max_m=MAX_SNAP):
         pad = max_m / 111320.0
-        best_d, bid = 1e18, None
+        cands = []
         for oid, lk in lake_items:
             b = lk["bbox"]
             if not (b[0] - pad <= lat <= b[2] + pad and b[1] - pad <= lon <= b[3] + pad):
                 continue
-            for r in lk["rings"]:
-                if in_ring(lat, lon, r):
-                    return int(oid), 0.0
-            d = min(d_ring(lat, lon, r, max_m) for r in lk["rings"])
-            if d < best_d and d < max_m:
-                best_d, bid = d, oid
-        if bid is not None:
-            return bid, best_d
+            inside = any(in_ring(lat, lon, r) for r in lk["rings"])
+            d = 0.0 if inside else min(d_ring(lat, lon, r, max_m) for r in lk["rings"])
+            if not inside and d >= max_m:
+                continue
+            # Sort key: a NAMED lake beats an unnamed sliver at the same range,
+            # and a bigger water body beats a 3,000 m2 pond. Little Mink Lake was
+            # shadowed by an unnamed 3,809 m2 polygon 148 m away: the "Little
+            # Mink to Mink" portage snapped to the sliver while the search index
+            # gave the name to the real lake, so the two nodes were never the
+            # same and Kiosk -> Mink routed the long way round the park.
+            # Nearest-first resolved it the wrong way; this resolves it right.
+            cands.append((d, 0 if lk["name"] else 1, -lk["area"], oid, d))
+        if cands:
+            cands.sort()
+            return cands[0][3], cands[0][4]
         # fallback: nearest stitched waterway reach point
         padg = max_m / 111320.0
         k = (int(lat // GRID), int(lon // GRID))
