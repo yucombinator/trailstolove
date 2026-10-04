@@ -1467,10 +1467,20 @@ function drawRoute(opt, pointIds) {
         : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
           ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
       const rate = Router.carryRating(e);
-      const rateTxt = rate
+      // "≈ flat" from the elevation change and "flat" from the grade say the
+      // same thing. Only the steep grades carry a percentage, so anything else
+      // that the elevation line already covered is dropped here.
+      const rateSaysFlat = rate && rate.cls === 'r-flat';
+      const rateTxt = rate && !(rateSaysFlat && elTxt.includes('flat'))
         ? `<span class="rate ${rate.cls}">${rate.label}${/steep|brutal/.test(rate.cls) && e.m ? ' · ' + Math.round(100 * Router.gradeOf(e)) + '%' : ''}</span>`
         : '';
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Portage ${portageNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${obsWarn(e)}</div></div>`;
+      // An OSM name often carries its own distance — "Canoe Lake to Joe Lake
+      // Portage (295m)" against the 271 m we computed. Printing both reads as
+      // two lengths for one carry, which is what a commenter flagged on r/algonquinpark.
+      const carryName = e.n
+        ? e.n.replace(/\s*\(\s*(\d+(?:\.\d+)?)\s*m(?:et(?:re|er)s?)?\s*\)\s*$/i, '')
+        : '';
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Portage ${portageNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${carryName ? '<br><span style="color:#667">' + carryName + '</span>' : ''}${obsWarn(e)}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
