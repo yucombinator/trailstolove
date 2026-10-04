@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-CA">
 <head>
 <meta charset="utf-8"/>
-<title>Algonquin Planner — canoe route planner for Algonquin Provincial Park</title>
-<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
+<title>Canoe Route Planner for Algonquin Provincial Park</title>
+<meta name="description" content="Interactive canoe-route planner for Algonquin Provincial Park: point-to-point paddling directions over every named lake, portage and river — fewest portages, least portaging, or easiest portages that avoid the steep ones."/>
 <link rel="canonical" href="https://hikewithyu.com/algonquin/"/>
-<meta property="og:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
-<meta property="og:description" content="Plan a canoe trip across Algonquin: point-to-point directions over every named lake, portage and river — fewest carries, least carrying, or easiest carries that avoid the steep ones."/>
+<meta property="og:title" content="Canoe Route Planner for Algonquin Provincial Park"/>
+<meta property="og:description" content="Plan a canoe trip across Algonquin: point-to-point directions over every named lake, portage and river — fewest portages, least portaging, or easiest portages that avoid the steep ones."/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://hikewithyu.com/algonquin/"/>
 <meta property="og:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
-<meta property="og:image:alt" content="The Algonquin Planner map showing a paddling route through Lake Opeongo with carries numbered and portage trails drawn in orange."/>
+<meta property="og:image:alt" content="The Algonquin Planner map showing a paddling route through Lake Opeongo with portages numbered and the trails drawn in orange."/>
 <meta property="og:site_name" content="Hiking With Yu"/>
 <meta property="og:locale" content="en_CA"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Algonquin Planner — canoe route planner for Algonquin Provincial Park"/>
+<meta name="twitter:title" content="Canoe Route Planner for Algonquin Provincial Park"/>
 <meta name="twitter:description" content="Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park."/>
 <meta name="twitter:image" content="https://hikewithyu.com/images/og/algonquin-planner.jpg"/>
 <meta name="twitter:image:alt" content="A canoe route through Lake Opeongo on the Algonquin Planner map."/>
@@ -27,10 +27,10 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Algonquin Planner",
+  "name": "Canoe Route Planner for Algonquin Provincial Park",
   "url": "https://hikewithyu.com/algonquin/",
   "image": "https://hikewithyu.com/images/og/algonquin-planner.jpg",
-  "description": "Canoe route planner for Algonquin Provincial Park: point-to-point paddling directions across every named lake, portage and river, with carry counts, carrying distances, climb profiles and park advisories.",
+  "description": "Canoe route planner for Algonquin Provincial Park: point-to-point paddling directions across every named lake, portage and river, with portage counts, portaging distances, climb profiles and park advisories.",
   "applicationCategory": "TravelApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript",
@@ -72,7 +72,7 @@
     --canvas: #f5f4ed; --surface: #fffef8; --surface-raised: rgba(255,254,248,.93);
     --ink: #18362d; --ink-muted: #60756d; --line: #d9ddd3;
     --accent: #176b4a; --accent-strong: #0c5237; --accent-soft: #dceadd;
-    --paddle: #1f78b4; --carry: #d95f02; --danger: #b30000;
+    --paddle: #1f78b4; --portage: #d95f02; --danger: #b30000;
     --shadow: 0 12px 36px rgba(25,55,45,.14);
   }
   html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, "Segoe UI", sans-serif; }
@@ -123,6 +123,15 @@
     border: 0; background: var(--accent-soft); color: var(--accent-strong); border-radius: 50%;
     width: 20px; height: 20px; cursor: pointer; font-size: 11px; line-height: 1;
   }
+  /* Clear-a-field, deliberately unlike the stop row's remove-row ✕: no filled
+     disc, just a quiet glyph in the padding the input already reserves. */
+  .field .clr {
+    position: absolute; right: 5px; bottom: 7px; width: 20px; height: 20px;
+    border: 0; background: none; color: var(--ink-muted); border-radius: 50%;
+    cursor: pointer; font-size: 12px; line-height: 1;
+  }
+  .field .clr:hover { color: var(--ink); background: var(--accent-soft); }
+  .field .clr:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .ac {
     position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); z-index: 1200;
     border: 1px solid var(--line); border-top: 0; max-height: 240px; overflow: auto;
@@ -160,17 +169,33 @@
   .optcard:hover { background: #f6f9f3; }
   .optcard.sel { border-color: var(--accent); background: #eef6ef; box-shadow: 0 0 0 1px var(--accent) inset; }
   .optcard .t { font-weight: 700; color: var(--ink); }
+  /* The clean-route callout: reassuring, so green rather than a warning red,
+     and quiet enough to read before the itinerary. */
+  .route-clear {
+    margin: 8px 0 10px; padding: 6px 9px; border-radius: 5px;
+    background: #eaf5ee; border: 1px solid #cbe3d3; color: #14532d; font-size: 11.5px;
+  }
   .optcard .m { color: var(--ink-muted); font-size: 11px; }
+  .lake-pop .lp-note {
+    margin: 9px 0 0; padding: 5px 8px; border-radius: 5px;
+    background: #f4f1e8; color: var(--ink-muted); font-size: 11px; line-height: 1.45;
+  }
+  .lake-pop .lp-note.warn { background: #fdf3d8; color: #8a6512; }
   #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
   #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
+  /* An empty #legs still painted its border-top and 12px of margin, so
+     before a route was drawn it left a stray rule and two empty lines under
+     the sample routes. Collapse the containers until they have content. */
+  #options:empty, #summary:empty, #legs:empty { display: none; }
   .wp { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
     border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
   .leg { padding: 8px 4px; border-bottom: 1px solid #eef0ea; display: flex; gap: 8px; }
   .leg .n { color: var(--ink-muted); min-width: 20px; text-align: right; font-weight: 700; }
   .leg .b { flex: 1; color: var(--ink); }
-  .leg .p { color: var(--carry); font-weight: 600; }
+  .leg .p { color: var(--portage); font-weight: 600; }
   .leg .r { color: var(--paddle); }
   .leg .warn { color: var(--danger); font-size: 11px; }
+  .leg .wind { color: #8a6512; font-size: 11px; font-weight: 600; }
   .conds { margin: 0 0 4px; }
   .conds .foot { color: var(--ink-muted); font-size: 9.5px; line-height: 1.4; }
   .cond-flag {
@@ -204,21 +229,21 @@
   .legend:not([open]) { padding: 7px 10px; }
   .legend-body { margin-top: 4px; }
   .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
-  .sw.portage { border-style: dashed; border-color: var(--carry); }
+  .sw.portage { border-style: dashed; border-color: var(--portage); }
   .sw.reach { border-color: #41b6c4; }
   .sw.road { border-color: #8a6d4e; border-width: 6px; }
   .sw.park { border-color: #3f5f3b; border-style: dashed; border-width: 1px; opacity: .8; }
-  .pa-leg { color: var(--carry); font-size: 12px; font-weight: 900; margin-right: 4px; }
+  .pa-leg { color: var(--portage); font-size: 12px; font-weight: 900; margin-right: 4px; }
   .camp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4caf7d; border: 1px solid #2f7d4f; margin-right: 5px; vertical-align: middle; }
-  .sw.route { border-color: var(--carry); border-style: solid; border-width: 5px; height: 0; }
+  .sw.route { border-color: var(--portage); border-style: solid; border-width: 5px; height: 0; }
   .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
-  .carry-badge span, .wp-badge span {
+  .portage-badge span, .wp-badge span {
     display: flex; align-items: center; justify-content: center;
     width: 22px; height: 22px; border-radius: 50%;
     color: #fff; font-size: 12px; font-weight: 700;
     border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
-  .carry-badge span { background: var(--carry); }
+  .portage-badge span { background: var(--portage); }
   .el { font-weight: 700; font-size: 11px; }
   .prof { display: block; width: 108px; height: 22px; margin: 4px 0 2px; opacity: .9; }
   .rate { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
@@ -233,8 +258,8 @@
   .portage-arrow span {
     display: flex; align-items: center; justify-content: center;
     width: 20px; height: 20px; border-radius: 50%;
-    background: #fff; border: 2px solid var(--carry);
-    color: var(--carry); font-size: 12px; font-weight: 900; line-height: 1;
+    background: #fff; border: 2px solid var(--portage);
+    color: var(--portage); font-size: 12px; font-weight: 900; line-height: 1;
     box-shadow: 0 1px 4px rgba(0,0,0,.35);
   }
   .wp-badge span { background: var(--paddle); }
@@ -265,6 +290,14 @@
   .sample-btn:hover { border-color: var(--accent); background: #f6f9f3; }
   .sample-btn .t { font-weight: 700; color: var(--ink); font-size: 12.5px; }
   .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
+  /* the About copy, which lives in the credits dialog */
+  .notice.credits .about-modes { margin: 0 0 10px; padding-left: 17px; color: var(--ink-muted); font-size: 12.5px; line-height: 1.55; }
+  .notice.credits .about-modes li { margin-bottom: 2px; }
+  .notice.credits .about-modes b { color: var(--ink); }
+  .notice.credits .about-caveat { margin: 0; padding-top: 9px; border-top: 1px solid var(--line); font-size: 12px; }
+  /* Anchors are content-box; buttons were border-box. With width:100% and
+     9px 11px of padding, that pushed every sample box 24px past the panel. */
+  a.sample-btn { text-decoration: none; color: inherit; display: block; box-sizing: border-box; }
   .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
     color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
   .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
@@ -319,11 +352,58 @@
   .notice .ghost { background: 0 0; color: var(--ink-muted); border: 1px solid var(--line); }
   .notice .ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
   .notice a { color: var(--accent-strong); }
-  .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 80vh; overflow: auto; }
+  /* The dialog grew with the About copy, so a scrolling Close button at the
+     bottom is a dead end on a short window. Body scrolls, footer does not. */
+  .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 84vh;
+                    display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .notice.credits .credits-body { overflow-y: auto; min-height: 0; padding: 22px 24px 4px; }
+  .notice.credits .row { flex: 0 0 auto; margin: 0; padding: 12px 24px 14px;
+                         border-top: 1px solid var(--line); background: var(--surface); }
   .notice.credits dt { margin-top: 11px; color: var(--ink); font-weight: 700; font-size: 12.5px; }
   .notice.credits dt:first-of-type { margin-top: 2px; }
+  /* The "Data sources" heading needs to read as introducing the list, not as
+     a caption on OpenStreetMap. It carried its own top border and 2px below,
+     which left the first <dt> pressed against it. */
+  .notice.credits .about-eyebrow { margin: 18px 0 7px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .notice.credits .about-eyebrow + dl dt:first-of-type { margin-top: 0; }
+  .notice.credits .about-by { margin: 0 0 10px; color: var(--ink); font-weight: 600; }
+  .notice.credits .about-by a { color: var(--accent-strong); font-weight: 500; }
   .notice.credits dd { margin: 3px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
   .notice.credits dd a { color: var(--accent-strong); }
+  /* lake popup: a card, not a <br>-separated list of unstyled buttons */
+  .leaflet-popup-content { margin: 0; width: 250px !important; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; padding: 0; overflow: hidden; }
+  .lake-pop { padding: 13px 14px 12px; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .lake-pop h3 {
+    margin: 0; font: 600 15.5px/1.25 Georgia, "Times New Roman", serif;
+    color: var(--ink); padding-right: 14px;
+  }
+  .lake-pop .lp-kind {
+    margin-top: 1px; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--accent-strong); font-weight: 700;
+  }
+  .lake-pop .lp-facts {
+    margin: 10px 0 0; padding: 9px 0 2px; border-top: 1px solid var(--line);
+  }
+  .lake-pop .lp-facts > div { display: flex; justify-content: space-between; gap: 10px; padding: 2.5px 0; }
+  .lake-pop .lp-facts dt { color: var(--ink-muted); font-size: 11.5px; }
+  .lake-pop .lp-facts dd { margin: 0; color: var(--ink); font-size: 11.5px; font-weight: 600; text-align: right; }
+  .lake-pop .lp-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 11px; }
+  .lake-pop .lp-btn {
+    width: 100%; padding: 8px 10px; border-radius: 6px; cursor: pointer; text-align: center;
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+    font: 600 12px/1 -apple-system, "Segoe UI", sans-serif;
+  }
+  .lake-pop .lp-btn:hover { border-color: var(--ink-muted); }
+  .lake-pop .lp-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .lake-pop .lp-btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .lake-pop .lp-btn.ghost { border-color: transparent; color: var(--ink-muted); font-weight: 500; }
+  .lake-pop .lp-btn.ghost:hover { color: var(--accent-strong); }
+  .lake-pop .lp-state {
+    margin-top: 9px; padding: 5px 8px; border-radius: 5px; text-align: center;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  }
 </style>
 </head>
 <body>
@@ -350,7 +430,7 @@
     <p class="eyebrow">Plan your trip</p>
     <h1>Plan a canoe route across Algonquin</h1>
     <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park.</p>
-    <div class="chip" id="stats">loading&hellip;</div>
+    <div class="chip" id="stats" hidden></div>
   </div>
   <section class="side-section">
     <div id="points"></div>
@@ -360,17 +440,27 @@
     </div>
     <div class="opts">
       <select id="mode">
-        <option value="balanced">balanced — carries + lakes crossed</option>
-        <option value="easiest">easiest carries — avoid steep portages</option>
-        <option value="carries">fewest carries</option>
-        <option value="meters">least total carrying — shortest walks</option>
+        <option value="balanced">balanced — portages + lakes crossed</option>
+        <option value="easiest">easiest portages — avoid the steep ones</option>
+        <option value="carries">fewest portages</option>
+        <option value="meters">least total portaging — shortest walks</option>
       </select>
       <label class="avoid"><input type="checkbox" id="avoid"/> avoid flagged obstacles</label>
     </div>
     <button class="go" id="go">Directions</button>
   </section>
   <section class="side-section grow">
-    <div id="samples"></div>
+    <!-- Static, not rendered by JS: the route names below and the copy in
+         "About" are the only prose a crawler sees on this page, and they are
+         the words people actually search for. The anchors carry the same
+         shareable hash the app writes itself, so a link to a sample route is
+         a real link rather than a click handler. -->
+    <div id="samples">
+      <p class="eyebrow">Try a sample route</p>
+      <a class="sample-btn" data-s="0" href="#r=Access%20Point%20%235%3A%20Canoe%20Lake~Otterslide%20Lake&amp;m=balanced"><div class="t">Canoe Lake access &rarr; Otterslide Lake</div><div class="m">the classic Hwy 60 chain &mdash; 5 portages &middot; 2.1 km</div></a>
+      <a class="sample-btn" data-s="1" href="#r=Access%20Point%20%2311%3A%20Lake%20Opeongo~Happy%20Isle%20Lake&amp;m=balanced"><div class="t">Lake Opeongo access &rarr; Happy Isle Lake</div><div class="m">big-water paddling from the park&rsquo;s largest lake &mdash; no portages</div></a>
+      <a class="sample-btn" data-s="2" href="#r=Access%20Point%20%239%3A%20Rock%20Lake~Pen%20Lake&amp;m=balanced"><div class="t">Rock Lake access &rarr; Pen Lake</div><div class="m">an easy first paddle off the Hwy 60 corridor &mdash; no portages</div></a>
+    </div>
     <div id="options"></div>
     <div id="summary"></div>
     <div class="warnbox" id="warnbox"></div>
@@ -379,9 +469,9 @@
   <footer class="side-footer">
     <div id="conds" class="conds"></div>
     <p>Portage data from OpenStreetMap; access points from official Algonquin data. <strong>Not a substitute for the official park map.</strong></p>
-    <span class="meta"><a href="#" id="creditsLink">data sources &amp; credits</a> ·
+    <span class="meta"><a href="#" id="creditsLink">about &amp; credits</a> ·
       <a href="mailto:me@yuchenhou.com?subject=Algonquin%20Planner%20feedback">feedback or a problem?</a><br>
-      Built <b id="bts">?</b></span>
+      Last updated on <b id="bts">?</b></span>
   </footer>
 </div>
 <div class="notice-veil" id="noticeVeil">
@@ -402,8 +492,31 @@
 </div>
 <div class="notice-veil" id="creditsVeil">
   <div class="notice credits" role="dialog" aria-modal="true" aria-labelledby="creditsTitle">
-    <p class="eyebrow">Credits</p>
-    <h2 id="creditsTitle">Data sources</h2>
+    <div class="credits-body">
+    <p class="eyebrow">About this planner</p>
+    <h2 id="creditsTitle">About &amp; credits</h2>
+    <!-- The prose a search engine actually reads. It lives in this dialog
+         rather than in the side panel on purpose: the panel is a workspace
+         and this is reference material nobody needs mid-route. Static markup
+         is indexed whether or not it is visible, so the click costs nothing. -->
+    <p>Pick any named lake, portage landing or official access point in
+       Algonquin Provincial Park and get a paddling route with every portage
+       listed in order: how long it is, how far it climbs, and an elevation
+       profile for the trail. Four ways to weight the answer:</p>
+    <ul class="about-modes">
+      <li><b>Balanced</b> &mdash; portages and the lakes you have to cross</li>
+      <li><b>Easiest portages</b> &mdash; steers around the steep ones</li>
+      <li><b>Fewest portages</b> &mdash; the shortest portage chain, whatever it costs</li>
+      <li><b>Least total portaging</b> &mdash; the shortest walks on the portages</li>
+    </ul>
+    <p>Built from OpenStreetMap &mdash; over 7,000 water bodies, more than 600
+       portages and 3,200 river reaches, plus all 29 official access points
+       &mdash; and refreshed as the map changes.</p>
+    <p class="about-by">Created by Yu Chen Hou. Open source at
+      <a href="https://github.com/yucombinator/trailstolove" target="_blank" rel="noopener">github.com/yucombinator/trailstolove</a>.</p>
+    <p class="about-caveat">Not a substitute for the official park map. Check
+       current conditions with Algonquin Provincial Park before you go.</p>
+    <p class="eyebrow about-eyebrow">Data sources</p>
     <dl>
       <dt>OpenStreetMap</dt>
       <dd>The route graph: lakes, rivers, portage trails, access points and Hwy 60.
@@ -422,6 +535,7 @@
       <dt>Map library</dt>
       <dd>Leaflet, BSD-2-Clause.</dd>
     </dl>
+    </div>
     <div class="row"><button class="primary" id="creditsClose">Close</button></div>
   </div>
 </div>
@@ -433,20 +547,22 @@
   </div>
 </details>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=a8fcd2ea6184"></script>
+<script src="router.js?v=c7b4edf11bcc"></script>
 <script>
-document.getElementById('stats').textContent = 'loading map data…';
-fetch('router_data.json?v=a8fcd2ea6184')
+// The lake/portage counts used to sit here. They went because "7,019 lakes"
+// counts every OSM water polygon in the park, including unnameable slivers and
+// the fragments that way-split lakes leave behind — it read as a boast and
+// invited the reading that it was wrong. The element stays, hidden, purely so
+// a failed data load still says something.
+fetch('router_data.json?v=c7b4edf11bcc')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
-document.getElementById('bts').textContent = document.lastModified;
-{
-  const nLakes = DATA.nodes.filter(n => n[2] === 'lake').length;
-  const nPort = new Set(DATA.edges.filter(e => e.k === 'portage').map(e => e.id)).size;
-  const el = document.getElementById('stats');
-  if (el) el.innerHTML = `<b>${nLakes.toLocaleString('en-CA')}</b> lakes &middot; <b>${nPort.toLocaleString('en-CA')}</b> portages`;
-}
+// Date only. document.lastModified carries a time nobody planning a trip
+// cares about, and "Built" was wrong anyway: the page is rebuilt, not authored.
+document.getElementById('bts').textContent =
+  new Date(document.lastModified).toLocaleDateString('en-CA',
+    { year: 'numeric', month: 'short', day: 'numeric' });
 if (!document.getElementById('go')) {   // self-heal: recreate the Directions button if absent
   const btn = document.createElement('button');
   btn.id = 'go'; btn.className = 'go'; btn.textContent = 'Directions';
@@ -484,6 +600,83 @@ if (DATA.park && DATA.park.features && DATA.park.features.length) {
     style: { color: '#3f5f3b', weight: 1.4, opacity: .65, fill: false, dashArray: '6 4' },
   }).addTo(map);
 }
+// What a paddler wants to know before choosing a lake, counted once over the
+// edge list rather than per popup open: how many portages it costs to get out,
+// how much walking that is, what else it connects to, and whether there is a
+// launch. Counts DISTINCT things — one portage is one trail however many
+// segments it has, and a river reach can meet the same water several times.
+// `dm` on a node is the bbox diagonal: the LONG way across, not the short
+// crossing. On a long thin lake that is several times the width you would
+// actually paddle, so it is labelled max extent.
+const waterFacts = new Map();
+{
+  const at = id => {
+    let f = waterFacts.get(id);
+    if (!f) waterFacts.set(id, f = { carries: new Set(), carryM: 0, waters: new Set(), access: 0 });
+    return f;
+  };
+  for (const e of DATA.edges) {
+    if (e.k === 'portage') {
+      at(e.s).carries.add(e.id); at(e.s).carryM += e.m || 0;
+      at(e.d).carries.add(e.id); at(e.d).carryM += e.m || 0;
+    } else if (e.k === 'channel' || e.k === 'river') {
+      at(e.s).waters.add(e.d); at(e.d).waters.add(e.s);
+    } else if (e.k === 'access') {
+      // an access edge hangs off a synthetic node and lands on real water
+      at(e.d).access++;
+    }
+  }
+}
+// Lake area in hectares, keyed by node id. `dm` is the bbox diagonal, which
+// overstates exposure on a long thin lake; area is what tells you how much
+// open water you are committing to.
+const lakeAreaHa = (() => {
+  const m = new Map();
+  for (const f of DATA.lakes.features) {
+    const a = f.properties.area_ha;
+    if (a == null) continue;
+    for (const id of (f.properties.ids || [f.properties.osm_id])) {
+      if (!m.has(id) || a > m.get(id)) m.set(id, a);
+    }
+  }
+  return m;
+})();
+// A long crossing on a big lake is where wind actually stops you. Calibrated
+// against a paddler's printed map sheet for the Burnt Island / Big Trout
+// area, where the wind-exposed sections are the long open-water legs: the one
+// confirmed by its distance label is 3.1 km across Burnt Island Lake, and
+// every sheltered lake paddle on the sheet is in the 300-500 m range. So
+// 3 km of continuous paddling in one body, not the whole trip.
+//
+// 500 ha of water is the smallest lake marked on that sheet (Burnt Island is
+// 638 ha, Big Trout 1,632), and it is the top 0.4% of the park's 7,036 water
+// bodies. For scale: the median is 1.2 ha, the 90th percentile 12.6 ha, and
+// Opeongo — the crossing everybody knows about — is 3,990.
+const WIND_AREA_HA = 500, WIND_CROSSING_M = 3000;
+const windExposed = (nodeId, m) =>
+  m >= WIND_CROSSING_M && (lakeAreaHa.get(nodeId) || 0) >= WIND_AREA_HA;
+// State the number that triggered it. "can be rough in wind" tells a paddler
+// they have already worked out; 4.3 km of open water tells them whether this
+// is the day to go.
+const windNote = m => `<br><span class="wind">\u26a0 ${(m / 1000).toFixed(1)} km of open water — can be rough in a headwind</span>`;
+
+function factsFor(p) {
+  const out = { carries: 0, carryM: 0, waters: 0, access: 0, dm: 0 };
+  for (const id of (p.ids || [p.osm_id])) {
+    const f = waterFacts.get(id);
+    if (!f) continue;
+    out.carries += f.carries.size; out.carryM += f.carryM;
+    out.waters += f.waters.size; out.access += f.access;
+    const n = idx.nodeById.get(id);
+    if (n && n.dm > out.dm) out.dm = n.dm;
+  }
+  return out;
+}
+// OSM names are third-party text going into innerHTML.
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtM = m => m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
+
 const lakes = L.geoJSON(DATA.lakes, {
   renderer: vecRenderer,
   style: () => LBASE,
@@ -493,10 +686,25 @@ const lakes = L.geoJSON(DATA.lakes, {
     // unnamed polygons don't soak up hovers — the named lake underneath wins
     l.options.interactive = !!p.name;
     if (p.name) l.bindTooltip(`<b>${p.name}</b><span class="tt-k">${p.kind || ''}</span>`, { sticky: true });
-    l.bindPopup(`<b>${p.name || 'unnamed water'}</b><br>kind: ${p.kind}<br>area: ${p.area_ha} ha
-      <br><button data-act="0" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as start</button>
-      <br><button data-act="end" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Set as destination</button>
-      <br><button data-act="add" data-id="${p.osm_id}" data-name="${p.name || 'unnamed water'}">Add after destination</button>`);
+    const fx = factsFor(p);
+    const nm = p.name || 'unnamed water';
+    const kindWord = { lake: 'lake', pond: 'pond', reservoir: 'reservoir' }[p.kind] || p.kind || 'water';
+    const facts = [];
+    facts.push(`<div><dt>Size</dt><dd>${p.area_ha != null ? esc(p.area_ha) + ' ha' : '—'}${fx.dm ? ` · max extent ≈ ${esc(fmtM(fx.dm))}` : ''}</dd></div>`);
+    facts.push(`<div><dt>Portages out</dt><dd>${fx.carries ? `${fx.carries} · ${esc(fmtM(fx.carryM))} of walking` : 'none'}</dd></div>`);
+    facts.push(`<div><dt>Connects to</dt><dd>${fx.waters ? `${fx.waters} other water${fx.waters > 1 ? 's' : ''}` : 'nothing mapped'}</dd></div>`);
+    if (fx.access) facts.push(`<div><dt>Access</dt><dd>${fx.access} point${fx.access > 1 ? 's' : ''}</dd></div>`);
+    l.bindPopup(`<div class="lake-pop">
+      <h3>${esc(nm)}</h3>
+      <div class="lp-kind">${esc(kindWord)}</div>
+      <dl class="lp-facts">${facts.join('')}</dl>
+      <div class="lp-acts">
+        <button class="lp-btn primary" data-act="0" data-id="${p.osm_id}" data-name="${esc(nm)}">Set as start</button>
+        <button class="lp-btn" data-act="end" data-id="${p.osm_id}" data-name="${esc(nm)}">Set as destination</button>
+        <button class="lp-btn ghost" data-act="add" data-id="${p.osm_id}" data-name="${esc(nm)}">Add as a stop</button>
+      </div>
+      <div class="lp-state" hidden></div>
+    </div>`);
   }
 }).addTo(map);
 let highlightedLakes = [];
@@ -565,7 +773,11 @@ const portages = L.geoJSON({ type: 'FeatureCollection', features:
     portageLayers[p.oid] = l;
     const warn = p.o && p.o.length ? ` ⚠ ${p.o.join(', ')}` : '';
     l.bindTooltip(`P ${p.m} m${warn}`, { sticky: true });
-    l.bindPopup(`<b>Portage — ${p.m} m</b>${p.n ? '<br>' + p.n : ''}${warn ? '<br>⚠ obstacles nearby: ' + p.o.join(', ') : ''}`);
+    l.bindPopup(`<div class="lake-pop">
+      <h3>Portage &mdash; ${p.m} m</h3>
+      ${p.n ? `<div class="lp-kind">${esc(p.n)}</div>` : ''}
+      ${warn ? `<div class="lp-note warn">\u26a0 ${p.o.join(', ')} nearby</div>` : ''}
+    </div>`);
   }
 }).addTo(map);
 let highlightedPortages = [];
@@ -587,9 +799,16 @@ for (const ap of DATA.official) {
     icon: L.divIcon({ className: 'ap-badge', html: `<span>${ap.num}</span>`, iconSize: [26, 20] })
   })
     .bindTooltip(`Access Point #${ap.num}: ${ap.name.replace(/^Access Point #\d+: /, '')}`, { direction: 'top' })
-    .bindPopup(`<b>Access Point #${ap.num}</b><br>${ap.name.replace(/^Access Point #\d+: /, '')}${ap.approx ? '<br><span style="color:#889">launch position approximate — see official map</span>' : ''}
-      <br><button data-act="0" data-id="${ap.id}" data-name="${ap.name}">Set as start</button>
-      <button data-act="end" data-id="${ap.id}" data-name="${ap.name}">Set as destination</button>`)
+    .bindPopup(`<div class="lake-pop">
+      <h3>${esc(ap.name.replace(/^Access Point #\d+: /, ''))}</h3>
+      <div class="lp-kind">Access Point #${ap.num}</div>
+      ${ap.approx ? '<div class="lp-note">Launch position approximate — check the official map</div>' : ''}
+      <div class="lp-acts">
+        <button class="lp-btn primary" data-act="0" data-id="${ap.id}" data-name="${esc(ap.name)}">Set as start</button>
+        <button class="lp-btn" data-act="end" data-id="${ap.id}" data-name="${esc(ap.name)}">Set as destination</button>
+      </div>
+      <div class="lp-state" hidden></div>
+    </div>`)
     .addTo(aps);
 }
 
@@ -632,6 +851,42 @@ function addStop() {
   // renumber stop labels
   for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
   row.input.focus();
+}
+function makeRow(label, removable) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'field';
+  // A stop row already has an ✕ and it removes the whole row, so it does not
+  // also get a clear button. From and Destination do.
+  wrapper.innerHTML = `<label>${label}</label>
+    <input autocomplete="off" placeholder="type a lake, river or access point…"/>
+    <div class="ac"></div>
+    ${removable ? '<button class="rm" title="remove stop">✕</button>'
+                : '<button class="clr" title="clear" aria-label="clear this field" hidden>✕</button>'}`;
+  const input = wrapper.querySelector('input');
+  attachAC(input, wrapper.querySelector('.ac'));
+  const row = { wrapper: wrapper, input: input };
+  if (removable) {
+    wrapper.querySelector('.rm').onclick = () => {
+      const k = rows.indexOf(row);
+      if (k >= 0) rows.splice(k, 1);
+      wrapper.remove();
+    };
+  } else {
+    const clr = wrapper.querySelector('.clr');
+    // Only when there is something to clear. The id lives in a data attribute
+    // and is what the router actually reads, so it has to go with the text —
+    // an empty box still holding an id would route to a lake you cannot see.
+    const sync = () => { clr.hidden = !input.value.trim(); };
+    input.addEventListener('input', sync);
+    clr.onclick = () => {
+      input.value = '';
+      delete input.dataset.id;
+      sync();
+      input.focus();
+    };
+    row.syncClear = sync;
+  }
+  return row;
 }
 // Unnamed pond/wetland slivers are the bulk of the graph but useless to search:
 // rank named waters first, then access points, and only surface unnamed slivers
@@ -680,6 +935,8 @@ function attachAC(input, ac) {
         input.value = h.name || 'unnamed water #' + h.id;
         input.dataset.id = h.id;
         ac.style.display = 'none';
+        const row = rows.find(r => r.input === input);
+        if (row && row.syncClear) row.syncClear();
       };
       ac.appendChild(d);
     }
@@ -756,11 +1013,20 @@ document.getElementById('sideHandle').onclick = () => {
 setTimeout(syncSheetVar, 300);
 document.getElementById('addStop').onclick = addStop;
 document.getElementById('mode').addEventListener('change', e => track('mode_change', { mode: e.target.value }));
-document.getElementById('avoid').addEventListener('change', e => track('avoid_toggle', { enabled: e.target.checked }));
 map.on('baselayerchange', e => track('basemap_change', { basemap: e.name }));
+// Off by default. It changes the answer for 83% of routes, and it is rarely
+// free: a clean line is often twice the portages. So it is offered, not
+// imposed — but it re-plans on change, because a tick that leaves the route
+// on screen computed with the old setting reads as a dead control.
+document.getElementById('avoid').addEventListener('change', e => {
+  track('avoid_toggle', { enabled: e.target.checked });
+  if (rows.length >= 2 && rows.every(r => r.input.dataset.id)) {
+    document.getElementById('go').click();
+  }
+});
 document.getElementById('swap').onclick = () => {
   const vals = rows.map(r => ({ v: r.input.value, id: r.input.dataset.id })).reverse();
-  rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; });
+  rows.forEach((r, i) => { r.input.value = vals[i].v; r.input.dataset.id = vals[i].id; if (r.syncClear) r.syncClear(); });
 };
 
 function setField(which, id) {   // which: row index or 'end'
@@ -769,6 +1035,7 @@ function setField(which, id) {   // which: row index or 'end'
   if (!node || !rows[k]) return;
   rows[k].input.value = node.name || 'unnamed water #' + id;
   rows[k].input.dataset.id = id;
+  if (rows[k].syncClear) rows[k].syncClear();
 }
 
 // The clicked lake becomes the new destination; the old destination is kept
@@ -797,12 +1064,31 @@ function relabelStops() {
   for (let i = 1; i < rows.length - 1; i++) rows[i].wrapper.querySelector('label').textContent = 'Stop ' + i;
 }
 map.on('popupopen', ev => {
-  ev.popup.getElement().querySelectorAll('button[data-act]').forEach(b => {
+  const el = ev.popup.getElement();
+  el.querySelectorAll('button[data-act]').forEach(b => {
     b.onclick = () => {
       if (b.dataset.act === 'add') addAfterDestination(Number(b.dataset.id));
       else setField(b.dataset.act, Number(b.dataset.id));
+      // Close it. The fields are set off-screen behind the panel, so leaving
+      // the popup open reads as a click that did nothing.
+      map.closePopup();
     };
   });
+  // Say what this lake already is in the current plan. Computed on open, not
+  // baked into the popup: the plan changes under a popup that is already open.
+  const btn = el.querySelector('button[data-act]');
+  const state = el.querySelector('.lp-state');
+  if (!btn || !state) return;
+  const id = Number(btn.dataset.id);
+  const last = rows.length - 1;
+  let label = '';
+  for (let k = 0; k < rows.length; k++) {
+    if (Number(rows[k].input.dataset.id) !== id) continue;
+    label = k === 0 ? 'your start' : k === last ? 'your destination' : 'stop ' + k;
+    break;
+  }
+  state.textContent = label;
+  state.hidden = !label;
 });
 
 // ---------- shareable URLs: restore a route from the hash ----------
@@ -816,7 +1102,8 @@ function applyHashRoute() {
   if (h.get('a')) document.getElementById('avoid').checked = true;
   while (rows.length > names.length) { const rm = rows[rows.length - 2]; const k = rows.indexOf(rm); if (k > 0 && rows[k].wrapper.querySelector('.rm')) { rows.splice(k, 1); rm.wrapper.remove(); } else break; }
   while (rows.length < names.length) addStop();
-  rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2]; });
+  rows.forEach((r, i2) => { r.input.value = names[i2]; r.input.dataset.id = ids[i2];
+                    if (r.syncClear) r.syncClear(); });
   track('route_from_url', { points: names.length, mode: h.get('m') || 'balanced' });
   document.getElementById('go').click();
   return true;
@@ -825,10 +1112,10 @@ function applyHashRoute() {
 // ---------- sample routes (onboarding; hidden after the first navigation) ----------
 const SAMPLES = [
   { label: 'Canoe Lake access → Otterslide Lake',
-    desc: 'the classic Hwy 60 chain — 5 carries · 2.1 km',
+    desc: 'the classic Hwy 60 chain — 5 portages · 2.1 km',
     from: 'Access Point #5: Canoe Lake', to: 'Otterslide Lake' },
   { label: 'Lake Opeongo access → Happy Isle Lake',
-    desc: 'big-water paddling from the park\u2019s largest lake — no portages',
+    desc: 'big-water paddling from the park’s largest lake — no portages',
     from: 'Access Point #11: Lake Opeongo', to: 'Happy Isle Lake' },
   { label: 'Rock Lake access → Pen Lake',
     desc: 'an easy first paddle off the Hwy 60 corridor — no portages',
@@ -844,13 +1131,15 @@ function runSample(s) {
   setField('end', tid.id);
   document.getElementById('go').click();
 }
-(function renderSamples() {
+// The sample routes live in the markup, not here. Rendering them from JS is
+// why a crawler saw none of these names: they are the only route-shaped text
+// on the page, and they are exactly what people search for. This only wires
+// the behaviour on. Each href is the same shareable hash the app writes.
+(function wireSamples() {
   const el = document.getElementById('samples');
   if (!el) return;
-  el.innerHTML = '<p class="eyebrow">Try a sample route</p>' + SAMPLES.map((s, i) =>
-    `<button class="sample-btn" data-s="${i}"><div class="t">${s.label}</div><div class="m">${s.desc}</div></button>`).join('');
   el.querySelectorAll('.sample-btn').forEach(b => {
-    b.onclick = () => runSample(SAMPLES[Number(b.dataset.s)]);
+    b.onclick = e => { e.preventDefault(); runSample(SAMPLES[Number(b.dataset.s)]); };
   });
 })();
 
@@ -907,15 +1196,15 @@ function profileSVG(pf, lenM) {
   const title = `${hi - lo} m of relief` + (up > 3 ? ` · +${Math.round(up)} m up` : '') +
                 (down < -3 ? ` · ${Math.round(-down)} m down` : '') + ` over ${lenM} m`;
   return `<svg class="prof" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="elevation profile">
-    <path d="${area}" fill="var(--carry)" opacity=".12"/>
-    <polyline points="${pts}" fill="none" stroke="var(--carry)" stroke-width="1.5"
+    <path d="${area}" fill="var(--portage)" opacity=".12"/>
+    <polyline points="${pts}" fill="none" stroke="var(--portage)" stroke-width="1.5"
       stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
     <title>${title}</title></svg>`;
 }
 const modeLabel = m => ({
-  balanced: 'balanced (carries + lakes)',
-  easiest: 'easiest carries (least climbing)',
-  carries: 'fewest carries', meters: 'least total carrying'
+  balanced: 'balanced (portages + lakes)',
+  easiest: 'easiest portages (least climbing)',
+  carries: 'fewest portages', meters: 'least total portaging'
 }[m] || m);
 
 function drawRoute(opt, pointIds) {
@@ -923,6 +1212,10 @@ function drawRoute(opt, pointIds) {
   highlightLakes(opt.res.nodeIds);
   highlightPortages(opt.res.legs.filter(e => e.k === 'portage').map(e => e.id));
   const res = opt.res;
+  // read early: the endpoint traverses below need the dot coordinates, and the
+  // two markers at the foot of this function are drawn from the same two
+  const s0 = idx.nodeById.get(res.nodeIds[0]);
+  const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
 
   // Every drawn path is remembered so a straight stub is never painted on top of
   // a real line that already covers the same water. The coverage rule itself
@@ -994,17 +1287,24 @@ function drawRoute(opt, pointIds) {
       icon: L.divIcon({ className: 'wp-badge', html: `<span>${k + 1}</span>`, iconSize: [22, 22] })
     }).addTo(routeLayer);
   };
-  let carryNo = 0;
+  let portageNo = 0;
   const obsWarn = e => (e.o && e.o.length) ? `<br><span class="warn">⚠ ${e.o.join(', ')}</span>` : '';
   let html = '';
+  // Say so when the route is clean. A paddler cannot otherwise tell whether
+  // "no ⚠ on any leg" means the water is fine or the data is thin — and with
+  // avoidance on it is the only signal that the toggle did anything.
+  if (!res.legs.some(e => e.o && e.o.length)) {
+    html += `<div class="route-clear">No dams, rapids or waterfalls flagged on this route${
+      document.getElementById('avoid').checked ? ' — avoidance is on' : ''}.</div>`;
+  }
   let i = 0;
   let gi = 0;
 
   // Paddling INSIDE a water body has no leg of its own: the graph jumps from the
   // landing to the take-out, so the distance you actually paddle appeared
-  // nowhere in the itinerary — a route could read "5 carries, 2 short paddles"
+  // nowhere in the itinerary — a route could read "5 portages, 2 short paddles"
   // while the summary said 76 km of paddling. Compute each traverse once, so
-  // the legs list can show it between the carries and the map can draw the
+  // the legs list can show it between the portages and the map can draw the
   // very same path without paying for it twice.
   const traverseCache = new Map();
   const traverseOf = j => {
@@ -1040,6 +1340,54 @@ function drawRoute(opt, pointIds) {
     return out;
   };
 
+  // Paddling at the two ENDS. traverseOf() can only describe a water body that
+  // has both an arrival and a departure, so it returns nothing for the first
+  // and last one — the route appeared to begin at the first portage, with the
+  // green dot sitting out in the lake and nothing drawn to it. This is the
+  // same shape as the interior traverse with the dot as the one open end.
+  //
+  // Not cosmetic. Canoe Lake to Burnt Island Lake is four portages with no
+  // paddling leg anywhere in the graph, yet there is 3.1 km of paddling out of
+  // Canoe Lake to reach the first portage and 3.3 km into Burnt Island Lake at
+  // the far end: undrawn, unlisted and uncounted in the km paddling total.
+  const WATER = new Set(['lake', 'pond', 'reservoir', 'reach']);
+  const openTraverse = (j, from, to) => {
+    const node = idx.nodeById.get(res.nodeIds[j]);
+    // an access endpoint is not water: its leg is already drawn as a spur
+    if (!node || !WATER.has(node.kind) || !from || !to) return null;
+    if (from[0] === to[0] && from[1] === to[1]) return null;
+    let coords = null, guess = false;
+    if (node.kind === 'reach') {
+      const lines = (DATA.reaches[res.nodeIds[j]] || {}).lines;
+      if (lines && lines.length) {
+        const a = Router.reachPointOn(lines, [from]);
+        const b = Router.reachPointOn(lines, [to]);
+        if (a && b && (a[0] !== b[0] || a[1] !== b[1])) { coords = [a, b]; guess = true; }
+      }
+    } else {
+      const feat = lakeGeoms[res.nodeIds[j]];
+      const path = feat ? Router.lakePath(from, to, feat) : null;
+      if (path) coords = Router.refinePath(path, feat, 40);
+    }
+    // The dot is an OSM centre for the whole body, which can land just outside
+    // the drawn (simplified) polygon. lakePath snaps such a point onto the
+    // shore, up to a few hundred metres away, so re-attach the dot at both
+    // ends or the line still stops short of the marker it is meant to meet.
+    if (coords) {
+      if (coords[0][0] !== from[0] || coords[0][1] !== from[1]) coords = [from, ...coords];
+      const e = coords[coords.length - 1];
+      if (e[0] !== to[0] || e[1] !== to[1]) coords = [...coords, to];
+    } else {
+      coords = [from, to]; guess = true;
+    }
+    const out = { coords, guess, m: 0 };
+    for (let q = 1; q < coords.length; q++) out.m += hav2(coords[q - 1], coords[q]);
+    return out;
+  };
+  const lastIdx = res.nodeIds.length - 1;
+  const firstT = openTraverse(0, [s0.lon, s0.lat], anchorOut[0]);
+  const lastT = openTraverse(lastIdx, anchorIn[lastIdx], [s1.lon, s1.lat]);
+
   // Consecutive nodes of the same lake are one crossing to a paddler, so
   // buffer them and emit a single step per water body.
   let run = null;
@@ -1049,7 +1397,8 @@ function drawRoute(opt, pointIds) {
     const km = (run.m / 1000).toFixed(run.m < 10000 ? 2 : 1);
     html += `<div class="leg leg-zoom" data-i="${gi}"><span class="n">${i}</span><div class="b">` +
             `<span class="r">Paddle ${km} km</span> — ${run.name}` +
-            `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}</div></div>`;
+            `${run.guess ? '<br><span style="color:#667">approximate</span>' : ''}` +
+            `${windExposed(run.id, run.m) ? windNote(run.m) : ''}</div></div>`;
     run = null;
   };
   // a reach inside a consumed same-reach pair is folded into that pair's row
@@ -1061,8 +1410,23 @@ function drawRoute(opt, pointIds) {
     if (!t || t.m < 100) return;
     const name = nameOf(res.nodeIds[j]);
     if (run && run.name === name) { run.m += t.m; run.guess = run.guess && t.guess; }
-    else { flushRun(); run = { name: name, m: t.m, guess: t.guess }; }
+    else { flushRun(); run = { id: res.nodeIds[j], name: name, m: t.m, guess: t.guess }; }
   };
+  // An endpoint paddle gets its own row rather than joining the buffered run:
+  // it is the first and last thing on the list, and no leg of its own to fold
+  // into. No leg-zoom either — there is no grouped index behind it to zoom to.
+  const paddleRow = (t, name, nodeId) => {
+    if (!t || t.m < 100) return;
+    flushRun();
+    i++;
+    const km = (t.m / 1000).toFixed(t.m < 10000 ? 2 : 1);
+    html += `<div class="leg"><span class="n">${i}</span><div class="b">` +
+            `<span class="r">Paddle ${km} km</span> — ${name}` +
+            `${t.guess ? '<br><span style="color:#667">approximate</span>' : ''}` +
+            `${windExposed(nodeId, t.m) ? windNote(t.m) : ''}</div></div>`;
+  };
+  paddleRow(firstT, nameOf(res.nodeIds[0]), res.nodeIds[0]);
+
 
   while (gi < grouped.length) {
     flushRun();
@@ -1073,15 +1437,15 @@ function drawRoute(opt, pointIds) {
     if (!foldStep) i++;
     const stepTag = `<span class="n">${i}</span>`;
     if (e.k === 'portage') {
-      carryNo++;
+      portageNo++;
       addLine(e.g, { color: '#d95f02', weight: 7, opacity: .95 });
       // portage geometry is route-oriented: g[0] is the landing on the from-lake
       const bp = e.g[0];
       L.marker([bp[1], bp[0]], {
-        icon: L.divIcon({ className: 'carry-badge', html: `<span>${carryNo}</span>`, iconSize: [22, 22] })
+        icon: L.divIcon({ className: 'portage-badge', html: `<span>${portageNo}</span>`, iconSize: [22, 22] })
       }).addTo(routeLayer);
       // uphill-direction arrow at the middle of the carried portage line —
-      // only when it's actually steep (5%+ grade); flat carries get no arrow
+      // only when it's actually steep (5%+ grade); flat portages get no arrow
       if (e.el !== null && e.el !== undefined && e.m > 0 && Math.abs(e.el) / e.m >= 0.05 && e.g.length >= 2) {
         const gp = e.g;
         const k = Math.floor((gp.length - 1) / 2);
@@ -1101,10 +1465,20 @@ function drawRoute(opt, pointIds) {
         : `<span class="el ${e.el >= 3 ? 'up' : ''}">${e.el >= 3 ? '↑ ' + e.el + ' m up' : ''}</span>` +
           ((e.ed || 0) >= 3 ? `<span class="el down">${e.el >= 3 ? ' · ' : ''}↓ ${e.ed} m down</span>` : '');
       const rate = Router.carryRating(e);
-      const rateTxt = rate
+      // "≈ flat" from the elevation change and "flat" from the grade say the
+      // same thing. Only the steep grades carry a percentage, so anything else
+      // that the elevation line already covered is dropped here.
+      const rateSaysFlat = rate && rate.cls === 'r-flat';
+      const rateTxt = rate && !(rateSaysFlat && elTxt.includes('flat'))
         ? `<span class="rate ${rate.cls}">${rate.label}${/steep|brutal/.test(rate.cls) && e.m ? ' · ' + Math.round(100 * Router.gradeOf(e)) + '%' : ''}</span>`
         : '';
-      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Carry ${carryNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${e.n ? '<br><span style="color:#667">' + e.n + '</span>' : ''}${obsWarn(e)}</div></div>`;
+      // An OSM name often carries its own distance — "Canoe Lake to Joe Lake
+      // Portage (295m)" against the 271 m we computed. Printing both reads as
+      // two lengths for one carry, which is what a commenter flagged on r/algonquinpark.
+      const carryName = e.n
+        ? e.n.replace(/\s*\(\s*(\d+(?:\.\d+)?)\s*m(?:et(?:re|er)s?)?\s*\)\s*$/i, '')
+        : '';
+      html += `<div class="leg leg-zoom" data-i="${gi}">${stepTag}<div class="b"><span class="p">Portage ${portageNo}: ${e.m} m</span> — ${nameOf(g.from)} → ${nameOf(g.to)}${elTxt ? ' · ' + elTxt : ''}${rateTxt ? ' · ' + rateTxt : ''}${profileSVG(e.pf, e.m)}${carryName ? '<br><span style="color:#667">' + carryName + '</span>' : ''}${obsWarn(e)}</div></div>`;
     } else if (e.k === 'access') {
       if (e.g && e.g.length >= 2) addLine(e.g, { color: '#1f78b4', weight: 6, opacity: .95 });
       const dir = e.s >= 1000000000000 ? 'Launch at ' : 'Take out at ';
@@ -1157,7 +1531,7 @@ function drawRoute(opt, pointIds) {
         // A river link's job is to attach a lake to its waterway; the paddling
         // itself is the reach traverse, already itemised. These legs are just
         // touch-point spurs of a metre or two, so their rows were pure noise
-        // between the carries.
+        // between the portages.
         const bareRiverLink = e.k === 'river' && e.m < 50;
         if (!handled && !bareRiverLink) {
           const label = e.k === 'channel' ? 'Paddle across the narrows' : 'Paddle';
@@ -1191,20 +1565,27 @@ function drawRoute(opt, pointIds) {
     gi += consumed;
   }
   flushRun();
+  paddleRow(lastT, nameOf(res.nodeIds[lastIdx]), res.nodeIds[lastIdx]);
 
   // Draw the traverses computed above. Same path, same distance as the legs
   // list — the itinerary and the map can no longer disagree. Order still
   // matters: real lines are laid down here, straight connectors last, so the
-  // dedupe always sees the good line first.
-  for (let j = 1; j < res.nodeIds.length - 1; j++) {
-    const t = traverseOf(j);
-    if (!t) continue;
+  // dedupe always sees the good line first. The two endpoint traverses lead,
+  // for the same reason: they are real lines and the interior ones may be
+  // guesses, and a guess must never be the one that gets painted.
+  const drawTraverse = t => {
+    if (!t) return;
     if (t.guess) {
       if (t.coords.length === 2) straight(t.coords[0], t.coords[1]);
       else pendingStubs.push(t.coords);
     } else {
       addPaddle(t.coords);
     }
+  };
+  drawTraverse(firstT);
+  drawTraverse(lastT);
+  for (let j = 1; j < res.nodeIds.length - 1; j++) {
+    drawTraverse(traverseOf(j));
   }
   // straight connectors last: addPaddle drops any already covered by a real
   // line. A bare two-point one stands in for water with no mapped path, so it
@@ -1227,8 +1608,6 @@ function drawRoute(opt, pointIds) {
       if (g && g.e.g) map.fitBounds(L.latLngBounds(g.e.g.map(c => L.latLng(c[1], c[0]))), { padding: fitPad(80) });
     };
   });
-  const s0 = idx.nodeById.get(res.nodeIds[0]);
-  const s1 = idx.nodeById.get(res.nodeIds[res.nodeIds.length - 1]);
   L.circleMarker([s0.lat, s0.lon], { renderer: routeRenderer, radius: 8, color: '#00441b', fillColor: '#238b45', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
   L.circleMarker([s1.lat, s1.lon], { renderer: routeRenderer, radius: 8, color: '#7f0000', fillColor: '#cb181d', fillOpacity: 1, weight: 2 }).addTo(routeLayer);
   return paddleM;          // metres actually drawn, after the dedupe
@@ -1249,7 +1628,7 @@ function renderOptionsPanel() {
   currentOptions.forEach((o, i) => {
     const via = o.res.nodeIds.map(nameOf).filter(nm => nm).slice(1, 4).join(' → ');
     cards += `<div class="optcard ${i === selectedOption ? 'sel' : ''}" data-i="${i}">
-      <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m</div>
+      <div class="t">Route ${String.fromCharCode(65 + i)} — ${o.res.carries} portages · ${o.res.portageM.toLocaleString()} m</div>
       <div class="m">${modeLabel(o.mode)} · ${o.res.edges} steps · ${o.res.lakes} lakes · via ${via}${o.res.nodeIds.length > 5 ? '…' : ''}</div></div>`;
   });
   optionsEl.innerHTML = cards;
@@ -1259,9 +1638,9 @@ function renderOptionsPanel() {
       renderOptionsPanel();
       const o = currentOptions[selectedOption];
       const paddleM = drawRoute(o, currentPoints);
-      const sumTxt = `${o.res.carries} carries · ${(paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
+      const sumTxt = `${o.res.carries} portages · ${(paddleM / 1000).toFixed(1)} km paddling · ${o.res.lakes} lakes`;
       const climbTot = Math.round(o.res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
-    summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} carries · ${o.res.portageM.toLocaleString()} m carrying · ${climbTot} m climb · ${o.res.lakes} lakes · ≈ ${(paddleM / 1000).toFixed(1)} km paddling`;
+    summaryEl.innerHTML = `<b>Route ${String.fromCharCode(65 + selectedOption)}</b> — ${o.res.carries} portages · ${o.res.portageM.toLocaleString()} m portaging · ${climbTot} m climb · ${o.res.lakes} lakes · ≈ ${(paddleM / 1000).toFixed(1)} km paddling`;
       showRoute(sumTxt);
     };
   });
@@ -1314,8 +1693,8 @@ document.getElementById('go').onclick = () => {
     renderOptionsPanel();
     const paddleM = drawRoute(options[0], pointIds);
     const climb0 = Math.round(options[0].res.legs.filter(e => e.k === 'portage').reduce((s2, e) => s2 + (e.el || 0), 0));
-    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> carries · <b>${options[0].res.portageM.toLocaleString()}</b> m carrying · <b>${climb0} m</b> climb · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(paddleM / 1000).toFixed(1)}</b> km paddling`;
-    showRoute(`${options[0].res.carries} carries · ${(paddleM / 1000).toFixed(1)} km paddling`);
+    summaryEl.innerHTML = `<b>${options[0].res.carries}</b> portages · <b>${options[0].res.portageM.toLocaleString()}</b> m portaging · <b>${climb0} m</b> climb · <b>${options[0].res.lakes}</b> lakes · ≈ <b>${(paddleM / 1000).toFixed(1)}</b> km paddling`;
+    showRoute(`${options[0].res.carries} portages · ${(paddleM / 1000).toFixed(1)} km paddling`);
   } catch (err) {
     warnbox.style.display = 'block';
     warnbox.textContent = 'Drawing failed: ' + (err && err.message ? err.message : err);
@@ -1340,7 +1719,7 @@ window.__app = { map, lakes, lakeGeoms, idx, routeLayer, currentOptions: () => c
   .catch(err => {
     console.error(err);
     const el = document.getElementById('stats');
-    if (el) el.textContent = 'failed to load map data — refresh';
+    if (el) { el.hidden = false; el.textContent = 'failed to load map data — refresh'; }
   });
 </script>
 <script>
