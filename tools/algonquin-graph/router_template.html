@@ -430,7 +430,7 @@
     <p class="eyebrow">Plan your trip</p>
     <h1>Plan a canoe route across Algonquin</h1>
     <p class="intro-copy">Point-to-point paddling directions over every named lake, portage and river in Algonquin Provincial Park.</p>
-    <div class="chip" id="stats">loading&hellip;</div>
+    <div class="chip" id="stats" hidden></div>
   </div>
   <section class="side-section">
     <div id="points"></div>
@@ -549,7 +549,11 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="router.js?v=__BUILD__"></script>
 <script>
-document.getElementById('stats').textContent = 'loading map data…';
+// The lake/portage counts used to sit here. They went because "7,019 lakes"
+// counts every OSM water polygon in the park, including unnameable slivers and
+// the fragments that way-split lakes leave behind — it read as a boast and
+// invited the reading that it was wrong. The element stays, hidden, purely so
+// a failed data load still says something.
 fetch('router_data.json?v=__BUILD__')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
@@ -559,12 +563,6 @@ const idx = Router.buildIndex(DATA);
 document.getElementById('bts').textContent =
   new Date(document.lastModified).toLocaleDateString('en-CA',
     { year: 'numeric', month: 'short', day: 'numeric' });
-{
-  const nLakes = DATA.nodes.filter(n => n[2] === 'lake').length;
-  const nPort = new Set(DATA.edges.filter(e => e.k === 'portage').map(e => e.id)).size;
-  const el = document.getElementById('stats');
-  if (el) el.innerHTML = `<b>${nLakes.toLocaleString('en-CA')}</b> lakes &middot; <b>${nPort.toLocaleString('en-CA')}</b> portages`;
-}
 if (!document.getElementById('go')) {   // self-heal: recreate the Directions button if absent
   const btn = document.createElement('button');
   btn.id = 'go'; btn.className = 'go'; btn.textContent = 'Directions';
@@ -1721,7 +1719,7 @@ window.__app = { map, lakes, lakeGeoms, idx, routeLayer, currentOptions: () => c
   .catch(err => {
     console.error(err);
     const el = document.getElementById('stats');
-    if (el) el.textContent = 'failed to load map data — refresh';
+    if (el) { el.hidden = false; el.textContent = 'failed to load map data — refresh'; }
   });
 </script>
 <script>
