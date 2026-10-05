@@ -243,16 +243,24 @@ describe('carry rating and effort', () => {
 describe('functionality: planning a trip', () => {
   // Golden routes. If a cost model changes, this names what moved and by how
   // much, instead of leaving a human to spot it on a screenshot.
+  // Re-baselined 2026-10-05. Two upstream changes moved these: reaches tagged
+  // rapids=yes / canoe=no are priced like a carry instead of free, and the
+  // search index answers to name variants. Petawawa -> Opeongo went 1 carry ->
+  // 7 because the river no longer prices as the cheap way round. On the
+  // published-trip backtest (data/tripreports_reference.md) that same change
+  // took routes matching a real report within 25% from 4 to 6, which is the
+  // number that matters; these goldens only pin the current graph so a later
+  // drift still shows up as a named diff rather than silence.
   const GOLDEN = [
-    ['Access Point #5: Canoe Lake', 'Booth Lake', 'balanced', { carries: 8, portageM: 5784, lakes: 15 }],
-    ['Access Point #5: Canoe Lake', 'Booth Lake', 'easiest',   { carries: 7, portageM: 3610, lakes: 16 }],
-    ['Access Point #5: Canoe Lake', 'Booth Lake', 'carries',   { carries: 2, portageM: 846,  lakes: 18 }],
-    ['Access Point #5: Canoe Lake', 'Booth Lake', 'meters',    { carries: 2, portageM: 846,  lakes: 19 }],
-    ['Canoe Lake', 'Lake Opeongo', 'balanced',  { carries: 7, portageM: 5140, lakes: 12 }],
-    ['Canoe Lake', 'Lake Opeongo', 'easiest',   { carries: 6, portageM: 2966, lakes: 13 }],
-    ['Canoe Lake', 'Lake Opeongo', 'meters',    { carries: 2, portageM: 846,  lakes: 15 }],
-    ['Petawawa River', 'Lake Opeongo', 'balanced', { carries: 1, portageM: 1893, lakes: 5 }],
-    ['Petawawa River', 'Lake Opeongo', 'meters',    { carries: 2, portageM: 476,  lakes: 15 }],
+    ['Access Point #5: Canoe Lake', 'Booth Lake', 'balanced', { carries: 9, portageM: 5849, lakes: 26 }],
+    ['Access Point #5: Canoe Lake', 'Booth Lake', 'easiest',   { carries: 9, portageM: 5849, lakes: 26 }],
+    ['Access Point #5: Canoe Lake', 'Booth Lake', 'carries',   { carries: 6, portageM: 12237, lakes: 32 }],
+    ['Access Point #5: Canoe Lake', 'Booth Lake', 'meters',    { carries: 7, portageM: 4256, lakes: 31 }],
+    ['Canoe Lake', 'Lake Opeongo', 'balanced',  { carries: 5, portageM: 2803, lakes: 12 }],
+    ['Canoe Lake', 'Lake Opeongo', 'easiest',   { carries: 4, portageM: 2280, lakes: 12 }],
+    ['Canoe Lake', 'Lake Opeongo', 'meters',    { carries: 2, portageM: 1117, lakes: 18 }],
+    ['Petawawa River', 'Lake Opeongo', 'balanced', { carries: 7, portageM: 8550, lakes: 14 }],
+    ['Petawawa River', 'Lake Opeongo', 'meters',    { carries: 7, portageM: 8099, lakes: 15 }],
   ];
 
   for (const [a, b, mode, want] of GOLDEN) {
@@ -284,18 +292,26 @@ describe('functionality: planning a trip', () => {
                           ['Petawawa River', 'Lake Opeongo']]) {
       const least = plan(a, b, 'meters');
       for (const m of ['balanced', 'easiest', 'carries']) {
-        assert.ok(least.portageM <= plan(a, b, m).portageM,
-          `${a}->${b} [${m}]: walks ${plan(a, b, m).portageM}m, less than meters=${least.portageM}m`);
+        const other = plan(a, b, m);
+        // A mode that runs the rapids may legitimately walk further: metres
+        // mode prices a rapids leg at 6x its length precisely so a walker is
+        // not routed down Class II water to save carrying distance. The
+        // invariant therefore only holds against a mode that stayed dry.
+        if (other.legs.some(e => e.haz)) continue;
+        assert.ok(least.portageM <= other.portageM,
+          `${a}->${b} [${m}]: walks ${other.portageM}m without touching rapids, less than meters=${least.portageM}m`);
       }
     }
   });
-
-  test('all four modes return different routes', () => {
+  test('the four cost models do not all collapse to one path', () => {
+    // They are allowed to agree: balanced and easiest pick the same route on
+    // some pairs now that hazard pricing dominates the carry multiplier that
+    // used to separate them. What is never acceptable is every model agreeing,
+    // which is the signature of a cost function doing nothing.
     const sig = m => plan('Access Point #5: Canoe Lake', 'Booth Lake', m).nodeIds.join(',');
     const all = ['balanced', 'easiest', 'carries', 'meters'].map(sig);
-    assert.equal(new Set(all).size, 4, 'two cost models produced the same path');
+    assert.ok(new Set(all).size >= 2, 'every cost model produced the same path');
   });
-
   test('a route starts and ends where asked', () => {
     for (const [a, b] of [['Canoe Lake', 'Lake Opeongo'],
                           ['Petawawa River', 'Booth Lake']]) {
@@ -358,22 +374,22 @@ describe('functionality: planning a trip', () => {
   });
 
   // 5,098 river hazard rows used to be discarded, so this toggle was inert.
-  test('avoiding flagged obstacles changes the route', () => {
-    const off = plan('Petawawa River', 'Lake Opeongo', 'balanced');
-    const on = Router.chainRoutes(data, idx, ['Petawawa River', 'Lake Opeongo'].map(idOf),
-                                  'balanced', true, 1)[0].res;
-    assert.notDeepEqual(on.nodeIds, off.nodeIds,
-      'avoiding hazards changed nothing - obstacles are not attached to river links');
-  });
-
-  test('the avoided route carries no flagged legs', () => {
-    const r = Router.chainRoutes(data, idx, ['Petawawa River', 'Lake Opeongo'].map(idOf),
-                                 'balanced', true, 1)[0].res;
-    for (const e of r.legs) {
-      assert.ok(!e.o || !e.o.length, `avoided route still uses a flagged ${e.k} leg`);
+  // 5,098 river hazard rows used to be discarded, so this toggle was inert.
+  // The Petawawa depends on flagged legs, so turning avoidance on makes it
+  // UNROUTABLE rather than merely different. Both outcomes are correct; the one
+  // that never is, is a route that still carries an obstacle.
+  test('avoiding flagged obstacles never routes through one', () => {
+    const chain = ['Petawawa River', 'Lake Opeongo'].map(idOf);
+    const off = Router.chainRoutes(data, idx, chain, 'balanced', false, 1)[0].res;
+    const on = Router.chainRoutes(data, idx, chain, 'balanced', true, 1)[0];
+    if (on) {
+      assert.notDeepEqual(on.nodeIds, off.nodeIds,
+        'avoiding hazards changed nothing - obstacles are not attached to river links');
+      for (const e of on.legs) {
+        assert.ok(!e.o || !e.o.length, `avoided route still uses a flagged ${e.k} leg`);
+      }
     }
   });
-
   test('hazards reach the edges the UI reads', () => {
     const flagged = data.edges.filter(e => e.o && e.o.length);
     assert.ok(flagged.length > 100, 'almost nothing is flagged');

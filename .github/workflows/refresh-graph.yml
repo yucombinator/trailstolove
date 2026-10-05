@@ -134,15 +134,33 @@ jobs:
       # regressing, and the pipeline units. No test framework to install:
       # node:test and unittest are both stdlib.
       #
-      # Advisory, not a gate. This job exists to refresh the graph, and a unit
-      # test must never be the reason it stops updating. The gate that actually
-      # matters, whether the page agrees with the router it ships beside, lives
-      # in pages.yml where it can block a deploy.
-      - name: Run tests (advisory)
-        continue-on-error: true
+      # This WAS advisory — continue-on-error, on the reasoning that a unit test
+      # must never be the reason the graph stops refreshing. That held for a
+      # long time and then bit: 12 golden tests sat failing and nothing said so,
+      # because the tests that would have caught a routing regression were
+      # decorative. A refresh that publishes a graph nobody is checking is a
+      # refresh that can quietly get worse every night. The safety net has to
+      # be load-bearing, so this gates now.
+      #
+      # If a future OSM refresh legitimately moves the goldens, re-baseline in
+      # the same commit that moves them, with the reason in the message.
+      - name: Run planner tests (gate)
+        run: sh tools/algonquin-graph/tests/run.sh
+      # The page loads the bundle copy, so a change to tools/algonquin-graph/
+      # router.js or router_template.html that is not mirrored into
+      # content/algonquin deploys the OLD script and the feature silently does
+      # not exist. That happened for real: two consecutive Deploy runs failed on
+      # this assertion hours after the commits that caused it. Catch it here,
+      # where it is created, instead of at deploy time.
+      - name: Published bundle matches its sources
         run: |
-          sh tools/algonquin-graph/tests/run.sh || \
-            echo "::error::planner tests failed; the data refresh continues anyway"
+          for f in router.js; do
+            if ! diff -q "tools/algonquin-graph/$f" "content/algonquin/$f" >/dev/null; then
+              echo "::error::content/algonquin/$f is stale — copy it from tools/algonquin-graph/$f (python3 tools/algonquin-graph/sync_build.py)"
+              exit 1
+            fi
+          done
+          echo "bundle matches sources"
 
       # Guards against the silent-drift class of bug: a stale generator writing
       # a payload missing fields the UI reads (e.g. elevation profiles).
