@@ -547,14 +547,14 @@
   </div>
 </details>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="router.js?v=781544e7cc9f"></script>
+<script src="router.js?v=729d6bb96c13"></script>
 <script>
 // The lake/portage counts used to sit here. They went because "7,019 lakes"
 // counts every OSM water polygon in the park, including unnameable slivers and
 // the fragments that way-split lakes leave behind — it read as a boast and
 // invited the reading that it was wrong. The element stays, hidden, purely so
 // a failed data load still says something.
-fetch('router_data.json?v=781544e7cc9f')
+fetch('router_data.json?v=729d6bb96c13')
   .then(r => { if (!r.ok) throw new Error('map data HTTP ' + r.status); return r.json(); })
   .then(DATA => {
 const idx = Router.buildIndex(DATA);
@@ -1552,6 +1552,20 @@ function drawRoute(opt, pointIds) {
           }
         }
       }
+    }
+    // Rapids. OSM tags them (rapids=yes, canoe=no) and we were ignoring both,
+    // so a leg over Class I/II rapids either looked like ordinary flat water or
+    // refused to route at all — the Petawawa has 40 rapids-tagged ways and no
+    // portage mapped anywhere along it. The planner now prices these like a
+    // carry, so a real portage wins when one exists; this is the half of the
+    // bargain that reaches the reader. It is deliberately loud: a paddler who
+    // reads past a grey parenthetical is worse off than one who was told no.
+    if (e.haz) {
+      html += `<div class="leg leg-haz" data-i="${gi}"><div class="b"><span class="hazmark">Rapids on this stretch</span>`
+        + `<span class="hazbody">This water is tagged rapids, or not canoeable. It is passable but `
+        + `you will likely want to portage around it, and where the portage is not in the map this `
+        + `route has nowhere to tell you it is there. Check conditions with the park before you go.</span>`
+        + `</div></div>`;
     }
     // The divider belongs to the end of the step, which is not always g.to — a
     // same-reach pair ends two legs along. Emitted from one place on purpose:

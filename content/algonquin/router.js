@@ -47,10 +47,26 @@
   // paddler actually weighs: how many carries, how far you walk, how hard they
   // are, and a blend that also charges for the water you have to cross.
   function cost(e, mode, avoidObstacles, penalty, idx) {
+    // A shoreline-only link between two differently named bodies is real
+    // geometry but not a crossing: it is marked `ph` by build_page.py. Letting
+    // it through priced a phantom paddle at zero and stitched the whole graph
+    // into one component — Tim River -> Longbow Lake came back "0 portages".
+    if (e.ph) return null;
     if (avoidObstacles && e.o && e.o.length) return null;
     if (penalty) {
       const f = penalty.get(e);
       if (f) return cost(e, mode, avoidObstacles, null, idx) * f;
+    }
+    if (e.haz) {
+      // Rapids are paddlable, not impassable — but they must never be the
+      // cheap way round. Price them like a portage so a real carry wins when
+      // one exists, and fall back to the rapids when the only way through is
+      // the water. The directions carry the warning; this only orders them.
+      const f = 6;
+      if (mode === "carries") return 0.5;
+      if (mode === "meters") return e.m * f;
+      if (mode === "easiest") return e.m * f * 4;
+      return e.m * f;
     }
     if (e.k === "portage") {
       if (mode === "carries") return 1e6 + e.m;     // count first, metres only to break ties
