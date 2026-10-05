@@ -5,6 +5,7 @@ Embeds a compact graph (nodes, edges with drawing geometry), simplified lake
 polygons and reach polylines. Routing runs client-side (Dijkstra in router.js).
 """
 import csv
+import os
 import hashlib
 import json
 import math
@@ -101,6 +102,9 @@ def park_boundary():
 
 
 
+REACH_LAKE_MIN_M = float(os.environ.get("AG_REACH_LAKE_MIN", "0"))
+
+
 def main():
     wgeo = {(e["type"], e["id"]): e for e in
             json.loads((RAW / "water_geom.json").read_text())["elements"]}
@@ -156,7 +160,8 @@ def main():
         wid = int(r["id"])
         name = r["name"] or None
         water[wid] = {"name": name, "kind": r["kind"], "lat": float(r["lat"]),
-                      "lon": float(r["lon"]), "area": float(r["area_m2"])}
+                      "lon": float(r["lon"]), "area": float(r["area_m2"]),
+                      "hazard": int(r.get("hazard") or 0)}
         nodes.append([wid, name, r["kind"], float(r["lat"]), float(r["lon"]), int(r["dm"])])
 
     # ---- edges: portages ----
@@ -248,6 +253,8 @@ def main():
     link_edges = []
     for r in load_csv("water_links.csv"):
         a, b = int(r["from_id"]), int(r["to_id"])
+        ph = False
+        haz = 0
         if r["kind"] == "river":
             lake_id, reach_id = (a, b) if b < 0 else (b, a)
             wa = water.get(lake_id)
@@ -266,10 +273,24 @@ def main():
             g = [[r5(landing["lon"]), r5(landing["lat"])],
                  [r5(nearest[1]), r5(nearest[0])]]
             m = round(hav(landing["lat"], landing["lon"], nearest[0], nearest[1]))
+            # A reach point a metre from a lake is a stitching artefact, not a
+            # creek mouth. TUNABLE so the backtest can sweep it.
+            if m < REACH_LAKE_MIN_M:
+                continue
+            haz = int(water[reach_id].get("hazard") or 0)
         else:
             wa, wb = water.get(a), water.get(b)
             if not wa or not wb:
                 continue
+            # A shared shoreline only means you can PADDLE between two bodies
+            # when they are the SAME water split across OSM polygons. Anything
+            # else — two different names, or an unnamed endpoint such as a
+            # river reach — is real geometry but not a crossing, and at m=0 it
+            # was pricing as a free paddle. That stitched the graph into one
+            # component and invented water routes that do not exist: Tim River
+            # -> Longbow Lake came back "0 portages" by way of a reach-to-lake
+            # channel, which a both-must-be-named test let straight through.
+            ph = not (wa["name"] and wb["name"] and wa["name"] == wb["name"])
             pa, pb = ring_pts(a), ring_pts(b)
             if not pa or not pb:
                 continue
@@ -281,12 +302,17 @@ def main():
             else:
                 g = [[r5(va["lon"]), r5(va["lat"])], [r5(vb["lon"]), r5(vb["lat"])]]
                 m = round(hav(va["lat"], va["lon"], vb["lat"], vb["lon"]))
+            haz = 0
         for s_node, d_node, g_oriented in ((a, b, g), (b, a, g[::-1])):
             ro = sorted(set(river_obs.get(-(s_node * 2000000000 + d_node), [])))
             link_edges.append({"s": s_node, "d": d_node, "k": r["kind"], "m": m,
-                               "n": r["via"], "o": ro, "g": g_oriented})
+                               "n": r["via"], "o": ro, "g": g_oriented,
+                               **({"ph": 1} if ph else {}),
+                               **({"haz": 1} if haz else {})})
     edges.extend(link_edges)
-    print(f"link edges: {len(link_edges)}")
+    print(f"link edges: {len(link_edges)} "
+          f"(phantom shoreline-only: {sum(1 for e in link_edges if e.get('ph'))})")
+    print(f"rapids-flagged reaches: {sum(1 for v in water.values() if v.get('hazard'))}")
 
     # ---- access nodes + edges ----
     official_geo = {r["num"]: r for r in load_csv("access_official_geo.csv")}
@@ -421,7 +447,43 @@ def main():
         for r in load_csv("conditions.csv"):
             conds.append({"cat": r["category"], "scope": r["scope"] or "park-wide",
                           "note": r["note"], "src": r["source"], "as_of": r["as_of"]})
-
+    # ---- merge same-named lakes into one node ----
+    # A lake drawn as several OSM polygons becomes several nodes, tied together
+    # only where a pair happens to fall within ADJ_MAX of each other. If a lake
+    # has five polygons and only three pairs touch, the lake is internally
+    # disconnected and every route through it has to go around — inflating carry
+    # counts, and in the other direction letting the router find shortcuts across
+    # the pieces. Merging makes lake identity explicit rather than inferred from
+    # proximity. The cross-lake `channel` edges that used to stitch the pieces
+    # together collapse to self-loops and are dropped.
+    if os.environ.get("AG_MERGE_LAKES", "1") == "1":
+        groups = {}
+        for r in load_csv("water.csv"):
+            if r["name"] and r["kind"] != "reach":
+                groups.setdefault(r["name"], []).append(int(r["id"]))
+        m = {}
+        for ids in groups.values():
+            if len(ids) < 2:
+                continue
+            keep = max(ids, key=lambda i: water[i]["area"])
+            for i in ids:
+                if i != keep:
+                    m[i] = keep
+        def rid(i):
+            seen = set()
+            while i in m and i not in seen:
+                seen.add(i); i = m[i]
+            return i
+        if m:
+            nodes = [r for r in nodes if r[0] not in m]
+            kept = []
+            for e in edges:
+                s2, d2 = rid(e["s"]), rid(e["d"])
+                if s2 == d2 and e["k"] == "channel":
+                    continue
+                kept.append({**e, "s": s2, "d": d2})
+            edges = kept
+            print(f"merged {len(m)} lake polygons into {len(set(m.values()))} lakes")
     data = {
         "center": [round(center["lat"], 6), round(center["lon"], 6)],
         "nodes": nodes,

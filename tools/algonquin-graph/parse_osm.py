@@ -249,11 +249,21 @@ def main():
         length, pts, name_count = 0.0, [], {}
         seen_pairs = set()
         wlines = []
+        hazard = 0
         for wid in wids:
             w = ways[wid]
-            nm = w.get("tags", {}).get("name")
+            t = w.get("tags", {})
+            nm = t.get("name")
             if nm:
                 name_count[nm] = name_count.get(nm, 0) + 1
+            # OSM marks hazards explicitly and the planner was ignoring both:
+            # 136 ways carry rapids=yes park-wide and 316 carry canoe=no. The
+            # Petawawa has 40 rapids-tagged ways and no portage mapped at all,
+            # so a route over it was either impossible or silently wrong. Flag
+            # the reach so the router can price it honestly and the directions
+            # can say "rapids — check for a portage".
+            if t.get("rapids") or t.get("canoe") == "no":
+                hazard = 1
             coords = [node_pos[n] for n in w["nodes"] if n in node_pos]
             wlines.append([[lo, la] for (la, lo) in coords])
             for a, b in zip(coords, coords[1:]):
@@ -278,7 +288,7 @@ def main():
         rid = -len(reaches) - 1
         reach_ways[str(rid)] = {"name": name, "lines": wlines}
         reaches.append({
-            "reach_id": rid, "name": name,
+            "reach_id": rid, "name": name, "hazard": hazard,
             "length_m": round(length, 1),
             "lat": round(mid[0], 6), "lon": round(mid[1], 6),
             "pts": pts[::step],
@@ -487,17 +497,18 @@ def main():
     (DATA / "reach_lines.json").write_text(json.dumps(reach_ways, ensure_ascii=False))
     with open(DATA / "water.csv", "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["id", "name", "kind", "lat", "lon", "area_m2", "major", "dm"])
+        w.writerow(["id", "name", "kind", "lat", "lon", "area_m2", "major", "dm", "hazard"])
         for oid, lk in lakes.items():
             # crossing scale: bbox diagonal in metres (paddling-distance proxy)
             b = lk["bbox"]
             dm = round(hav(b[0], b[1], b[2], b[3]))
             w.writerow([oid, lk["name"] or "", lk["kind"],
                         round(lk["lat"], 6), round(lk["lon"], 6),
-                        round(lk["area"]), 1 if lk["name"] else 0, dm])
+                        round(lk["area"]), 1 if lk["name"] else 0, dm, 0])
         for r in reaches:
             w.writerow([r["reach_id"], r["name"], "reach",
-                        r["lat"], r["lon"], 0, 0, round(r["length_m"] / 2)])
+                        r["lat"], r["lon"], 0, 0, round(r["length_m"] / 2),
+                        r["hazard"]])
 
     # ---------- 7d) backcountry campsites ----------
     camps = []

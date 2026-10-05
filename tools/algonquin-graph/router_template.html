@@ -1553,6 +1553,20 @@ function drawRoute(opt, pointIds) {
         }
       }
     }
+    // Rapids. OSM tags them (rapids=yes, canoe=no) and we were ignoring both,
+    // so a leg over Class I/II rapids either looked like ordinary flat water or
+    // refused to route at all — the Petawawa has 40 rapids-tagged ways and no
+    // portage mapped anywhere along it. The planner now prices these like a
+    // carry, so a real portage wins when one exists; this is the half of the
+    // bargain that reaches the reader. It is deliberately loud: a paddler who
+    // reads past a grey parenthetical is worse off than one who was told no.
+    if (e.haz) {
+      html += `<div class="leg leg-haz" data-i="${gi}"><div class="b"><span class="hazmark">Rapids on this stretch</span>`
+        + `<span class="hazbody">This water is tagged rapids, or not canoeable. It is passable but `
+        + `you will likely want to portage around it, and where the portage is not in the map this `
+        + `route has nowhere to tell you it is there. Check conditions with the park before you go.</span>`
+        + `</div></div>`;
+    }
     // The divider belongs to the end of the step, which is not always g.to — a
     // same-reach pair ends two legs along. Emitted from one place on purpose:
     // when the drawing branches did their own `continue`, a stop the route had
