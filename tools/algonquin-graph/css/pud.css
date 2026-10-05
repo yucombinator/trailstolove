@@ -1,0 +1,346 @@
+
+  :root {
+    --canvas: #f5f4ed; --surface: #fffef8; --surface-raised: rgba(255,254,248,.93);
+    --ink: #18362d; --ink-muted: #60756d; --line: #d9ddd3;
+    --accent: #176b4a; --accent-strong: #0c5237; --accent-soft: #dceadd;
+    --paddle: #1f78b4; --portage: #d95f02; --danger: #b30000;
+    --shadow: 0 12px 36px rgba(25,55,45,.14);
+  }
+  html, body { margin: 0; height: 100%; font: 13px/1.45 -apple-system, "Segoe UI", sans-serif; }
+  #map { position: absolute; inset: 0; background: #eef2ec; }
+  /* faded basemap: desaturate + lift the tiles so the lake polygons pop */
+  .leaflet-tile-pane { opacity: .72; filter: saturate(.55) contrast(.88) brightness(1.04); }
+  .side {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 356px; z-index: 1000;
+    background: var(--surface); border-right: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .side-header { display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px 16px; border-bottom: 1px solid var(--line); }
+  .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); }
+  .brand-mark { width: 40px; height: 40px; border-radius: 50%; background: var(--accent);
+    color: var(--surface); display: grid; place-items: center; }
+  .brand-mark svg { width: 26px; height: 26px; }
+  .brand-name { display: block; font: 700 18px/1.05 Georgia, "Times New Roman", serif; }
+  .brand-sub { display: block; margin-top: 3px; color: var(--ink-muted);
+    font: 700 10px/1.05 -apple-system, "Segoe UI", sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+  .side-intro { padding: 14px 22px 12px; border-bottom: 1px solid var(--line); }
+  .eyebrow { margin: 0 0 8px; color: var(--accent); font: 800 10px/1 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .18em; text-transform: uppercase; }
+  .side-intro h1 { margin: 0; font: 500 20px/1.12 Georgia, "Times New Roman", serif;
+    letter-spacing: -.02em; color: var(--ink); }
+  .intro-copy { margin: 7px 0 10px; max-width: 300px; color: var(--ink-muted);
+    font: 12.5px/1.45 Georgia, "Times New Roman", serif; }
+  .chip { display: inline-flex; align-items: baseline; gap: 7px; padding: 7px 11px;
+    background: var(--accent-soft); color: var(--accent-strong); border-radius: 4px;
+    font: 800 10px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+  .chip b { font: 700 15px/1 Georgia, serif; letter-spacing: 0; }
+  .side-section { padding: 10px 22px 12px; border-bottom: 1px solid var(--line); }
+  .side-section.grow { padding-bottom: 8px; }
+  #points { margin: 2px 0; }
+  .field { position: relative; margin: 6px 0; }
+  .field label { font: 700 10px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-muted); }
+  .field input {
+    width: 100%; box-sizing: border-box; margin-top: 3px; padding: 7px 30px 7px 10px; font-size: 13px;
+    color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    outline: none;
+  }
+  .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .field .rm {
+    position: absolute; right: 7px; bottom: 9px;
+    border: 0; background: var(--accent-soft); color: var(--accent-strong); border-radius: 50%;
+    width: 20px; height: 20px; cursor: pointer; font-size: 11px; line-height: 1;
+  }
+  /* Clear-a-field, deliberately unlike the stop row's remove-row ✕: no filled
+     disc, just a quiet glyph in the padding the input already reserves. */
+  .field .clr {
+    position: absolute; right: 5px; bottom: 7px; width: 20px; height: 20px;
+    border: 0; background: none; color: var(--ink-muted); border-radius: 50%;
+    cursor: pointer; font-size: 12px; line-height: 1;
+  }
+  .field .clr:hover { color: var(--ink); background: var(--accent-soft); }
+  .field .clr:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .ac {
+    position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); z-index: 1200;
+    border: 1px solid var(--line); border-top: 0; max-height: 240px; overflow: auto;
+    box-shadow: var(--shadow); display: none; border-radius: 0 0 6px 6px;
+  }
+  .ac div { padding: 7px 10px; cursor: pointer; }
+  .ac div:hover { background: var(--accent-soft); }
+  .ac .k { color: var(--ink-muted); font-size: 10px; margin-left: 6px; }
+  .ac .ac-more { color: var(--accent-strong); font-size: 11px; font-weight: 600;
+    background: var(--accent-soft); border-top: 1px solid var(--line); position: sticky; bottom: 0; }
+  .ac .ac-more:hover { background: #cfe3d2; }
+  .tools { display: flex; gap: 8px; margin: 10px 0 2px; }
+  .tools button, .opts select {
+    font: 700 11px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .04em;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--surface); color: var(--accent-strong); cursor: pointer;
+  }
+  .tools button:hover, .opts select:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .opts { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .opts select { flex: 1; min-width: 0; }
+  .opts .avoid { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; color: var(--ink-muted); white-space: nowrap; }
+  .go {
+    display: block; width: 100%; margin-top: 10px;
+    padding: 10px; font: 800 13px/1 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .06em; text-transform: uppercase;
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(23,107,74,.35);
+  }
+  .go:hover { background: var(--accent-strong); }
+  #options { margin-top: 2px; }
+  .optcard {
+    border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; margin-bottom: 7px;
+    cursor: pointer; background: var(--surface);
+  }
+  .optcard:hover { background: #f6f9f3; }
+  .optcard.sel { border-color: var(--accent); background: #eef6ef; box-shadow: 0 0 0 1px var(--accent) inset; }
+  .optcard .t { font-weight: 700; color: var(--ink); }
+  /* The clean-route callout: reassuring, so green rather than a warning red,
+     and quiet enough to read before the itinerary. */
+  .route-clear {
+    margin: 8px 0 10px; padding: 6px 9px; border-radius: 5px;
+    background: #eaf5ee; border: 1px solid #cbe3d3; color: #14532d; font-size: 11.5px;
+  }
+  .optcard .m { color: var(--ink-muted); font-size: 11px; }
+  .lake-pop .lp-note {
+    margin: 9px 0 0; padding: 5px 8px; border-radius: 5px;
+    background: #f4f1e8; color: var(--ink-muted); font-size: 11px; line-height: 1.45;
+  }
+  .lake-pop .lp-note.warn { background: #fdf3d8; color: #8a6512; }
+  #summary { margin: 4px 0 2px; font-size: 12px; color: var(--ink-muted); }
+  #legs { margin: 4px 0 8px; border-top: 1px solid var(--line); }
+  /* An empty #legs still painted its border-top and 12px of margin, so
+     before a route was drawn it left a stray rule and two empty lines under
+     the sample routes. Collapse the containers until they have content. */
+  #options:empty, #summary:empty, #legs:empty { display: none; }
+  .wp { margin: 6px 0; padding: 7px 10px; background: var(--accent-soft); color: var(--accent-strong);
+    border: 1px solid #c5ddcd; border-radius: 4px; font-weight: 700; font-size: 12px; }
+  .leg { padding: 8px 4px; border-bottom: 1px solid #eef0ea; display: flex; gap: 8px; }
+  .leg .n { color: var(--ink-muted); min-width: 20px; text-align: right; font-weight: 700; }
+  .leg .b { flex: 1; color: var(--ink); }
+  .leg .p { color: var(--portage); font-weight: 600; }
+  .leg .r { color: var(--paddle); }
+  .leg .warn { color: var(--danger); font-size: 11px; }
+  .leg .wind { color: #8a6512; font-size: 11px; font-weight: 600; }
+  .conds { margin: 0 0 4px; }
+  .conds .foot { color: var(--ink-muted); font-size: 9.5px; line-height: 1.4; }
+  .cond-flag {
+    display: inline-block; margin-left: 5px; padding: 1px 5px; border-radius: 3px;
+    font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    background: #fdf3d8; color: #8a6512; white-space: nowrap; cursor: help;
+  }
+  .cond-flag.closure { background: #fbe0d6; color: #a3530b; }
+  .cond-flag.boil-water { background: #f9d3d3; color: #a51d1d; }
+  .warnbox {
+    margin: 6px 0 0; padding: 8px 10px; background: #fdf2f2; color: var(--danger);
+    border: 1px solid #f3cccc; border-radius: 4px; font-size: 12px; display: none;
+  }
+  .legend {
+    position: absolute; bottom: 14px; right: 14px; z-index: 1000; background: var(--surface-raised);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 8px 11px; font: 800 10px/1.7 -apple-system, "Segoe UI", sans-serif;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+  /* open by default on desktop, where there is room; collapsed on small
+     screens so it stops eating the map */
+  .legend > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .legend > summary::-webkit-details-marker { display: none; }
+  .legend > summary::after { content: '▾'; font-size: 9px; opacity: .6; }
+  .legend[open] > summary::after { content: '▴'; }
+  .legend:not([open]) { padding: 7px 10px; }
+  .legend-body { margin-top: 4px; }
+  .sw { display: inline-block; width: 20px; height: 0; border-top: 3px solid; margin-right: 5px; vertical-align: middle; }
+  .sw.portage { border-style: dashed; border-color: var(--portage); }
+  .sw.reach { border-color: #41b6c4; }
+  .sw.road { border-color: #8a6d4e; border-width: 6px; }
+  .sw.park { border-color: #3f5f3b; border-style: dashed; border-width: 1px; opacity: .8; }
+  .pa-leg { color: var(--portage); font-size: 12px; font-weight: 900; margin-right: 4px; }
+  .camp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4caf7d; border: 1px solid #2f7d4f; margin-right: 5px; vertical-align: middle; }
+  .sw.route { border-color: var(--portage); border-style: solid; border-width: 5px; height: 0; }
+  .lglake { display: inline-block; width: 12px; height: 9px; background: #a6cee3; border: 1px solid #3182bd; margin-right: 5px; vertical-align: middle; }
+  .portage-badge span, .wp-badge span {
+    display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    color: #fff; font-size: 12px; font-weight: 700;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  .portage-badge span { background: var(--portage); }
+  .el { font-weight: 700; font-size: 11px; }
+  .prof { display: block; width: 108px; height: 22px; margin: 4px 0 2px; opacity: .9; }
+  .rate { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+  .rate.r-flat { background: #eef2ec; color: #4a6b58; }
+  .rate.r-moderate { background: #fdf3d8; color: #8a6512; }
+  .rate.r-steep { background: #fde8cf; color: #a3530b; }
+  .rate.r-vsteep { background: #fbdfd2; color: #b23a0e; }
+  .rate.r-brutal { background: #f9d3d3; color: #a51d1d; }
+  .rate.r-unknown { background: #eee; color: #888; }
+  .el.up { color: #9a3412; }
+  .el.down { color: #1a6b4a; }
+  .portage-arrow span {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--portage);
+    color: var(--portage); font-size: 12px; font-weight: 900; line-height: 1;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+  }
+  .wp-badge span { background: var(--paddle); }
+  .ap-badge span {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 24px; height: 20px; padding: 0 3px;
+    background: var(--surface); color: var(--accent-strong); font-size: 11px; font-weight: 700;
+    border: 2px solid var(--accent); border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  .leg-zoom { cursor: pointer; }
+  .leg-zoom:hover { background: #f2f7f1; }
+  .leaflet-tooltip {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 4px;
+    color: var(--ink); font: 700 11px/1.3 -apple-system, "Segoe UI", sans-serif;
+    box-shadow: var(--shadow); padding: 5px 8px;
+  }
+  .leaflet-tooltip .tt-k { color: var(--ink-muted); font-weight: 400; margin-left: 5px; font-size: 10px; }
+  .leaflet-tooltip-top:before { border-top-color: var(--line); }
+  .leaflet-tooltip-bottom:before { border-bottom-color: var(--line); }
+  #samples { margin-bottom: 6px; }
+  #samples .eyebrow { margin-bottom: 8px; }
+  .sample-btn {
+    display: block; width: 100%; text-align: left; margin-bottom: 7px;
+    border: 1px solid var(--line); background: var(--surface); border-radius: 6px;
+    padding: 9px 11px; cursor: pointer;
+  }
+  .sample-btn:hover { border-color: var(--accent); background: #f6f9f3; }
+  .sample-btn .t { font-weight: 700; color: var(--ink); font-size: 12.5px; }
+  .sample-btn .m { color: var(--ink-muted); font-size: 11px; margin-top: 2px; }
+  /* the About copy, which lives in the credits dialog */
+  .notice.credits .about-modes { margin: 0 0 10px; padding-left: 17px; color: var(--ink-muted); font-size: 12.5px; line-height: 1.55; }
+  .notice.credits .about-modes li { margin-bottom: 2px; }
+  .notice.credits .about-modes b { color: var(--ink); }
+  .notice.credits .about-caveat { margin: 0; padding-top: 9px; border-top: 1px solid var(--line); font-size: 12px; }
+  /* Anchors are content-box; buttons were border-box. With width:100% and
+     9px 11px of padding, that pushed every sample box 24px past the panel. */
+  a.sample-btn { text-decoration: none; color: inherit; display: block; box-sizing: border-box; }
+  .side-footer { margin-top: auto; padding: 9px 22px 11px; border-top: 1px solid var(--line);
+    color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
+  .side-handle { display: none; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 46px; height: 5px; border-radius: 3px; background: var(--line); border: 0; cursor: pointer; z-index: 2; }
+  .side-peek { display: none; }
+  @media (max-width: 768px) {
+    .side { top: auto; height: 54%; width: 100%; border-right: 0; border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(0,0,0,.2); transition: height .22s ease; }
+    .side.collapsed { height: 78px; overflow: hidden; }
+    .side-handle { display: block; position: absolute; top: 0; left: 0; right: 0; width: 100%;
+      height: 22px; background: none; transform: none; }
+    .side-handle::after { content: ''; position: absolute; left: 50%; top: 7px; transform: translateX(-50%);
+      width: 40px; height: 4px; border-radius: 2px; background: var(--line); }
+    .side-header { padding: 24px 16px 6px; align-items: center; gap: 10px; }
+    .side-header .brand-sub { display: none; }
+    .side-peek { display: block; flex: 1; min-width: 0; color: var(--ink-muted); font-size: 11px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+    .side-intro { display: none; }
+    .side-section { padding: 8px 16px 10px; }
+    .field input { min-height: 40px; font-size: 16px; }   /* 16px: no iOS focus-zoom */
+    .tools button, .opts select, .go { min-height: 40px; font-size: 14px; }
+    .opts { flex-direction: column; align-items: stretch; gap: 6px; }
+    .opts .avoid { padding: 4px 0; }
+    .go { position: sticky; bottom: 0; }
+    .legend { bottom: calc(var(--sheet-h, 0px) + 10px); right: 8px; font-size: 9px; padding: 6px 8px; }
+    .legend-body > div { display: inline; margin-right: 8px; }
+    .legend-body { max-width: 62vw; }
+  }
+  .side-footer p { margin: 0 0 6px; }
+  .side-footer .meta { display: block; letter-spacing: .04em; }
+  /* planning-tool notice */
+  .notice-veil {
+    position: absolute; inset: 0; z-index: 3000; display: none;
+    background: rgba(13, 27, 23, .45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  .notice-veil.show { display: grid; place-items: center; }
+  .notice {
+    width: min(420px, calc(100vw - 40px)); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .notice h2 { margin: 0 0 8px; font: 500 20px/1.15 Georgia, "Times New Roman", serif; color: var(--ink); }
+  .notice p { margin: 0 0 9px; color: var(--ink-muted); font-size: 12.5px; line-height: 1.55; }
+  .notice .eyebrow { margin-bottom: 10px; }
+  .notice .row { display: flex; gap: 8px; margin-top: 14px; flex-direction: column; }
+  .notice button {
+    padding: 10px; border-radius: 6px; cursor: pointer;
+    font: 800 12px/1 -apple-system, "Segoe UI", sans-serif; letter-spacing: .05em;
+  }
+  .notice .primary { background: var(--accent); color: #fff; border: 0; }
+  .notice .primary:hover { background: var(--accent-strong); }
+  .notice .ghost { background: 0 0; color: var(--ink-muted); border: 1px solid var(--line); }
+  .notice .ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+  .notice a { color: var(--accent-strong); }
+  /* The dialog grew with the About copy, so a scrolling Close button at the
+     bottom is a dead end on a short window. Body scrolls, footer does not. */
+  .notice.credits { width: min(480px, calc(100vw - 40px)); max-height: 84vh;
+                    display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+  .notice.credits .credits-body { overflow-y: auto; min-height: 0; padding: 22px 24px 4px; }
+  .notice.credits .row { flex: 0 0 auto; margin: 0; padding: 12px 24px 14px;
+                         border-top: 1px solid var(--line); background: var(--surface); }
+  .notice.credits dt { margin-top: 11px; color: var(--ink); font-weight: 700; font-size: 12.5px; }
+  .notice.credits dt:first-of-type { margin-top: 2px; }
+  /* The "Data sources" heading needs to read as introducing the list, not as
+     a caption on OpenStreetMap. It carried its own top border and 2px below,
+     which left the first <dt> pressed against it. */
+  .notice.credits .about-eyebrow { margin: 18px 0 7px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .notice.credits .about-eyebrow + dl dt:first-of-type { margin-top: 0; }
+  .notice.credits .about-by { margin: 0 0 10px; color: var(--ink); font-weight: 600; }
+  .notice.credits .about-by a { color: var(--accent-strong); font-weight: 500; }
+  .notice.credits dd { margin: 3px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.5; }
+  .notice.credits dd a { color: var(--accent-strong); }
+  /* lake popup: a card, not a <br>-separated list of unstyled buttons */
+  .leaflet-popup-content { margin: 0; width: 250px !important; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; padding: 0; overflow: hidden; }
+  .lake-pop { padding: 13px 14px 12px; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .lake-pop h3 {
+    margin: 0; font: 600 15.5px/1.25 Georgia, "Times New Roman", serif;
+    color: var(--ink); padding-right: 14px;
+  }
+  .lake-pop .lp-kind {
+    margin-top: 1px; font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--accent-strong); font-weight: 700;
+  }
+  .lake-pop .lp-facts {
+    margin: 10px 0 0; padding: 9px 0 2px; border-top: 1px solid var(--line);
+  }
+  .lake-pop .lp-facts > div { display: flex; justify-content: space-between; gap: 10px; padding: 2.5px 0; }
+  .lake-pop .lp-facts dt { color: var(--ink-muted); font-size: 11.5px; }
+  .lake-pop .lp-facts dd { margin: 0; color: var(--ink); font-size: 11.5px; font-weight: 600; text-align: right; }
+  .lake-pop .lp-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 11px; }
+  .lake-pop .lp-btn {
+    width: 100%; padding: 8px 10px; border-radius: 6px; cursor: pointer; text-align: center;
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+    font: 600 12px/1 -apple-system, "Segoe UI", sans-serif;
+  }
+  .lake-pop .lp-btn:hover { border-color: var(--ink-muted); }
+  .lake-pop .lp-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .lake-pop .lp-btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .lake-pop .lp-btn.ghost { border-color: transparent; color: var(--ink-muted); font-weight: 500; }
+  .lake-pop .lp-btn.ghost:hover { color: var(--accent-strong); }
+  .lake-pop .lp-state {
+    margin-top: 9px; padding: 5px 8px; border-radius: 5px; text-align: center;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  }
+
+/* rapids hazard warning on a route leg.
+   Deliberately loud: a paddler who reads past a grey parenthetical is worse off
+   than one who was told the water is dangerous. */
+.leg-haz .b { background: rgba(154, 52, 18, .09); border-left: 3px solid #9a3412;
+  border-radius: 4px; padding: 9px 11px; margin: 8px 0; }
+.leg-haz .hazmark { display: block; font: 700 10px var(--sans); letter-spacing: .09em;
+  text-transform: uppercase; color: #9a3412; margin-bottom: 4px; }
+.leg-haz .hazbody { font-size: 11.5px; line-height: 1.45; color: var(--ink); }
