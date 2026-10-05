@@ -12,3 +12,5 @@ tools/algonquin-graph/raw/
 tools/algonquin-graph/algonquin.duckdb
 tools/algonquin-graph/__pycache__/
 .DS_Store
+__pycache__/
+*.pyc
