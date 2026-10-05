@@ -12,9 +12,40 @@
       if (!adj.has(e.s)) adj.set(e.s, []);
       adj.get(e.s).push(e);
     }
+    // Search vocabulary. Paddlers do not type the name the map has: trip reports
+    // and guides say "Narrowbag", "Red Pine Bay", "Mike's Lake", "Kiosk",
+    // "Kio" where OSM has "Narrowbag Lake", "Redpine Lake", "Mink (Little)"
+    // and so on. Nineteen of thirty-two published trip reports could not even
+    // be replayed because their names did not resolve, so the gaps were as much
+    // a UX failure as a measurement one. Add the variants people actually use.
     const search = [];
+    const seen = new Set();
+    const add = (id, name, kind) => {
+      const k = id + "\u0000" + name;
+      if (seen.has(k)) return;
+      seen.add(k);
+      search.push({ id, name, kind });
+    };
+    const variants = (name) => {
+      const out = new Set([name]);
+      const core = name.replace(/\s+lake$/i, "").replace(/\s*\(\w+\)\s*$/, "").trim();
+      out.add(core);
+      out.add(core + " lake");
+      out.add("lake " + core);
+      // "Ralph Bice (Butt)" -> "Butt Lake"; "Mink (Little)" -> "Little Mink Lake"
+      const m = core.match(/^(.+?)\s*\((.+?)\)$/);
+      if (m) {
+        out.add(`${m[2]} ${m[1]} lake`);
+        out.add(`${m[2]} ${m[1]}`);
+      }
+      // "Mike's Lake" <-> "Mikes Lake"
+      out.add(name.replace(/'/g, ""));
+      for (const v of [...out]) out.add(v.replace(/'/g, ""));
+      return [...out].filter(Boolean);
+    };
     for (const n of data.nodes) {
-      if (n[1]) search.push({ id: n[0], name: n[1], kind: n[2] });
+      if (!n[1]) continue;
+      for (const v of variants(n[1])) add(n[0], v, n[2]);
     }
     return { nodeById, adj, search };
   }
