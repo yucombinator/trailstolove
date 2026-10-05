@@ -22,7 +22,8 @@ CREATE OR REPLACE TABLE water (
   lon     DOUBLE,
   area_m2 DOUBLE,
   major   INTEGER,   -- 1 = named feature
-  dm      DOUBLE     -- bbox diagonal in metres: the scale of a crossing into it
+  dm      DOUBLE,    -- bbox diagonal in metres: the scale of a crossing into it
+  hazard  INTEGER    -- 1 = OSM tagged this reach rapids=yes or canoe=no
 );
 INSERT INTO water SELECT * FROM read_csv_auto('data/water.csv', header = true);
 
