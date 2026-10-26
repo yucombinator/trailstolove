@@ -628,9 +628,12 @@ def main():
         title = re.search(r"<title>([^<]+)</title>", html)
         title = title.group(1) if title else p.stem
         num = re.search(r"#(\d+)", title)
+        if not num:
+            print(f"[warn] no access point number in title for {p.name} — skipped", flush=True)
+            continue
         nm = re.search(r"^(.*?)\s*(?:\(#\d+\))?\s*\|", title)
         off_rows.append({
-            "num": num.group(1) if num else "",
+            "num": num.group(1),
             "name": (nm.group(1).strip() if nm else p.stem),
             "slug": p.stem,
             "url": f"https://www.algonquinpark.on.ca/visit/camping/{p.stem}-access-point.php",

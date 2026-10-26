@@ -315,7 +315,14 @@ def main():
     print(f"rapids-flagged reaches: {sum(1 for v in water.values() if v.get('hazard'))}")
 
     # ---- access nodes + edges ----
-    official_geo = {r["num"]: r for r in load_csv("access_official_geo.csv")}
+    official_geo = {}
+    for r in load_csv("access_official_geo.csv"):
+        try:
+            int(str(r.get("num") or "").strip())
+        except ValueError:
+            print(f"[warn] ignoring official access row without number: {r.get('name')}")
+            continue
+        official_geo[r["num"]] = r
     official = []
     for r in load_csv("access_osm.csv"):
         aid = 1000000000000 + int(r["osm_id"])
