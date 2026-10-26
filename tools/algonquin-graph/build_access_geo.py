@@ -155,6 +155,12 @@ def main():
 
     rows = []
     for off in load_csv("access_official.csv"):
+        raw_num = str(off.get("num") or "").strip()
+        try:
+            num = int(raw_num)
+        except ValueError:
+            print(f"[warn] access point '{off.get('name')}' has no numeric number — skipped")
+            continue
         cores = [ALIASES.get(c, c) for c in core_tokens(off["name"])]
         best_w, best_score = None, -1
         for nm, w in wgeo.items():
@@ -189,7 +195,6 @@ def main():
 
         # pin: physical boat ramp > canoe/boat rental > parking.
         # NOTE: hav() returns kilometres here — all thresholds below use metres.
-        num = int(off["num"])
         pin = {"kind": "", "osm_id": "", "name": "", "lat": lat, "lon": lon}
         named = slips_by_num.get(num)
         if named and hav(lat, lon, named["lat"], named["lon"]) * 1000 <= 25000:
@@ -217,7 +222,7 @@ def main():
                     < hav(pin["lat"], pin["lon"], tgt["lat"], tgt["lon"])):
                 tgt = near
         rows.append({
-            "num": off["num"], "name": off["name"], "lat": round(pin["lat"], 6),
+            "num": num, "name": off["name"], "lat": round(pin["lat"], 6),
             "lon": round(pin["lon"], 6), "water_id": tgt["id"],
             "water_name": tgt["name"], "osm_id": ap_oid, "match": match,
             "matched_name": matched,
